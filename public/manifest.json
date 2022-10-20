@@ -1,0 +1,33 @@
+{
+  "name": "__MSG_extName__",
+  "author": "baptistecdr",
+  "homepage_url": "https://github.com/baptistecdr/aria2-extensions",
+  "description": "__MSG_extDescription__",
+  "version": "4.0.0",
+  "default_locale": "en",
+  "permissions": [
+    "contextMenus",
+    "cookies",
+    "downloads",
+    "notifications",
+    "storage",
+    "activeTab"
+  ],
+  "options_ui": {
+    "page": "options.html",
+    "browser_style": false
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "19": "icons/icon19.png",
+    "24": "icons/icon24.png",
+    "32": "icons/icon32.png",
+    "38": "icons/icon38.png",
+    "48": "icons/icon48.png",
+    "80": "icons/icon80.png",
+    "96": "icons/icon96.png",
+    "128": "icons/icon128.png",
+    "256": "icons/icon256.png",
+    "512": "icons/icon512.png"
+  }
+}

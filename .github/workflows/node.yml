@@ -1,0 +1,40 @@
+name: Node
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        name: Clone repository
+
+      - uses: actions/setup-node@v3
+        name: Setup node
+        with:
+          node-version: '18'
+
+      - name: Install Dependencies
+        run: npm install
+
+      - name: Build Firefox Extension
+        run: npm run build:firefox
+
+      - uses: actions/upload-artifact@v3
+        name: Upload Firefox artifact
+        with:
+          name: aria2-integration-firefox
+          path: ./build/
+
+      - name: Build Chromium Extension
+        run: npm run build:chromium
+
+      - uses: actions/upload-artifact@v3
+        name: Upload Chromium artifact
+        with:
+          name: aria2-integration-chromium
+          path: ./build/

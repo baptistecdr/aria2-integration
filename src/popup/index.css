@@ -1,0 +1,33 @@
+body {
+    width: 500px;
+}
+
+@media (prefers-color-scheme: dark) {
+    body {
+        color: #FFF !important;
+        background-color: #4A4A4F !important;
+    }
+
+    hr {
+        background-color: #343638 !important;
+    }
+
+    .nav-tabs {
+        border-color: #343638 !important;
+    }
+
+    .nav-link.active, .nav-link:hover, .nav-link:focus, .form-control {
+        color: #FFF !important;
+        background-color: #4A4A4F !important;
+        border-color: #343638 !important;
+    }
+
+    .form-control::-moz-placeholder, .form-control::placeholder, textarea::placeholder {
+        color: #B1B1B3 !important;
+    }
+
+    .progress {
+        background-color: #F2F2F2 !important;
+        color: black;
+    }
+}
