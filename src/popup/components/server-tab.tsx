@@ -70,8 +70,8 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
       <Row>
         <Col xs={6} sm={6} className="align-self-baseline text-start stats">
           <>
-            <i className="bi-arrow-down" /> {filesize(globalStat.downloadSpeed, fileSizeBase)}/s -{" "}
-            <i className="bi-arrow-up" /> {filesize(globalStat.uploadSpeed, fileSizeBase)}/s
+            <i className="bi-arrow-down" /> {filesize(globalStat.downloadSpeed, fileSizeBase)}/s - <i className="bi-arrow-up" />{" "}
+            {filesize(globalStat.uploadSpeed, fileSizeBase)}/s
           </>
         </Col>
         <Col xs={6} sm={6} className="align-self-baseline text-end">
@@ -108,13 +108,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
         </Col>
       </Row>
       {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
-      {showQuickOptions && (
-        <ServerQuickOptions
-          setExtensionOptions={setExtensionOptions}
-          extensionOptions={extensionOptions}
-          server={server}
-        />
-      )}
+      {showQuickOptions && <ServerQuickOptions setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />}
       {!showAddTask && !showQuickOptions && tasks.length === 0 && (
         <Row>
           <Col xs={12} sm={12}>

@@ -1,4 +1,4 @@
-import { Col, OverlayTrigger, ProgressBar, Row, Tooltip } from "react-bootstrap";
+import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import React from "react";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
@@ -86,15 +86,15 @@ function ServerTask({ task, aria2 }: Props) {
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
             <>
-              {getStatus()}, {filesize(task.completedLength, filesizeParameters)} /{" "}
-              {filesize(task.totalLength, filesizeParameters)} {task.isActive() && `, ${getETA()}`}
+              {getStatus()}, {filesize(task.completedLength, filesizeParameters)} / {filesize(task.totalLength, filesizeParameters)}{" "}
+              {task.isActive() && `, ${getETA()}`}
             </>
           </Col>
           {task.isActive() && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
               <>
-                {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" />{" "}
-                {filesize(task.downloadSpeed)}/s - <i className="bi-arrow-up" /> {filesize(task.uploadSpeed)}/s
+                {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed)}/s - <i className="bi-arrow-up" />{" "}
+                {filesize(task.uploadSpeed)}/s
               </>
             </Col>
           )}

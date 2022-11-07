@@ -62,7 +62,7 @@ export class Task {
     uploadLength: number,
     uploadSpeed: number,
     errorMessage: string,
-    bittorrent?: Bittorrent
+    bittorrent?: Bittorrent,
   ) {
     this.bittorrent = bittorrent;
     this.completedLength = completedLength;

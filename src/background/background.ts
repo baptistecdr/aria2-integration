@@ -119,13 +119,7 @@ function downloadItemMustBeCaptured(item: Downloads.DownloadItem, referrer: stri
   return false;
 }
 
-async function captureDownloadItem(
-  aria2: any,
-  server: Server,
-  item: Downloads.DownloadItem,
-  referer: string,
-  cookies: string
-) {
+async function captureDownloadItem(aria2: any, server: Server, item: Downloads.DownloadItem, referer: string, cookies: string) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const url = item.finalUrl ?? item.url; // finalUrl (Chrome), url (Firefox)

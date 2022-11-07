@@ -35,13 +35,7 @@ function Servers() {
   }
 
   return (
-    <Tabs
-      id="tabs-servers"
-      defaultActiveKey=""
-      activeKey={activeTab}
-      onSelect={(k) => setActiveTab(k ?? "")}
-      className="mb-3"
-    >
+    <Tabs id="tabs-servers" defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3">
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
         <Tab eventKey={id} title={server.name}>
           <ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />
@@ -54,5 +48,5 @@ function Servers() {
 root.render(
   <Container className="p-3" fluid>
     <Servers />
-  </Container>
+  </Container>,
 );

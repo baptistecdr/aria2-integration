@@ -46,7 +46,7 @@ function Options() {
         setActiveTab(serversKeys[0]);
       }
     },
-    [extensionOptions]
+    [extensionOptions],
   );
 
   return (
@@ -64,12 +64,7 @@ function Options() {
     >
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
         <Tab eventKey={id} title={server.name}>
-          <ServerOptionsTab
-            extensionOptions={extensionOptions}
-            setExtensionOptions={setExtensionOptions}
-            server={server}
-            deleteServer={deleteServer}
-          />
+          <ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />
         </Tab>
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
@@ -83,5 +78,5 @@ function Options() {
 root.render(
   <Container className="p-3" fluid>
     <Options />
-  </Container>
+  </Container>,
 );

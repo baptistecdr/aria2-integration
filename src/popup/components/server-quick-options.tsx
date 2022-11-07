@@ -19,7 +19,7 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
         e.target.checked,
         extensionOptions.excludedProtocols,
         extensionOptions.excludedSites,
-        extensionOptions.excludedFileTypes
+        extensionOptions.excludedFileTypes,
       );
       await newExtensionsOptions.toStorage();
       setExtensionOptions(newExtensionsOptions);
@@ -31,7 +31,7 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
       extensionOptions.servers,
       server.uuid,
       setExtensionOptions,
-    ]
+    ],
   );
 
   return (

@@ -8,7 +8,7 @@ export default class ExtensionOptions {
     public readonly captureDownloads: boolean = false,
     public readonly excludedProtocols: string[] = [],
     public readonly excludedSites: string[] = [],
-    public readonly excludedFileTypes: string[] = []
+    public readonly excludedFileTypes: string[] = [],
   ) {}
 
   private serialize(): string {

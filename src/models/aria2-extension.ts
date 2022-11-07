@@ -58,14 +58,7 @@ export async function captureTorrentFromURL(aria2: any, server: Server, url: str
   return aria2.call("aria2.addMetalink", blobAsBase64, [], server.rpcParameters);
 }
 
-export async function captureURL(
-  aria2: any,
-  server: Server,
-  url: string,
-  referer: string,
-  cookies: string,
-  filename?: string
-) {
+export async function captureURL(aria2: any, server: Server, url: string, referer: string, cookies: string, filename?: string) {
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/)) {
     return captureTorrentFromURL(aria2, server, url, filename);
   }

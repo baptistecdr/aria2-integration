@@ -30,7 +30,7 @@ function ServerAddTasks({ aria2, server }: Props) {
       formEvent.currentTarget.reset();
       setFormUrls([]);
     },
-    [aria2, formUrls, server]
+    [aria2, formUrls, server],
   );
 
   const onChangeInputFiles = useCallback((e: ChangeEvent) => {
@@ -54,7 +54,7 @@ function ServerAddTasks({ aria2, server }: Props) {
         setFormFiles(DEFAULT_FORM_FILES);
       }
     },
-    [aria2, formFiles.files, server]
+    [aria2, formFiles.files, server],
   );
 
   return (

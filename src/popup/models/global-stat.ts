@@ -26,14 +26,7 @@ export default class GlobalStat {
   @Transform(({ value }) => parseInt(value, 10))
   numStoppedTotal: number;
 
-  constructor(
-    downloadSpeed: number,
-    uploadSpeed: number,
-    numActive: number,
-    numWaiting: number,
-    numStopped: number,
-    numStoppedTotal: number
-  ) {
+  constructor(downloadSpeed: number, uploadSpeed: number, numActive: number, numWaiting: number, numStopped: number, numStoppedTotal: number) {
     this.downloadSpeed = downloadSpeed;
     this.uploadSpeed = uploadSpeed;
     this.numActive = numActive;

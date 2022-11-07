@@ -86,16 +86,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
     if (form.checkValidity()) {
       try {
         const newExtensionOptions = await extensionOptions.addServer(
-          new Server(
-            server.uuid,
-            serverName,
-            serverSecure,
-            serverHost,
-            serverPort,
-            "/jsonrpc",
-            serverSecret,
-            serverRpcParameters
-          )
+          new Server(server.uuid, serverName, serverSecure, serverHost, serverPort, "/jsonrpc", serverSecret, serverRpcParameters),
         );
         setExtensionOptions(newExtensionOptions);
         setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
@@ -113,12 +104,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
       {alertProps.show && (
         <Row className="mb-3">
           <Form.Group as={Col} controlId="form-server-name">
-            <Alert
-              variant={alertProps.variant}
-              className="mb-0"
-              onClose={() => setAlertProps(new AlertProps())}
-              dismissible
-            >
+            <Alert variant={alertProps.variant} className="mb-0" onClose={() => setAlertProps(new AlertProps())} dismissible>
               {alertProps.message}
             </Alert>
           </Form.Group>
@@ -151,11 +137,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
         <Form.Group as={Col} controlId="form-server-secret">
           <Form.Label>{i18n("serverOptionsSecret")}</Form.Label>
           <InputGroup>
-            <Form.Control
-              type={showPassword ? "text" : "password"}
-              value={serverSecret}
-              onChange={onChangeServerSecret}
-            />
+            <Form.Control type={showPassword ? "text" : "password"} value={serverSecret} onChange={onChangeServerSecret} />
             <InputGroup.Text role="button" tabIndex={0} onClick={() => setShowPassword(!showPassword)}>
               <i className={showPassword ? "bi-eye-slash" : "bi-eye"} />
             </InputGroup.Text>

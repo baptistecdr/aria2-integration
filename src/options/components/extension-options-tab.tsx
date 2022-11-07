@@ -48,7 +48,7 @@ function ExtensionOptionsTab({ servers }: Props) {
         setCaptureServer(event.target.value);
       }
     },
-    [servers]
+    [servers],
   );
 
   const onChangeCaptureDownloads = useCallback(
@@ -60,25 +60,22 @@ function ExtensionOptionsTab({ servers }: Props) {
         setCaptureServer(extensionOptions.captureServer);
       }
     },
-    [extensionOptions.captureServer]
+    [extensionOptions.captureServer],
   );
 
   const onChangeExcludedProtocols = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setExcludedProtocols(serializeExcludedOption(e.target.value)),
-    []
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedProtocols(serializeExcludedOption(e.target.value)),
+    [],
   );
 
   const onChangeExcludedSites = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setExcludedSites(serializeExcludedOption(e.target.value)),
-    []
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedSites(serializeExcludedOption(e.target.value)),
+    [],
   );
 
   const onChangeExcludedFileTypes = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
-      setExcludedFileTypes(serializeExcludedOption(e.target.value)),
-    []
+    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedFileTypes(serializeExcludedOption(e.target.value)),
+    [],
   );
 
   const onClickSaveExtensionOptions = useCallback(async () => {
@@ -89,7 +86,7 @@ function ExtensionOptionsTab({ servers }: Props) {
         captureDownloads,
         excludedProtocols,
         excludedSites,
-        excludedFileTypes
+        excludedFileTypes,
       ).toStorage();
       setExtensionOptions(newExtensionOptions);
       setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
@@ -102,12 +99,7 @@ function ExtensionOptionsTab({ servers }: Props) {
     <Form className="row p-3">
       {alertProps.show && (
         <Col xs={12} sm={12}>
-          <Alert
-            variant={alertProps.variant}
-            className="mb-3"
-            onClose={() => setAlertProps(new AlertProps())}
-            dismissible
-          >
+          <Alert variant={alertProps.variant} className="mb-3" onClose={() => setAlertProps(new AlertProps())} dismissible>
             {alertProps.message}
           </Alert>
         </Col>
@@ -116,11 +108,7 @@ function ExtensionOptionsTab({ servers }: Props) {
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-capture-downloads">
           <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
-          <Form.Check
-            checked={captureDownloads}
-            aria-label={i18n("extensionOptionsCaptureDownloads")}
-            onChange={onChangeCaptureDownloads}
-          />
+          <Form.Check checked={captureDownloads} aria-label={i18n("extensionOptionsCaptureDownloads")} onChange={onChangeCaptureDownloads} />
         </Form.Group>
       </Col>
 
