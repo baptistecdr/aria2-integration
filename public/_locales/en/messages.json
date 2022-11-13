@@ -146,6 +146,9 @@
   "taskStatusPaused": {
     "message": "Paused"
   },
+  "taskStatusRemoved": {
+    "message": "Removed"
+  },
   "taskEta": {
     "message": "ETA"
   },
