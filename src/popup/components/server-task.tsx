@@ -93,8 +93,8 @@ function ServerTask({ task, aria2 }: Props) {
           {task.isActive() && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
               <>
-                {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed)}/s - <i className="bi-arrow-up" />{" "}
-                {filesize(task.uploadSpeed)}/s
+                {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, filesizeParameters)}/s -{" "}
+                <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, filesizeParameters)}/s
               </>
             </Col>
           )}
