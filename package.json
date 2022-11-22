@@ -18,7 +18,7 @@
     "@testing-library/react": "13.4.0",
     "@testing-library/user-event": "14.4.3",
     "aria2": "4.1.2",
-    "bootstrap": "5.2.2",
+    "bootstrap": "5.2.3",
     "bootstrap-icons": "1.10.2",
     "class-transformer": "0.5.1",
     "filesize": "10.0.5",
