@@ -75,7 +75,7 @@
     "message": "Leave it blank to capture files from any site."
   },
   "extensionOptionsExcludeSitesInformation": {
-    "message": ".*microsoft, google.com"
+    "message": "microsoft, google.com"
   },
   "extensionOptionsExcludeFileTypes": {
     "message": "Exclude File Types"
