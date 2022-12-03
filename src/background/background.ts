@@ -98,23 +98,29 @@ function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
 
 function downloadItemMustBeCaptured(item: Downloads.DownloadItem, referrer: string): boolean {
   if (extensionOptions.captureServer !== "") {
-    const protocolsRegExp = new RegExp(`^${extensionOptions.excludedProtocols.map((p) => `(${p})`).join("|^")}`);
-    const sitesRegExp = new RegExp(`${extensionOptions.excludedSites.map((s) => `(${s})`).join("|")}`);
-    const fileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
+    const excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
+    const excludedFileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    const url = item.finalUrl ?? item.url; // finalUrl exists only on Chromium
+    const url = new URL(item.finalUrl ?? item.url); // finalUrl exists only on Chromium
+    const refererURL = referrer !== "" ? new URL(referrer) : null;
 
-    if (extensionOptions.excludedProtocols.length > 0 && protocolsRegExp.test(url)) {
+    if (excludedProtocols.indexOf(url.protocol) !== -1) {
       return false;
     }
 
-    if (extensionOptions.excludedSites.length > 0 && (sitesRegExp.test(referrer) || sitesRegExp.test(url))) {
+    if (
+      !!extensionOptions.excludedSites.map((site) => url.hostname.includes(site)).filter((isFound) => isFound).length ||
+      (refererURL && !!extensionOptions.excludedSites.map((site) => refererURL.hostname.includes(site)).filter((include) => include).length)
+    ) {
       return false;
     }
 
-    return !(extensionOptions.excludedFileTypes.length > 0 && fileTypesRegExp.test(url));
+    return !(
+      extensionOptions.excludedFileTypes.length > 0 &&
+      (excludedFileTypesRegExp.test(url.pathname) || (refererURL && excludedFileTypesRegExp.test(refererURL.pathname)))
+    );
   }
   return false;
 }
@@ -141,9 +147,9 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
     }
     const cookies = await getCookies(referrer);
     if (downloadItemMustBeCaptured(downloadItem, referrer)) {
+      await browser.downloads.cancel(downloadItem.id).catch();
+      await browser.downloads.erase({ id: downloadItem.id }).catch();
       try {
-        await browser.downloads.cancel(downloadItem.id);
-        await browser.downloads.erase({ id: downloadItem.id });
         await captureDownloadItem(connection, server, downloadItem, referrer, cookies);
         await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));
       } catch {

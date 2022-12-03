@@ -75,7 +75,7 @@
     "message": "Laissez le champ vide pour capturer depuis n'importe quel site."
   },
   "extensionOptionsExcludeSitesInformation": {
-    "message": ".*microsoft, google.com"
+    "message": "microsoft, google.com"
   },
   "extensionOptionsExcludeFileTypes": {
     "message": "Exclure des extensions de fichier"

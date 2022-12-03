@@ -6,9 +6,9 @@
     "lint": "eslint '{**/*,*}.{js,ts,jsx,tsx}'",
     "lint:fix": "eslint '{**/*,*}.{js,ts,jsx,tsx}' --fix",
     "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox",
-    "build:firefox": "CI= react-app-rewired build && BROWSER=firefox node scripts/generate-manifest.js && BROWSER=firefox scripts/zip-build.sh",
-    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium:development",
-    "build:chromium": "CI= react-app-rewired build && BROWSER=chromium node scripts/generate-manifest.js && BROWSER=chromium scripts/zip-build.sh",
+    "build:firefox": "CI= react-app-rewired build && BROWSER=firefox node scripts/generate-manifest.js",
+    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium",
+    "build:chromium": "CI= react-app-rewired build && BROWSER=chromium node scripts/generate-manifest.js",
     "test": "react-app-rewired test"
   },
   "dependencies": {
