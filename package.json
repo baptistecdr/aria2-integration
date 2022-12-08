@@ -3,8 +3,8 @@
   "private": true,
   "version": "4.0.4",
   "scripts": {
-    "lint": "eslint '{**/*,*}.{js,ts,jsx,tsx}'",
-    "lint:fix": "eslint '{**/*,*}.{js,ts,jsx,tsx}' --fix",
+    "lint": "eslint 'src/**/*.{js,ts,jsx,tsx}'",
+    "lint:fix": "eslint 'src/**/*.{js,ts,jsx,tsx}' --fix",
     "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox",
     "build:firefox": "CI= react-app-rewired build && BROWSER=firefox node scripts/generate-manifest.js",
     "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium",
