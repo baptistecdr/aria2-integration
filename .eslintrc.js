@@ -28,8 +28,12 @@ module.exports = {
   },
   plugins: [],
   rules: {
-    'jsx-a11y/label-has-associated-control': ['error', {
-      assert: 'either'
-    }],
+    "jsx-a11y/label-has-associated-control": [
+      "error",
+      {
+        assert: "either",
+      },
+    ],
+    "@typescript-eslint/no-explicit-any": "off",
   },
 };
