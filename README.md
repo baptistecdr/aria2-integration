@@ -7,6 +7,11 @@
     <a href="https://github.com/baptistecdr/aria2-integration/issues/new">Request feature</a>
 </p>
 
+## Quick start
+
+- [Chrome Web Store](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
+- [Firefox Extension Store](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
+
 ## How to build
 
 - Install [Node.JS LTS](https://nodejs.org/)
@@ -18,9 +23,9 @@
 
 ## Development
 
+- Run `npm run lint:fix` to lint and fix files
 - Run `npm run build:firefox:watch` to build and hot-reloads (on Firefox)
 - Run `npm run build:chromium:watch` to build and hot-reloads (on Chromium)
-- Run `npm run lint:fix` to lint and fix files
 
 ### Internationalization
 
@@ -37,11 +42,6 @@ addressed yet, [please open a new issue](https://github.com/baptistecdr/aria2-in
 ## Contributing
 
 Contributions are welcome!
-
-## Confidentiality
-
-Cookies read are only transmitted to Aria2 instance. Be sure to use a secure connection between your computer and the
-instance.
 
 ## Thanks to
 

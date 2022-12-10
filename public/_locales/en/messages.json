@@ -104,10 +104,10 @@
   "serverNoTasks": {
     "message": "This place is quiet, so quiet..."
   },
-  "addTaskAddUrl": {
+  "addTaskAddUrls": {
     "message": "Insert magnet links, torrent links and/or file links"
   },
-  "addTaskAddUrlPlaceholder": {
+  "addTaskAddUrlsPlaceholder": {
     "message": "URLs and/or magnets"
   },
   "addTaskAddFiles": {
