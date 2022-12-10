@@ -9,6 +9,7 @@ import basename from "../models/basename";
 import Server from "../models/server";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
+
 let extensionOptions = await ExtensionOptions.fromStorage();
 
 function createConnections() {

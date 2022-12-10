@@ -31,9 +31,7 @@ export async function showNotification(message: string) {
     iconUrl: "../icons/icon80.png",
     message,
   };
-  const id = await browser.notifications.create(undefined, options);
-  const timeout = 3000; // ms
-  window.setTimeout(() => browser.notifications.clear(id), timeout);
+  await browser.notifications.create(undefined, options);
 }
 
 export async function download(url: string): Promise<Blob> {
