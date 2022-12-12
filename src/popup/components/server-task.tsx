@@ -86,7 +86,7 @@ function ServerTask({ task, aria2 }: Props) {
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
             <>
-              {getStatus()}, {filesize(task.completedLength, filesizeParameters)} / {filesize(task.totalLength, filesizeParameters)}{" "}
+              {getStatus()}, {filesize(task.completedLength, filesizeParameters)} / {filesize(task.totalLength, filesizeParameters)}
               {task.isActive() && `, ${getETA()}`}
             </>
           </Col>
