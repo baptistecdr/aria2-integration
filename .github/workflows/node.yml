@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    name: Build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -41,3 +42,26 @@ jobs:
         with:
           name: aria2-integration-chromium
           path: ./build/
+  release:
+    needs: build
+    name: Release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'Release v')
+    steps:
+      - uses: actions/checkout@93ea575cb5d8a053eaa0ac8fa3b40d7e05a33cc8 # v3
+        name: Clone Repository
+
+      - name: Get Release Version
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          echo "::set-output name=VERSION::$(echo $COMMIT_MESSAGE | grep -Po 'v\d+\.\d+\.\d+')"
+        id: version
+
+      - uses: rickstaa/action-create-tag@87a112438ed8b80a2ae25dcf8f11d4949dc4f740 # v1
+        name: Create Tag
+        env:
+          VERSION: $(echo $COMMIT_MESSAGE | grep -Po "v\d+\.\d+\.\d+")
+        with:
+          tag: ${{ steps.version.outputs.VERSION }}
+          message: ${{ github.event.head_commit.message }}
