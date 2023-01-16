@@ -8,10 +8,12 @@
 </p>
 
 <div align="center">
+
 ![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/baptistecdr/aria2-integration/node.yml)
 ![Mozilla Add-on](https://img.shields.io/amo/v/aria2-extension)
 ![Chrome Web Store](https://img.shields.io/chrome-web-store/v/hnenidncmoeebipinjdfniagjnfjbapi)
 ![GitHub](https://img.shields.io/github/license/baptistecdr/aria2-integration)
+
 </div>
 
 ## Quick start
