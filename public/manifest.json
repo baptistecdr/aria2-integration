@@ -17,6 +17,16 @@
     "page": "options.html",
     "browser_style": false
   },
+  "commands": {
+    "toggle_capture_downloads": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+D",
+        "mac": "MacCtrl+Shift+D"
+      },
+      "description": "Toggle Capture Downloads"
+    }
+  },
+
   "icons": {
     "16": "icons/icon16.png",
     "19": "icons/icon19.png",

@@ -116,7 +116,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
           </Col>
         </Row>
       )}
-      {!showAddTask && !showQuickOptions && tasks.map((task) => <ServerTask task={task} aria2={aria2} />)}
+      {!showAddTask && !showQuickOptions && tasks.map((task) => <ServerTask key={task.gid} task={task} aria2={aria2} />)}
     </Container>
   );
 }

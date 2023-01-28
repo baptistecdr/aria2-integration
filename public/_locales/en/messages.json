@@ -189,5 +189,19 @@
         "content": "$1"
       }
     }
+  },
+  "toggleCaptureDownloadsEnabled": {
+    "message": "Enabling capture downloads to $SERVER$.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "toggleCaptureDownloadsDisabled": {
+    "message": "Disabling capture downloads"
+  },
+  "toggleCaptureDownloadsNoServer": {
+    "message": "No server available to capture downloads."
   }
 }

@@ -37,8 +37,8 @@ function Servers() {
   return (
     <Tabs id="tabs-servers" defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3">
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
-        <Tab eventKey={id} title={server.name}>
-          <ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />
+        <Tab key={`tab-${id}`} eventKey={id} title={server.name}>
+          <ServerTab key={`server-${id}`} setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />
         </Tab>
       ))}
     </Tabs>

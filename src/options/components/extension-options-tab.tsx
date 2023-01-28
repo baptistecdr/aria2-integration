@@ -3,16 +3,15 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import { Alert, Button, Col, Form, FormText } from "react-bootstrap";
 import i18n from "../../i18n";
-import IServer from "../../models/server";
 import ExtensionOptions from "../../models/extension-options";
 import AlertProps from "../models/alert-props";
 
 interface Props {
-  servers: Record<string, IServer>;
+  extensionOptions: ExtensionOptions;
+  setExtensionOptions: React.Dispatch<React.SetStateAction<ExtensionOptions>>;
 }
 
-function ExtensionOptionsTab({ servers }: Props) {
-  const [extensionOptions, setExtensionOptions] = useState(new ExtensionOptions());
+function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
   const [excludedProtocols, setExcludedProtocols] = useState(extensionOptions.excludedProtocols);
@@ -21,15 +20,9 @@ function ExtensionOptionsTab({ servers }: Props) {
   const [alertProps, setAlertProps] = useState(new AlertProps());
 
   useEffect(() => {
-    ExtensionOptions.fromStorage().then((result) => {
-      setExtensionOptions(result);
-      setCaptureDownloads(result.captureDownloads);
-      setCaptureServer(result.captureServer);
-      setExcludedProtocols(result.excludedProtocols);
-      setExcludedSites(result.excludedSites);
-      setExcludedFileTypes(result.excludedFileTypes);
-    });
-  }, []);
+    setCaptureDownloads(extensionOptions.captureDownloads);
+    setCaptureServer(extensionOptions.captureServer);
+  }, [extensionOptions]);
 
   function serializeExcludedOption(excludedOptions: string) {
     return excludedOptions
@@ -44,11 +37,11 @@ function ExtensionOptionsTab({ servers }: Props) {
 
   const onChangeCaptureServer = useCallback(
     (event: ChangeEvent<HTMLSelectElement>) => {
-      if (servers[event.target.value]) {
+      if (extensionOptions.servers[event.target.value]) {
         setCaptureServer(event.target.value);
       }
     },
-    [servers],
+    [extensionOptions.servers],
   );
 
   const onChangeCaptureDownloads = useCallback(
@@ -81,7 +74,7 @@ function ExtensionOptionsTab({ servers }: Props) {
   const onClickSaveExtensionOptions = useCallback(async () => {
     try {
       const newExtensionOptions = await new ExtensionOptions(
-        servers,
+        extensionOptions.servers,
         captureServer,
         captureDownloads,
         excludedProtocols,
@@ -93,7 +86,7 @@ function ExtensionOptionsTab({ servers }: Props) {
     } catch {
       setAlertProps(AlertProps.error(i18n("serverOptionsError")));
     }
-  }, [captureDownloads, captureServer, excludedFileTypes, excludedProtocols, excludedSites, servers]);
+  }, [captureDownloads, captureServer, excludedFileTypes, excludedProtocols, excludedSites, extensionOptions.servers, setExtensionOptions]);
 
   return (
     <Form className="row p-3">
@@ -119,8 +112,10 @@ function ExtensionOptionsTab({ servers }: Props) {
             <option value="" disabled>
               {i18n("extensionOptionsNoServerSelected")}
             </option>
-            {Object.entries(servers).map(([id, server]) => (
-              <option value={id}>{server.name}</option>
+            {Object.entries(extensionOptions.servers).map(([id, server]) => (
+              <option key={id} value={id}>
+                {server.name}
+              </option>
             ))}
           </Form.Select>
         </Form.Group>
@@ -178,7 +173,7 @@ function ExtensionOptionsTab({ servers }: Props) {
       </Col>
 
       <Col xs={12} sm={12} className="mb-3">
-        <Button variant="primary" onClick={onClickSaveExtensionOptions}>
+        <Button variant="primary" onClick={onClickSaveExtensionOptions} disabled={captureDownloads && captureServer === ""}>
           {i18n("serverOptionsSave")}
         </Button>
       </Col>

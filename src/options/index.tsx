@@ -37,14 +37,23 @@ function Options() {
 
   const deleteServer = useCallback(
     async (server: Server) => {
-      const newExtensionOptions = await extensionOptions.deleteServer(server);
-      setExtensionOptions(newExtensionOptions);
+      let newExtensionOptions = await extensionOptions.deleteServer(server);
       const serversKeys = Object.keys(newExtensionOptions.servers);
+      let newActiveTab = EXTENSION_OPTIONS_TAB;
       if (serversKeys.length === 0) {
-        setActiveTab(EXTENSION_OPTIONS_TAB);
+        newExtensionOptions = await new ExtensionOptions(
+          newExtensionOptions.servers,
+          "",
+          false,
+          newExtensionOptions.excludedProtocols,
+          newExtensionOptions.excludedSites,
+          newExtensionOptions.excludedFileTypes,
+        ).toStorage();
       } else {
-        setActiveTab(serversKeys[0]);
+        [newActiveTab] = serversKeys;
       }
+      setExtensionOptions(newExtensionOptions);
+      setActiveTab(newActiveTab);
     },
     [extensionOptions],
   );
@@ -63,13 +72,19 @@ function Options() {
       }}
     >
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
-        <Tab eventKey={id} title={server.name}>
-          <ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />
+        <Tab key={`tab-${id}`} eventKey={id} title={server.name}>
+          <ServerOptionsTab
+            key={`server-${id}`}
+            extensionOptions={extensionOptions}
+            setExtensionOptions={setExtensionOptions}
+            server={server}
+            deleteServer={deleteServer}
+          />
         </Tab>
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title="Options">
-        <ExtensionOptionsTab servers={extensionOptions.servers} />
+        <ExtensionOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
       </Tab>
     </Tabs>
   );

@@ -189,5 +189,19 @@
         "content": "$1"
       }
     }
+  },
+  "toggle-capture-downloads-enabled": {
+    "message": "Capturation des téléchargements vers $SERVER$.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "toggle-capture-downloads-disabled": {
+    "message": "Désactivation de la capture des téléchargements."
+  },
+  "toggle-capture-downloads-no-server": {
+    "message": "Aucun server disponible pour capturer les téléchargements."
   }
 }

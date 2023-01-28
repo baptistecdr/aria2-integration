@@ -177,3 +177,30 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
       });
   });
 });
+
+browser.commands.onCommand.addListener(async (command) => {
+  if (command === "toggle_capture_downloads") {
+    const newCaptureDownloads = !extensionOptions.captureDownloads;
+    let newCaptureServer = extensionOptions.captureServer;
+    if (newCaptureServer === "") {
+      const serverKeys = Object.keys(extensionOptions.servers);
+      if (serverKeys.length === 0) {
+        await showNotification(browser.i18n.getMessage("toggleCaptureDownloadsNoServer"));
+        return;
+      }
+      [newCaptureServer] = serverKeys;
+    }
+    await new ExtensionOptions(
+      extensionOptions.servers,
+      newCaptureServer,
+      newCaptureDownloads,
+      extensionOptions.excludedProtocols,
+      extensionOptions.excludedSites,
+      extensionOptions.excludedFileTypes,
+    ).toStorage();
+    const message = newCaptureDownloads
+      ? browser.i18n.getMessage("toggleCaptureDownloadsEnabled", extensionOptions.servers[newCaptureServer].name)
+      : browser.i18n.getMessage("toggleCaptureDownloadsDisabled");
+    await showNotification(message);
+  }
+});
