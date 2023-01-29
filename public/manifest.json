@@ -3,7 +3,7 @@
   "author": "baptistecdr",
   "homepage_url": "https://github.com/baptistecdr/aria2-extensions",
   "description": "__MSG_extDescription__",
-  "version": "4.0.8",
+  "version": "4.1.0",
   "default_locale": "en",
   "permissions": [
     "contextMenus",
@@ -26,7 +26,6 @@
       "description": "Toggle Capture Downloads"
     }
   },
-
   "icons": {
     "16": "icons/icon16.png",
     "19": "icons/icon19.png",
