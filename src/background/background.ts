@@ -120,7 +120,9 @@ function downloadItemMustBeCaptured(item: Downloads.DownloadItem, referrer: stri
 
     return !(
       extensionOptions.excludedFileTypes.length > 0 &&
-      (excludedFileTypesRegExp.test(url.pathname) || (refererURL && excludedFileTypesRegExp.test(refererURL.pathname)))
+      (excludedFileTypesRegExp.test(url.pathname) ||
+        (refererURL && excludedFileTypesRegExp.test(refererURL.pathname)) ||
+        excludedFileTypesRegExp.test(item.filename))
     );
   }
   return false;
