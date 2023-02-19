@@ -22,6 +22,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   useEffect(() => {
     setCaptureDownloads(extensionOptions.captureDownloads);
     setCaptureServer(extensionOptions.captureServer);
+    setExcludedProtocols(extensionOptions.excludedProtocols);
+    setExcludedSites(extensionOptions.excludedSites);
+    setExcludedFileTypes(extensionOptions.excludedFileTypes);
   }, [extensionOptions]);
 
   function serializeExcludedOption(excludedOptions: string) {
