@@ -15,7 +15,7 @@
     "@stdlib/regexp-basename-posix": "0.0.7",
     "@stdlib/regexp-basename-windows": "0.0.7",
     "@testing-library/jest-dom": "5.16.5",
-    "@testing-library/react": "13.4.0",
+    "@testing-library/react": "14.0.0",
     "@testing-library/user-event": "14.4.3",
     "aria2": "4.1.2",
     "bootstrap": "5.2.3",
