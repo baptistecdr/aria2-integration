@@ -3,7 +3,7 @@
   "author": "baptistecdr",
   "homepage_url": "https://github.com/baptistecdr/aria2-extensions",
   "description": "__MSG_extDescription__",
-  "version": "4.1.2",
+  "version": "4.2.0",
   "default_locale": "en",
   "permissions": [
     "contextMenus",
