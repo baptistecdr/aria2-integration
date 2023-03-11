@@ -63,8 +63,8 @@ function ServerTask({ task, aria2 }: Props) {
     return "∞";
   }
 
-  function getDownloadPercent(): number {
-    return Math.round((task.completedLength * 100) / task.totalLength) || 0;
+  function getDownloadPer(per: number): number {
+    return Math.round((task.completedLength * per) / task.totalLength) || 0;
   }
 
   return (
@@ -108,18 +108,18 @@ function ServerTask({ task, aria2 }: Props) {
           <div
             className={`progress-bar bg-${getProgressVariant()}`}
             role="progressbar"
-            style={{ width: `${getDownloadPercent()}%` }}
-            aria-valuenow={60}
+            style={{ width: `${getDownloadPer(100)}%` }}
+            aria-valuenow={getDownloadPer(1000)}
             aria-valuemin={0}
-            aria-valuemax={100}
+            aria-valuemax={1000}
           />
           <small
             className="justify-content-center d-flex position-absolute w-100"
             style={{
-              color: `${getDownloadPercent() <= 55 ? "inherit" : "white"}`,
+              color: `${getDownloadPer(100) <= 55 ? "inherit" : "white"}`,
             }}
           >
-            {getDownloadPercent()} %
+            {getDownloadPer(100)} %
           </small>
         </div>
       </Col>

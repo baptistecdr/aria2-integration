@@ -104,6 +104,9 @@
   "serverNoTasks": {
     "message": "This place is quiet, so quiet..."
   },
+  "serverError": {
+    "message": "Unable to retrieve tasks. Check your connection and server connection settings."
+  },
   "addTaskAddUrls": {
     "message": "Insert magnet links, torrent links and/or file links"
   },

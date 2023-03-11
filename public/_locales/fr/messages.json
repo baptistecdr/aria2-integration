@@ -9,7 +9,7 @@
     "message": "Il n'y a aucun serveur.<br>Créez-en un en cliquant sur le bouton <b>+</b> au dessus."
   },
   "serverOptionsSuccess": {
-    "message": "Les options ont été sauvegardées."
+    "message": "Les options ont été sauvegardé."
   },
   "serverOptionsError": {
     "message": "Une erreur est survenue durant la sauvegarde des options."
@@ -57,7 +57,7 @@
     "message": "Serveur sur lequel envoyer les téléchargements"
   },
   "extensionOptionsNoServerSelected": {
-    "message": "--- Aucun serveur selectionné ---"
+    "message": "--- Aucun serveur sélectionné ---"
   },
   "extensionOptionsExcludeProtocols": {
     "message": "Exclure des protocoles"
@@ -103,6 +103,9 @@
   },
   "serverNoTasks": {
     "message": "Cet endroit est calme, très calme..."
+  },
+  "serverError": {
+    "message": "Impossible de récupérer les tâches. Vérifiez votre connexion internet ainsi que les paramètres de connexion au serveur."
   },
   "addTaskAddUrls": {
     "message": "Insérer des liens vers un fichier, un magnet et/ou un torrent"
@@ -202,6 +205,6 @@
     "message": "Désactivation de la capture des téléchargements."
   },
   "toggle-capture-downloads-no-server": {
-    "message": "Aucun server disponible pour capturer les téléchargements."
+    "message": "Aucun serveur disponible pour capturer les téléchargements."
   }
 }

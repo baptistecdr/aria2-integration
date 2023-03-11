@@ -8,6 +8,7 @@ import Aria2 from "aria2";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { plainToInstance } from "class-transformer";
 import { filesize } from "filesize";
+import { Oval } from "react-loader-spinner";
 import { Task } from "../models/task";
 import GlobalStat from "../models/global-stat";
 import ServerTask from "./server-task";
@@ -42,11 +43,13 @@ async function getTasks(aria2server: any, numWaiting: number, numStopped: number
 }
 
 function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
+  const [loading, setLoading] = useState(true);
   const [aria2] = useState(new Aria2(server));
   const [globalStat, setGlobalStat] = useState(GlobalStat.default());
   const [tasks, setTasks] = useState([] as Task[]);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
+  const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
   const fileSizeBase = { base: 2 };
 
   function onClickPurge() {
@@ -55,15 +58,43 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
 
   useEffect(() => {
     const intervalId = window.setInterval(async () => {
-      const gs = await getGlobalStat(aria2);
-      const ts = await getTasks(aria2, gs.numWaiting, gs.numStopped);
-      setGlobalStat(gs);
-      setTasks(ts);
+      try {
+        const gs = await getGlobalStat(aria2);
+        const ts = await getTasks(aria2, gs.numWaiting, gs.numStopped);
+        setGlobalStat(gs);
+        setTasks(ts);
+      } catch (e: any) {
+        setDefaultMessage(i18n("serverError"));
+      }
+      setLoading(false);
     }, 1000);
     return () => {
       clearInterval(intervalId);
     };
   }, [aria2]);
+
+  if (loading) {
+    return (
+      <Container fluid>
+        <Row>
+          <Col xs={12} sm={12} className="d-flex justify-content-center">
+            <Oval
+              height={35}
+              width={35}
+              color="#0D6EFD"
+              wrapperStyle={{}}
+              wrapperClass=""
+              visible
+              ariaLabel="oval-loading"
+              secondaryColor="#0D6EFD"
+              strokeWidth={3}
+              strokeWidthSecondary={3}
+            />
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
 
   return (
     <Container fluid>
@@ -112,7 +143,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
       {!showAddTask && !showQuickOptions && tasks.length === 0 && (
         <Row>
           <Col xs={12} sm={12}>
-            <em>{i18n("serverNoTasks")}</em>
+            <em>{defaultMessage}</em>
           </Col>
         </Row>
       )}
