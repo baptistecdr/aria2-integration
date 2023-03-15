@@ -59,7 +59,7 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
         id: version
 
-      - uses: rickstaa/action-create-tag@06019d3a86c96bc16d442177e1474cae2353e1fd # v1
+      - uses: rickstaa/action-create-tag@84c90e6ba79b47b5147dcb11ff25d6a0e06238ba # v1
         name: Create Tag
         with:
           tag: ${{ steps.version.outputs.VERSION }}
