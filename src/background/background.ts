@@ -69,10 +69,7 @@ function formatCookies(cookies: Cookies.Cookie[]) {
 }
 
 async function getCookies(url: string, cookieStoreID?: string): Promise<string> {
-  if (cookieStoreID) {
-    return formatCookies(await browser.cookies.getAll({ url, storeId: cookieStoreID }));
-  }
-  return formatCookies(await browser.cookies.getAll({ url }));
+  return formatCookies(await browser.cookies.getAll({ url, storeId: cookieStoreID }));
 }
 
 async function findCurrentTab(): Promise<Tabs.Tab | undefined> {
