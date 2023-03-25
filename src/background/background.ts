@@ -68,15 +68,14 @@ function formatCookies(cookies: Cookies.Cookie[]) {
   }, "");
 }
 
-async function getCookies(url: string): Promise<string> {
-  if (url === "") {
-    return "";
+async function getCookies(url: string, cookieStoreID?: string): Promise<string> {
+  if (cookieStoreID) {
+    return formatCookies(await browser.cookies.getAll({ url, storeId: cookieStoreID }));
   }
-  const cookies = await browser.cookies.getAll({ url });
-  return formatCookies(cookies);
+  return formatCookies(await browser.cookies.getAll({ url }));
 }
 
-async function getCurrentTab(): Promise<Tabs.Tab | undefined> {
+async function findCurrentTab(): Promise<Tabs.Tab | undefined> {
   const tabs = await browser.tabs.query({
     currentWindow: true,
     active: true,
@@ -144,11 +143,11 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
     const connection = connections[extensionOptions.captureServer];
     const server = extensionOptions.servers[extensionOptions.captureServer];
     let referrer = downloadItem.referrer ?? "";
+    const currentTab = await findCurrentTab();
     if (referrer === "" || referrer === "about:blank") {
-      const currentTab = await getCurrentTab();
       referrer = currentTab?.url ?? "";
     }
-    const cookies = await getCookies(referrer);
+    const cookies = await getCookies(referrer, currentTab?.cookieStoreId);
     if (downloadItemMustBeCaptured(downloadItem, referrer)) {
       await browser.downloads.cancel(downloadItem.id).catch();
       await browser.downloads.erase({ id: downloadItem.id }).catch();
@@ -168,7 +167,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 
   const urls = getSelectedUrls(info);
   const referer = tab?.url ?? "";
-  const cookies = await getCookies(referer);
+  const cookies = await getCookies(referer, tab?.cookieStoreId);
   urls.forEach((url) => {
     captureURL(connection, server, url, referer, cookies)
       .then(() => {
