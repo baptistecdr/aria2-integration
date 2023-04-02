@@ -1,0 +1,48 @@
+name: Release Patch
+
+on: workflow_dispatch
+
+jobs:
+  release-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.RELEASE_TOKEN }}
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          cache: npm
+      - name: Set major version
+        id: patch_version
+        run: |
+          PATCH_VERSION=$(npm version --no-git-tag-version --no-commit-hooks patch)
+          node scripts/update-version.js $PATCH_VERSION
+          npm install
+          echo "PATCH_VERSION=$PATCH_VERSION" >> $GITHUB_OUTPUT
+      - name: Commit, push and create tag
+        uses: EndBug/add-and-commit@v9
+        with:
+          fetch: true
+          default_author: github_actions
+          message: Release ${{ steps.patch_version.outputs.PATCH_VERSION }}
+          pathspec_error_handling: exitImmediately
+          push: true
+          tag: ${{ steps.patch_version.outputs.PATCH_VERSION }}
+      - name: Set next dev version
+        id: dev_version
+        run: |
+          DEV_VERSION=$(npm version --no-git-tag-version --no-commit-hooks --preid SNAPSHOT prerelease)
+          node scripts/update-version.js $DEV_VERSION
+          npm install
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
+      - name: Commit and push
+        uses: EndBug/add-and-commit@v9
+        with:
+          fetch: true
+          default_author: github_actions
+          message: Set next dev version to ${{ steps.dev_version.outputs.DEV_VERSION }}
+          pathspec_error_handling: exitImmediately
+          push: true

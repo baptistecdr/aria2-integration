@@ -1,10 +1,8 @@
 name: Node
 
 on:
-  push:
-    branches: '**'
-  pull_request:
-    branches: '**'
+  - push
+  - pull_request
 
 jobs:
   build:
@@ -18,6 +16,7 @@ jobs:
         name: Setup node
         with:
           node-version: '18'
+          cache: npm
 
       - name: Install Dependencies
         run: npm install
@@ -42,25 +41,3 @@ jobs:
         with:
           name: aria2-integration-chromium
           path: ./build/
-  release:
-    needs: build
-    name: Release
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && startsWith(github.event.head_commit.message, 'Release v')
-    steps:
-      - uses: actions/checkout@8f4b7f84864484a7bf31766abe9204da3cbe65b3 # v3
-        name: Clone Repository
-
-      - name: Get Release Version
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-        run: |
-          VERSION=$(echo $COMMIT_MESSAGE | grep -Po 'v\d+\.\d+\.\d+')
-          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-        id: version
-
-      - uses: rickstaa/action-create-tag@84c90e6ba79b47b5147dcb11ff25d6a0e06238ba # v1
-        name: Create Tag
-        with:
-          tag: ${{ steps.version.outputs.VERSION }}
-          message: ${{ github.event.head_commit.message }}

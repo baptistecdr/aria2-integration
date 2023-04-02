@@ -7,7 +7,10 @@ if (process.argv.length <= 2) {
   console.error("You need to specify a new version.");
   process.exit();
 }
-const version = process.argv[2];
+let version = process.argv[2].trim();
+if (version.startsWith("v")) {
+  version = version.substring(1);
+}
 const filesToUpdate = ["package.json", "public/manifest.json", "package-lock.json"];
 
 filesToUpdate.forEach((file) => {
