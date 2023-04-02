@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 jobs:
   release-patch:
+    name: Release Patch
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -15,7 +16,7 @@ jobs:
         with:
           node-version: '18'
           cache: npm
-      - name: Set major version
+      - name: Set patch version
         id: patch_version
         run: |
           PATCH_VERSION=$(npm version --no-git-tag-version --no-commit-hooks patch)

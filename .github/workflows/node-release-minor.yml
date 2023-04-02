@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 jobs:
   release-minor:
+    name: Release Minor
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -15,7 +16,7 @@ jobs:
         with:
           node-version: '18'
           cache: npm
-      - name: Set major version
+      - name: Set minor version
         id: minor_version
         run: |
           MINOR_VERSION=$(npm version --no-git-tag-version --no-commit-hooks minor)

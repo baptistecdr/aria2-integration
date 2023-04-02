@@ -13,7 +13,7 @@ jobs:
         name: Clone repository
 
       - uses: actions/setup-node@v3
-        name: Setup node
+        name: Setup Node.js
         with:
           node-version: '18'
           cache: npm
