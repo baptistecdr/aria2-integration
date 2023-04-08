@@ -32,7 +32,7 @@
     "react-loader-spinner": "^5.3.4",
     "react-scripts": "5.0.1",
     "reflect-metadata": "0.1.13",
-    "typescript": "5.0.3",
+    "typescript": "5.0.4",
     "uuid": "9.0.0",
     "webextension-polyfill": "0.10.0"
   },
@@ -46,7 +46,7 @@
     "@types/webextension-polyfill": "0.10.0",
     "@typescript-eslint/eslint-plugin": "5.57.1",
     "@typescript-eslint/parser": "5.57.1",
-    "eslint": "8.37.0",
+    "eslint": "8.38.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-typescript": "17.0.0",
     "eslint-config-prettier": "8.8.0",
@@ -61,7 +61,7 @@
     "prettier": "2.8.7"
   },
   "overrides": {
-    "typescript": "5.0.3"
+    "typescript": "5.0.4"
   },
   "browserslist": {
     "production": [
