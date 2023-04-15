@@ -22,7 +22,7 @@
     "bootstrap-icons": "1.10.4",
     "class-transformer": "0.5.1",
     "filesize": "10.0.7",
-    "html-webpack-plugin": "5.5.0",
+    "html-webpack-plugin": "5.5.1",
     "luxon": "3.3.0",
     "path": "0.12.7",
     "react": "18.2.0",
