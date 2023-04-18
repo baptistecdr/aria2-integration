@@ -1,4 +1,4 @@
-import React, { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import { ChangeEvent, FormEvent, useCallback, useState } from "react";
 import { InputGroup, Form, Button, Col, Row } from "react-bootstrap";
 import i18n from "../../i18n";
 import { captureTorrentFromFile, captureURL, showNotification } from "../../models/aria2-extension";

@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import * as React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min";
 import { useCallback, useEffect, useState } from "react";
@@ -12,7 +11,6 @@ import i18n from "../i18n";
 import Theme from "../models/theme";
 
 const container = document.getElementById("root");
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
 
 const ADD_SERVER_TAB = "add-server";

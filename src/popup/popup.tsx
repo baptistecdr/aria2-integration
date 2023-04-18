@@ -1,18 +1,16 @@
 import { createRoot } from "react-dom/client";
-import * as React from "react";
 import { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min";
-import "./index.css";
+import "./popup.css";
 import { Container, Tab, Tabs } from "react-bootstrap";
-import i18n from "../i18n";
-import ServerTab from "./components/server-tab";
-import ExtensionOptions from "../models/extension-options";
-import Theme from "../models/theme";
+import i18n from "../i18n.js";
+import ServerTab from "./components/server-tab.js";
+import ExtensionOptions from "../models/extension-options.js";
+import Theme from "../models/theme.js";
 
 const container = document.getElementById("root");
-// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 const root = createRoot(container!);
 
 function Servers() {
@@ -44,8 +42,7 @@ function Servers() {
   }
 
   window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    const storedTheme = extensionOptions.theme;
-    if (storedTheme === Theme.Auto) {
+    if (extensionOptions.theme === Theme.Auto) {
       if (e.matches) {
         document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
       } else {

@@ -1,5 +1,4 @@
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import React from "react";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
 import { filesize } from "filesize";
@@ -53,7 +52,7 @@ function ServerTask({ task, aria2 }: Props) {
     const duration = Duration.fromMillis(milliseconds, {
       locale: browser.i18n.getUILanguage(),
     });
-    return duration.toISOTime().replace(/\.\d{3}$/, "");
+    return duration.toISOTime()?.replace(/\.\d{3}$/, "") ?? "";
   }
 
   function getETA(): string {
