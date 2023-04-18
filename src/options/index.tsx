@@ -9,6 +9,7 @@ import ExtensionOptionsTab from "./components/extension-options-tab";
 import ServerOptionsTab from "./components/server-options-tab";
 import ExtensionOptions from "../models/extension-options";
 import Server from "../models/server";
+import i18n from "../i18n";
 
 const container = document.getElementById("root");
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -83,7 +84,7 @@ function Options() {
         </Tab>
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
-      <Tab eventKey={EXTENSION_OPTIONS_TAB} title="Options">
+      <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
         <ExtensionOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
       </Tab>
     </Tabs>

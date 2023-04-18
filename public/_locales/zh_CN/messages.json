@@ -1,0 +1,210 @@
+{
+  "extName": {
+    "message": "Aria2 整合"
+  },
+  "extDescription": {
+    "message": "用 Aria2 下载文件"
+  },
+  "optionsNoServers": {
+    "message": "无服务器<br>使用上面的 <b>+</b> 按钮创建新的服务器."
+  },
+  "serverOptionsSuccess": {
+    "message": "选项已保存."
+  },
+  "serverOptionsError": {
+    "message": "保存选项时发生错误."
+  },
+  "serverOptionsName": {
+    "message": "名称"
+  },
+  "serverOptionsHost": {
+    "message": "主机"
+  },
+  "serverOptionsPort": {
+    "message": "端口"
+  },
+  "serverOptionsSecureConnection": {
+    "message": "安全连接"
+  },
+  "serverOptionsSecret": {
+    "message": "加密"
+  },
+  "serverOptionsSecretDescription": {
+    "message": "如未指定则留空."
+  },
+  "serverOptionsRpcParameters": {
+    "message": "RPC 参数"
+  },
+  "serverOptionsRpcParametersDescription": {
+    "message": "RPC 参数将应用到每个发送到本服务器的下载."
+  },
+  "serverOptionsSave": {
+    "message": "保存"
+  },
+  "serverOptionsDelete": {
+    "message": "删除"
+  },
+  "serverOptionsInvalidFeedback": {
+    "message": "请输入些东西."
+  },
+  "extensionOptionsTitle": {
+    "message": "选项"
+  },
+  "extensionOptionsCaptureDownloads": {
+    "message": "拦截下载"
+  },
+  "extensionOptionsServerToSendDownloads": {
+    "message": "下载服务器"
+  },
+  "extensionOptionsNoServerSelected": {
+    "message": "--- 无选中的服务器 ---"
+  },
+  "extensionOptionsExcludeProtocols": {
+    "message": "排除的协议"
+  },
+  "extensionOptionsExcludeProtocolsDescription": {
+    "message": "留空则拦截任何协议的文件下载."
+  },
+  "extensionOptionsExcludeProtocolsInformation": {
+    "message": "ftp, http, https"
+  },
+  "extensionOptionsExcludeSites": {
+    "message": "排除站点"
+  },
+  "extensionOptionsExcludeSitesDescription": {
+    "message": "留空则拦截任何站点的文件下载."
+  },
+  "extensionOptionsExcludeSitesInformation": {
+    "message": "microsoft, google.com"
+  },
+  "extensionOptionsExcludeFileTypes": {
+    "message": "排除文件类型"
+  },
+  "extensionOptionsExcludeFileTypesDescription": {
+    "message": "rar, zip"
+  },
+  "extensionOptionsExcludeFileTypesInformation": {
+    "message": "留空则拦截任何类型的文件下载."
+  },
+  "popupNoServerFound1": {
+    "message": "未找到服务器."
+  },
+  "popupNoServerFound2": {
+    "message": "在扩展选项里添加."
+  },
+  "serverAdd": {
+    "message": "添加"
+  },
+  "serverCancel": {
+    "message": "取消"
+  },
+  "serverPurge": {
+    "message": "清空"
+  },
+  "serverNoTasks": {
+    "message": "这地方很安静, 太安静了..."
+  },
+  "serverError": {
+    "message": "未能检索任务. 请检查连接和服务器连接设置."
+  },
+  "addTaskAddUrls": {
+    "message": "插入磁力链接、种子链接或文件链接"
+  },
+  "addTaskAddUrlsPlaceholder": {
+    "message": "URLs 或磁力"
+  },
+  "addTaskAddFiles": {
+    "message": "选择磁力文件或种子文件"
+  },
+  "addTaskAdd": {
+    "message": "添加"
+  },
+  "addTaskAddFilesPlaceholder": {
+    "message": "选择种子或 metalink 文件..."
+  },
+  "addTaskAddFilesDropPlaceholder": {
+    "message": "拖入种子或 metalink 文件..."
+  },
+  "addTaskAddFilesBrowse": {
+    "message": "浏览"
+  },
+  "taskNoFilename": {
+    "message": "未提供文件名"
+  },
+  "taskStatusActive": {
+    "message": "活动"
+  },
+  "taskStatusComplete": {
+    "message": "完成"
+  },
+  "taskStatusError": {
+    "message": "错误"
+  },
+  "taskStatusDeleted": {
+    "message": "删除"
+  },
+  "taskStatusWaiting": {
+    "message": "等待"
+  },
+  "taskStatusPaused": {
+    "message": "暂停"
+  },
+  "taskStatusRemoved": {
+    "message": "移除"
+  },
+  "taskEta": {
+    "message": "估计"
+  },
+  "taskConnections": {
+    "message": "连接"
+  },
+  "contextMenusTitle": {
+    "message": "用 Aria2 下载"
+  },
+  "addUrlSuccess": {
+    "message": "已发送 URL 到 $SERVER$.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "addUrlError": {
+    "message": "添加链接到 $SERVER$ 时发生错误.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "addFileSuccess": {
+    "message": "已发送文件到 $SERVER$.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "addFileError": {
+    "message": "添加文件到 $SERVER$ 时发生错误.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "toggleCaptureDownloadsEnabled": {
+    "message": "启用下载拦截到 $SERVER$.",
+    "placeholders": {
+      "server": {
+        "content": "$1"
+      }
+    }
+  },
+  "toggleCaptureDownloadsDisabled": {
+    "message": "禁用下载拦截"
+  },
+  "toggleCaptureDownloadsNoServer": {
+    "message": "没有可用的服务器来拦截下载."
+  }
+}
