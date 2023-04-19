@@ -1,8 +1,8 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 import Aria2 from "aria2";
+import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import type { Menus, Tabs, Cookies, Downloads } from "webextension-polyfill";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 import ExtensionOptions from "../models/extension-options";
 import basename from "../models/basename";
@@ -44,20 +44,38 @@ async function createServersContextMenus() {
   });
 }
 
+async function createSingleServerContextMenus() {
+  await browser.contextMenus.removeAll();
+  Object.entries(extensionOptions.servers).forEach(([id]) => {
+    browser.contextMenus.create({
+      title: browser.i18n.getMessage("contextMenusTitle"),
+      id,
+      contexts: ["link", "selection"],
+    });
+  });
+}
+
+async function createContextMenus() {
+  if (Object.keys(extensionOptions.servers).length === 1) {
+    await createSingleServerContextMenus();
+  } else if (Object.keys(extensionOptions.servers).length > 1) {
+    await createExtensionContextMenus();
+    await createServersContextMenus();
+  }
+}
+
 browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     await browser.runtime.openOptionsPage();
   }
 });
 
-await createExtensionContextMenus();
-await createServersContextMenus();
+await createContextMenus();
 
 browser.storage.onChanged.addListener(async (changes) => {
   if (changes.options) {
     extensionOptions = await ExtensionOptions.fromStorage();
-    await createExtensionContextMenus();
-    await createServersContextMenus();
+    await createContextMenus();
     connections = createConnections();
   }
 });
