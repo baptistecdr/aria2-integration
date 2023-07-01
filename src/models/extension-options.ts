@@ -1,5 +1,6 @@
 import browser from "webextension-polyfill";
 import Server from "./server";
+import Theme from "./theme";
 
 export default class ExtensionOptions {
   constructor(
@@ -9,6 +10,7 @@ export default class ExtensionOptions {
     public readonly excludedProtocols: string[] = [],
     public readonly excludedSites: string[] = [],
     public readonly excludedFileTypes: string[] = [],
+    public readonly theme: Theme = Theme.Auto,
   ) {}
 
   private serialize(): string {

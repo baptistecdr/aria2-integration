@@ -2,7 +2,6 @@ import { createRoot } from "react-dom/client";
 import * as React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min";
-import "./index.css";
 import { useCallback, useEffect, useState } from "react";
 import { Container, Tab, Tabs } from "react-bootstrap";
 import ExtensionOptionsTab from "./components/extension-options-tab";
@@ -10,6 +9,7 @@ import ServerOptionsTab from "./components/server-options-tab";
 import ExtensionOptions from "../models/extension-options";
 import Server from "../models/server";
 import i18n from "../i18n";
+import Theme from "../models/theme";
 
 const container = document.getElementById("root");
 // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -28,6 +28,14 @@ function Options() {
       setExtensionOptions(result);
     });
   }, []);
+
+  useEffect(() => {
+    if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", extensionOptions.theme);
+    }
+  }, [extensionOptions]);
 
   async function addServer() {
     const server = new Server();

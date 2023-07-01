@@ -86,6 +86,18 @@
   "extensionOptionsExcludeFileTypesInformation": {
     "message": "Leave it blank to capture files of any type."
   },
+  "extensionOptionsTheme": {
+    "message": "Theme"
+  },
+  "extensionOptionsThemeLight": {
+    "message": "Light"
+  },
+  "extensionOptionsThemeDark": {
+    "message": "Dark"
+  },
+  "extensionOptionsThemeAuto": {
+    "message": "Auto"
+  },
   "popupNoServerFound1": {
     "message": "No server was found."
   },
