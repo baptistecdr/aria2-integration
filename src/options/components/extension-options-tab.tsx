@@ -3,8 +3,9 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import { Alert, Button, Col, Form, FormText } from "react-bootstrap";
 import i18n from "../../i18n";
-import ExtensionOptions from "../../models/extension-options";
 import AlertProps from "../models/alert-props";
+import ExtensionOptions from "../../models/extension-options";
+import Theme from "../../models/theme";
 
 interface Props {
   extensionOptions: ExtensionOptions;
@@ -17,6 +18,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [excludedProtocols, setExcludedProtocols] = useState(extensionOptions.excludedProtocols);
   const [excludedSites, setExcludedSites] = useState(extensionOptions.excludedSites);
   const [excludedFileTypes, setExcludedFileTypes] = useState(extensionOptions.excludedFileTypes);
+  const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
 
   useEffect(() => {
@@ -25,6 +27,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     setExcludedProtocols(extensionOptions.excludedProtocols);
     setExcludedSites(extensionOptions.excludedSites);
     setExcludedFileTypes(extensionOptions.excludedFileTypes);
+    setTheme(extensionOptions.theme);
   }, [extensionOptions]);
 
   function serializeExcludedOption(excludedOptions: string) {
@@ -74,6 +77,10 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     [],
   );
 
+  const onChangeTheme = useCallback((e: ChangeEvent<HTMLInputElement>) => {
+    setTheme(e.target.value as Theme);
+  }, []);
+
   const onClickSaveExtensionOptions = useCallback(async () => {
     try {
       const newExtensionOptions = await new ExtensionOptions(
@@ -83,13 +90,14 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         excludedProtocols,
         excludedSites,
         excludedFileTypes,
+        theme,
       ).toStorage();
       setExtensionOptions(newExtensionOptions);
       setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
     } catch {
       setAlertProps(AlertProps.error(i18n("serverOptionsError")));
     }
-  }, [captureDownloads, captureServer, excludedFileTypes, excludedProtocols, excludedSites, extensionOptions.servers, setExtensionOptions]);
+  }, [captureDownloads, captureServer, excludedFileTypes, excludedProtocols, excludedSites, extensionOptions.servers, setExtensionOptions, theme]);
 
   return (
     <Form className="row p-3">
@@ -172,6 +180,44 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           <Form.Text id="exclude-file-types-description" muted>
             {i18n("extensionOptionsExcludeFileTypesDescription")}
           </Form.Text>
+        </Form.Group>
+      </Col>
+
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Group controlId="form-theme">
+          <Form.Label>{i18n("extensionOptionsTheme")}</Form.Label>
+          <Form.Group controlId="form-group-theme">
+            <Form.Check
+              inline
+              label={i18n("extensionOptionsThemeLight")}
+              name="group-theme"
+              type="radio"
+              id="theme-light"
+              value={Theme.Light}
+              checked={theme === Theme.Light}
+              onChange={onChangeTheme}
+            />
+            <Form.Check
+              inline
+              label={i18n("extensionOptionsThemeDark")}
+              name="group-theme"
+              type="radio"
+              id="theme-dark"
+              value={Theme.Dark}
+              checked={theme === Theme.Dark}
+              onChange={onChangeTheme}
+            />
+            <Form.Check
+              inline
+              label={i18n("extensionOptionsThemeAuto")}
+              name="group-theme"
+              type="radio"
+              id="theme-auto"
+              value={Theme.Auto}
+              checked={theme === Theme.Auto}
+              onChange={onChangeTheme}
+            />
+          </Form.Group>
         </Form.Group>
       </Col>
 

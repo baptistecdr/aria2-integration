@@ -86,6 +86,18 @@
   "extensionOptionsExcludeFileTypesInformation": {
     "message": "rar, zip"
   },
+  "extensionOptionsTheme": {
+    "message": "Thème"
+  },
+  "extensionOptionsThemeLight": {
+    "message": "Clair"
+  },
+  "extensionOptionsThemeDark": {
+    "message": "Sombre"
+  },
+  "extensionOptionsThemeAuto": {
+    "message": "Automatique"
+  },
   "popupNoServerFound1": {
     "message": "Aucun serveur n'a été trouvé."
   },
