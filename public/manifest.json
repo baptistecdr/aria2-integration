@@ -14,7 +14,7 @@
     "activeTab"
   ],
   "options_ui": {
-    "page": "options.html",
+    "page": "options/options.html",
     "browser_style": false
   },
   "commands": {

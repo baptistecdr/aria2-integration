@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import React, { useCallback } from "react";
+import { useCallback } from "react";
 import { Task } from "../models/task";
 
 interface Props {

@@ -31,7 +31,7 @@ jobs:
         name: Upload Firefox artifact
         with:
           name: aria2-integration-firefox
-          path: ./build/
+          path: ./dist/
 
       - name: Build Chromium Extension
         run: npm run build:chromium
@@ -40,4 +40,4 @@ jobs:
         name: Upload Chromium artifact
         with:
           name: aria2-integration-chromium
-          path: ./build/
+          path: ./dist/

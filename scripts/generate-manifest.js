@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const fs = require("fs");
+import fs from "fs";
 
 const rawManifest = fs.readFileSync("./public/manifest.json").toString();
 const manifest = JSON.parse(rawManifest);
@@ -12,7 +11,7 @@ if (process.env.BROWSER === "firefox") {
     scripts: ["js/background.js"],
   };
   manifest.browser_action = {
-    default_popup: "popup.html",
+    default_popup: "popup/popup.html",
     default_title: "__MSG_extName__",
     default_icon: {
       16: "icons/icon16.png",
@@ -41,7 +40,7 @@ if (process.env.BROWSER === "firefox") {
   };
   manifest.host_permissions = ["*://*/*"];
   manifest.action = {
-    default_popup: "popup.html",
+    default_popup: "popup/popup.html",
     default_title: "__MSG_extName__",
     default_icon: {
       16: "icons/icon16.png",
@@ -58,4 +57,4 @@ if (process.env.BROWSER === "firefox") {
   };
 }
 
-fs.writeFileSync("./build/manifest.json", JSON.stringify(manifest));
+fs.writeFileSync("./dist/manifest.json", JSON.stringify(manifest));

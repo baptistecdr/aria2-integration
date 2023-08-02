@@ -1,15 +1,15 @@
 {
   "name": "aria2-integration",
   "private": true,
+  "type": "module",
   "version": "4.4.1-SNAPSHOT.0",
   "scripts": {
     "lint": "eslint 'src/**/*.{js,ts,jsx,tsx}'",
     "lint:fix": "eslint 'src/**/*.{js,ts,jsx,tsx}' --fix",
+    "build:firefox": "CI= tsc && vite build --emptyOutDir && BROWSER=firefox node scripts/generate-manifest.js",
     "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox",
-    "build:firefox": "CI= react-app-rewired build && BROWSER=firefox node scripts/generate-manifest.js",
-    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium",
-    "build:chromium": "CI= react-app-rewired build && BROWSER=chromium node scripts/generate-manifest.js",
-    "test": "react-app-rewired test"
+    "build:chromium": "CI= tsc && vite build --emptyOutDir && BROWSER=chromium node scripts/generate-manifest.js",
+    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium"
   },
   "dependencies": {
     "@stdlib/regexp-basename-posix": "0.0.7",
@@ -26,13 +26,10 @@
     "luxon": "3.3.0",
     "path": "0.12.7",
     "react": "18.2.0",
-    "react-app-rewired": "2.2.1",
     "react-bootstrap": "2.8.0",
     "react-dom": "18.2.0",
     "react-loader-spinner": "^5.3.4",
-    "react-scripts": "5.0.1",
     "reflect-metadata": "0.1.13",
-    "typescript": "5.1.6",
     "uuid": "9.0.0",
     "webextension-polyfill": "0.10.0"
   },
@@ -44,35 +41,22 @@
     "@types/react-dom": "18.2.7",
     "@types/uuid": "9.0.2",
     "@types/webextension-polyfill": "0.10.1",
-    "@typescript-eslint/eslint-plugin": "5.62.0",
-    "@typescript-eslint/parser": "5.62.0",
+    "@typescript-eslint/eslint-plugin": "6.2.1",
+    "@typescript-eslint/parser": "6.2.1",
+    "@vitejs/plugin-react": "4.0.4",
     "eslint": "8.46.0",
     "eslint-config-airbnb": "19.0.4",
     "eslint-config-airbnb-typescript": "17.1.0",
     "eslint-config-prettier": "8.9.0",
-    "eslint-config-react-app": "7.0.1",
     "eslint-plugin-import": "2.28.0",
     "eslint-plugin-jsx-a11y": "6.7.1",
-    "eslint-plugin-prettier": "4.2.1",
+    "eslint-plugin-prettier": "5.0.0",
     "eslint-plugin-react": "7.33.1",
     "eslint-plugin-react-hooks": "4.6.0",
-    "mini-css-extract-plugin": "2.7.6",
     "nodemon": "3.0.1",
-    "prettier": "2.8.8"
-  },
-  "overrides": {
-    "typescript": "5.1.6"
-  },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
+    "prettier": "3.0.0",
+    "rollup-plugin-html": "0.2.1",
+    "typescript": "5.1.6",
+    "vite": "4.4.8"
   }
 }

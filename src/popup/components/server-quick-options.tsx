@@ -1,5 +1,5 @@
 import { Col, Form, Row } from "react-bootstrap";
-import React, { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
 import i18n from "../../i18n";
 import ExtensionOptions from "../../models/extension-options";
 import Server from "../../models/server";
