@@ -37,5 +37,5 @@ module.exports = {
     "react/jsx-uses-react": "off",
     "react/react-in-jsx-scope": "off"
   },
-  ignorePatterns: ["build", "dist", "public", "scripts", "vite.config.ts"]
+  ignorePatterns: ["dist", "public", "scripts", "vite.config.ts"]
 };
