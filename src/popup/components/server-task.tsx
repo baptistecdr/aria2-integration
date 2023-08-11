@@ -1,7 +1,7 @@
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
-import { filesize, FileSizeOptionsString } from "filesize";
+import { filesize } from "filesize";
 import { Task } from "../models/task";
 import basename from "../../models/basename";
 import ServerTaskManagement from "./server-task-management";
@@ -13,7 +13,7 @@ interface Props {
 }
 
 function ServerTask({ task, aria2 }: Props) {
-  const filesizeParameters = { base: 2 } as FileSizeOptionsString;
+  const filesizeParameters = { base: 2 };
 
   function toFirstUppercase(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
