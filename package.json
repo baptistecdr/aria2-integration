@@ -12,8 +12,8 @@
     "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium"
   },
   "dependencies": {
-    "@stdlib/regexp-basename-posix": "0.0.7",
-    "@stdlib/regexp-basename-windows": "0.0.7",
+    "@stdlib/regexp-basename-posix": "0.1.0",
+    "@stdlib/regexp-basename-windows": "0.1.0",
     "@testing-library/jest-dom": "6.1.3",
     "@testing-library/react": "14.0.0",
     "@testing-library/user-event": "14.5.1",
