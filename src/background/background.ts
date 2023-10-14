@@ -10,19 +10,17 @@ import Server from "../models/server";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 
-let extensionOptions = await ExtensionOptions.fromStorage();
+let connections: Record<string, Aria2> = {};
 
-function createConnections() {
-  const connections: Record<string, Aria2> = {};
+function createConnections(extensionOptions: ExtensionOptions) {
+  const conns: Record<string, Aria2> = {};
   Object.entries(extensionOptions.servers).forEach(([key, server]) => {
-    connections[key] = new Aria2(server);
+    conns[key] = new Aria2(server);
   });
-  return connections;
+  return conns;
 }
 
-let connections: Record<string, Aria2> = createConnections();
-
-async function createExtensionContextMenus() {
+async function createExtensionContextMenus(extensionOptions: ExtensionOptions) {
   await browser.contextMenus.removeAll();
   if (Object.keys(extensionOptions.servers).length > 0) {
     browser.contextMenus.create({
@@ -33,7 +31,7 @@ async function createExtensionContextMenus() {
   }
 }
 
-async function createServersContextMenus() {
+async function createServersContextMenus(extensionOptions: ExtensionOptions) {
   Object.entries(extensionOptions.servers).forEach(([id, server]) => {
     browser.contextMenus.create({
       title: `${server.name}`,
@@ -44,7 +42,7 @@ async function createServersContextMenus() {
   });
 }
 
-async function createSingleServerContextMenus() {
+async function createSingleServerContextMenus(extensionOptions: ExtensionOptions) {
   await browser.contextMenus.removeAll();
   Object.entries(extensionOptions.servers).forEach(([id]) => {
     browser.contextMenus.create({
@@ -55,14 +53,19 @@ async function createSingleServerContextMenus() {
   });
 }
 
-async function createContextMenus() {
+async function createContextMenus(extensionOptions: ExtensionOptions) {
   if (Object.keys(extensionOptions.servers).length === 1) {
-    await createSingleServerContextMenus();
+    await createSingleServerContextMenus(extensionOptions);
   } else if (Object.keys(extensionOptions.servers).length > 1) {
-    await createExtensionContextMenus();
-    await createServersContextMenus();
+    await createExtensionContextMenus(extensionOptions);
+    await createServersContextMenus(extensionOptions);
   }
 }
+
+ExtensionOptions.fromStorage().then(async (extensionOptions) => {
+  connections = createConnections(extensionOptions);
+  await createContextMenus(extensionOptions);
+});
 
 browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
@@ -70,13 +73,11 @@ browser.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-await createContextMenus();
-
 browser.storage.onChanged.addListener(async (changes) => {
   if (changes.options) {
-    extensionOptions = await ExtensionOptions.fromStorage();
-    await createContextMenus();
-    connections = createConnections();
+    const extensionOptions = await ExtensionOptions.fromStorage();
+    connections = createConnections(extensionOptions);
+    await createContextMenus(extensionOptions);
   }
 });
 
@@ -111,7 +112,7 @@ function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
   return [];
 }
 
-function downloadItemMustBeCaptured(item: Downloads.DownloadItem, referrer: string): boolean {
+function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Downloads.DownloadItem, referrer: string): boolean {
   if (extensionOptions.captureServer !== "") {
     const excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
     const excludedFileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
@@ -146,7 +147,7 @@ async function captureDownloadItem(aria2: any, server: Server, item: Downloads.D
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const url = item.finalUrl ?? item.url; // finalUrl (Chrome), url (Firefox)
-  const filename = basename(item.filename);
+  const filename = await basename(item.filename);
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/) || filename.match(/\.torrent$|\.meta4$|\.metalink$/)) {
     return captureTorrentFromURL(aria2, server, url, filename);
   }
@@ -154,6 +155,7 @@ async function captureDownloadItem(aria2: any, server: Server, item: Downloads.D
 }
 
 browser.downloads.onCreated.addListener(async (downloadItem) => {
+  const extensionOptions = await ExtensionOptions.fromStorage();
   if (extensionOptions.captureDownloads && connections[extensionOptions.captureServer] !== undefined) {
     const connection = connections[extensionOptions.captureServer];
     const server = extensionOptions.servers[extensionOptions.captureServer];
@@ -163,7 +165,7 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
       referrer = currentTab?.url ?? "";
     }
     const cookies = await getCookies(referrer, currentTab?.cookieStoreId);
-    if (downloadItemMustBeCaptured(downloadItem, referrer)) {
+    if (downloadItemMustBeCaptured(extensionOptions, downloadItem, referrer)) {
       await browser.downloads.cancel(downloadItem.id).catch();
       await browser.downloads.erase({ id: downloadItem.id }).catch();
       try {
@@ -177,6 +179,7 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
 });
 
 browser.contextMenus.onClicked.addListener(async (info, tab) => {
+  const extensionOptions = await ExtensionOptions.fromStorage();
   const connection = connections[info.menuItemId];
   const server = extensionOptions.servers[info.menuItemId];
 
@@ -195,6 +198,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
 });
 
 browser.commands.onCommand.addListener(async (command) => {
+  const extensionOptions = await ExtensionOptions.fromStorage();
   if (command === "toggle_capture_downloads") {
     const newCaptureDownloads = !extensionOptions.captureDownloads;
     let newCaptureServer = extensionOptions.captureServer;

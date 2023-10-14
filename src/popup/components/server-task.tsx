@@ -2,6 +2,7 @@ import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
 import { filesize } from "filesize";
+import { useEffect, useState } from "react";
 import { Task } from "../models/task";
 import basename from "../../models/basename";
 import ServerTaskManagement from "./server-task-management";
@@ -12,21 +13,26 @@ interface Props {
   aria2: any;
 }
 
+async function getFilename(task: Task): Promise<string> {
+  if (task.bittorrent && task.bittorrent.info) {
+    return task.bittorrent.info.name;
+  }
+  if (task.files[0].path !== "") {
+    return basename(task.files[0].path);
+  }
+  return basename(task.files[0].uris[0].uri);
+}
+
 function ServerTask({ task, aria2 }: Props) {
   const filesizeParameters = { base: 2 };
+  const [filename, setFilename] = useState("");
+
+  useEffect(() => {
+    getFilename(task).then((it) => setFilename(it));
+  }, [task]);
 
   function toFirstUppercase(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
-  }
-
-  function getFilename(): string {
-    if (task.bittorrent && task.bittorrent.info) {
-      return task.bittorrent.info.name;
-    }
-    if (task.files[0].path !== "") {
-      return basename(task.files[0].path);
-    }
-    return basename(task.files[0].uris[0].uri);
   }
 
   function getProgressVariant(): string {
@@ -76,11 +82,11 @@ function ServerTask({ task, aria2 }: Props) {
               placement="top"
               overlay={
                 <Tooltip id="tooltip-bottom">
-                  <small>{getFilename()}</small>
+                  <small>{filename}</small>
                 </Tooltip>
               }
             >
-              <span>{getFilename()}</span>
+              <span>{filename}</span>
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
