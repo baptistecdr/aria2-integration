@@ -1,7 +1,7 @@
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
-import { filesize } from "filesize";
+import { filesize, FileSizeOptionsBase } from "filesize";
 import { useEffect, useState } from "react";
 import { Task } from "../models/task";
 import basename from "../../models/basename";
@@ -24,7 +24,7 @@ async function getFilename(task: Task): Promise<string> {
 }
 
 function ServerTask({ task, aria2 }: Props) {
-  const filesizeParameters = { base: 2 };
+  const filesizeParameters = { base: 2 } as FileSizeOptionsBase;
   const [filename, setFilename] = useState("");
 
   useEffect(() => {

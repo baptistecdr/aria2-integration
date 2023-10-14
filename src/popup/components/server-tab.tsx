@@ -7,7 +7,7 @@ import "./server-tab.css";
 import Aria2 from "aria2";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { plainToInstance } from "class-transformer";
-import { filesize } from "filesize";
+import { filesize, FileSizeOptionsBase } from "filesize";
 import { Oval } from "react-loader-spinner";
 import { Task } from "../models/task";
 import GlobalStat from "../models/global-stat";
@@ -50,7 +50,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
-  const fileSizeBase = { base: 2 };
+  const fileSizeBase = { base: 2 } as FileSizeOptionsBase;
 
   function onClickPurge() {
     aria2.call("aria2.purgeDownloadResult");
