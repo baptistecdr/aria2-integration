@@ -1,4 +1,4 @@
-import { ChangeEvent, FormEvent, useCallback, useState } from "react";
+import { FormEvent, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
@@ -51,34 +51,6 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
       .trim();
   }
 
-  const onChangeServerName = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setServerName(e.target.value);
-  }, []);
-
-  const onChangeServerHost = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setServerHost(e.target.value);
-  }, []);
-
-  const onChangeServerPort = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setServerPort(parseInt(e.target.value, 10));
-  }, []);
-
-  const onChangeServerSecure = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setServerSecure(e.target.checked);
-  }, []);
-
-  const onChangeServerSecret = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setServerSecret(e.target.value);
-  }, []);
-
-  const onChangeRpcParameters = useCallback((e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setServerRpcParameters(serializeRpcParameters(e.target.value));
-  }, []);
-
-  const onClickDeleteServer = useCallback(async () => {
-    await deleteServer(server);
-  }, [deleteServer, server]);
-
   async function onSubmitSaveServer(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
     formEvent.stopPropagation();
@@ -113,23 +85,23 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-name">
           <Form.Label>{i18n("serverOptionsName")}</Form.Label>
-          <Form.Control type="text" value={serverName} required onChange={onChangeServerName} />
+          <Form.Control type="text" value={serverName} required onChange={(e) => setServerName(e.target.value)} />
         </Form.Group>
         <Form.Group as={Col} controlId="form-server-host">
           <Form.Label>{i18n("serverOptionsHost")}</Form.Label>
-          <Form.Control type="text" value={serverHost} required onChange={onChangeServerHost} />
+          <Form.Control type="text" value={serverHost} required onChange={(e) => setServerHost(e.target.value)} />
         </Form.Group>
       </Row>
 
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-port">
           <Form.Label>{i18n("serverOptionsPort")}</Form.Label>
-          <Form.Control type="number" min={0} max={49151} value={serverPort} required onChange={onChangeServerPort} />
+          <Form.Control type="number" min={0} max={49151} value={serverPort} required onChange={(e) => setServerPort(parseInt(e.target.value, 10))} />
         </Form.Group>
 
         <Form.Group as={Col} controlId="form-server-secure">
           <Form.Label>{i18n("serverOptionsSecureConnection")}</Form.Label>
-          <Form.Check checked={serverSecure} onChange={onChangeServerSecure} />
+          <Form.Check checked={serverSecure} onChange={(e) => setServerSecure(e.target.checked)} />
         </Form.Group>
       </Row>
 
@@ -137,7 +109,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
         <Form.Group as={Col} controlId="form-server-secret">
           <Form.Label>{i18n("serverOptionsSecret")}</Form.Label>
           <InputGroup>
-            <Form.Control type={showPassword ? "text" : "password"} value={serverSecret} onChange={onChangeServerSecret} />
+            <Form.Control type={showPassword ? "text" : "password"} value={serverSecret} onChange={(e) => setServerSecret(e.target.value)} />
             <InputGroup.Text role="button" tabIndex={0} onClick={() => setShowPassword(!showPassword)}>
               <i className={showPassword ? "bi-eye-slash" : "bi-eye"} />
             </InputGroup.Text>
@@ -155,8 +127,8 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
             as="textarea"
             rows={3}
             placeholder="split: 5"
-            defaultValue={deserializeRpcParameters(serverRpcParameters)}
-            onChange={onChangeRpcParameters}
+            value={deserializeRpcParameters(serverRpcParameters)}
+            onChange={(e) => setServerRpcParameters(serializeRpcParameters(e.target.value))}
           />
           <Form.Text id="form-rpc-parameters-description">{i18n("serverOptionsRpcParametersDescription")}</Form.Text>
         </Form.Group>
@@ -167,7 +139,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
           <Button type="submit" variant="primary">
             {i18n("serverOptionsSave")}
           </Button>
-          <Button variant="danger" className="ms-2" onClick={onClickDeleteServer}>
+          <Button variant="danger" className="ms-2" onClick={() => deleteServer(server)}>
             {i18n("serverOptionsDelete")}
           </Button>
         </Col>

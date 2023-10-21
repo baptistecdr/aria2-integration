@@ -1,5 +1,4 @@
 import { Button } from "react-bootstrap";
-import { useCallback } from "react";
 import { Task } from "../models/task";
 
 interface Props {
@@ -8,21 +7,21 @@ interface Props {
 }
 
 function ServerTaskManagement({ aria2, task }: Props) {
-  const onClickPlayPause = useCallback(() => {
+  const onClickPlayPause = () => {
     if (task.isActive()) {
       aria2.call("aria2.pause", task.gid);
     } else {
       aria2.call("aria2.unpause", task.gid);
     }
-  }, [aria2, task]);
+  };
 
-  const onClickDelete = useCallback(() => {
+  const onClickDelete = () => {
     if (task.isComplete() || task.isError() || task.isRemoved()) {
       aria2.call("aria2.removeDownloadResult", task.gid);
     } else {
       aria2.call("aria2.remove", task.gid);
     }
-  }, [aria2, task]);
+  };
 
   if (task.isActive() || task.isPaused()) {
     return (

@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap/dist/js/bootstrap.min";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Tab, Tabs } from "react-bootstrap";
 import ExtensionOptionsTab from "./components/extension-options-tab";
 import ServerOptionsTab from "./components/server-options-tab";
@@ -42,39 +42,36 @@ function Options() {
     setActiveTab(server.uuid);
   }
 
-  const deleteServer = useCallback(
-    async (server: Server) => {
-      let newExtensionOptions = await extensionOptions.deleteServer(server);
-      const serversKeys = Object.keys(newExtensionOptions.servers);
-      let newActiveTab = EXTENSION_OPTIONS_TAB;
-      if (serversKeys.length === 0) {
-        newExtensionOptions = await new ExtensionOptions(
-          newExtensionOptions.servers,
-          "",
-          false,
-          newExtensionOptions.excludedProtocols,
-          newExtensionOptions.excludedSites,
-          newExtensionOptions.excludedFileTypes,
-        ).toStorage();
-      } else {
-        [newActiveTab] = serversKeys;
-      }
-      setExtensionOptions(newExtensionOptions);
-      setActiveTab(newActiveTab);
-    },
-    [extensionOptions],
-  );
+  const deleteServer = async (server: Server) => {
+    let newExtensionOptions = await extensionOptions.deleteServer(server);
+    const serversKeys = Object.keys(newExtensionOptions.servers);
+    let newActiveTab = EXTENSION_OPTIONS_TAB;
+    if (serversKeys.length === 0) {
+      newExtensionOptions = await new ExtensionOptions(
+        newExtensionOptions.servers,
+        "",
+        false,
+        newExtensionOptions.excludedProtocols,
+        newExtensionOptions.excludedSites,
+        newExtensionOptions.excludedFileTypes,
+      ).toStorage();
+    } else {
+      [newActiveTab] = serversKeys;
+    }
+    setExtensionOptions(newExtensionOptions);
+    setActiveTab(newActiveTab);
+  };
 
   return (
     <Tabs
       id="tabs-servers-options"
       defaultActiveKey={defaultActiveTab}
       activeKey={activeTab}
-      onSelect={async (k) => {
-        if (k === ADD_SERVER_TAB) {
+      onSelect={async (selectedTab) => {
+        if (selectedTab === ADD_SERVER_TAB) {
           await addServer();
         } else {
-          setActiveTab(k ?? defaultActiveTab);
+          setActiveTab(selectedTab ?? defaultActiveTab);
         }
       }}
     >
@@ -91,7 +88,7 @@ function Options() {
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
-        <ExtensionOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
+        <ExtensionOptionsTab key={Object.keys(extensionOptions.servers).length} extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
       </Tab>
     </Tabs>
   );

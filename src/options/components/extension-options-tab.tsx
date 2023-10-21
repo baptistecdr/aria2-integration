@@ -1,4 +1,4 @@
-import { ChangeEvent, useCallback, useEffect, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import { Alert, Button, Col, Form, FormText } from "react-bootstrap";
@@ -21,15 +21,6 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
 
-  useEffect(() => {
-    setCaptureDownloads(extensionOptions.captureDownloads);
-    setCaptureServer(extensionOptions.captureServer);
-    setExcludedProtocols(extensionOptions.excludedProtocols);
-    setExcludedSites(extensionOptions.excludedSites);
-    setExcludedFileTypes(extensionOptions.excludedFileTypes);
-    setTheme(extensionOptions.theme);
-  }, [extensionOptions]);
-
   function serializeExcludedOption(excludedOptions: string) {
     return excludedOptions
       .trim()
@@ -41,47 +32,22 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     return excludedOption.join(", ");
   }
 
-  const onChangeCaptureServer = useCallback(
-    (event: ChangeEvent<HTMLSelectElement>) => {
-      if (extensionOptions.servers[event.target.value]) {
-        setCaptureServer(event.target.value);
-      }
-    },
-    [extensionOptions.servers],
-  );
+  const onChangeCaptureServer = (event: ChangeEvent<HTMLSelectElement>) => {
+    if (extensionOptions.servers[event.target.value]) {
+      setCaptureServer(event.target.value);
+    }
+  };
 
-  const onChangeCaptureDownloads = useCallback(
-    (e: ChangeEvent<HTMLInputElement>) => {
-      setCaptureDownloads(e.target.checked);
-      if (!e.target.checked) {
-        setCaptureServer("");
-      } else {
-        setCaptureServer(extensionOptions.captureServer);
-      }
-    },
-    [extensionOptions.captureServer],
-  );
+  const onChangeCaptureDownloads = (e: ChangeEvent<HTMLInputElement>) => {
+    setCaptureDownloads(e.target.checked);
+    if (!e.target.checked) {
+      setCaptureServer("");
+    } else {
+      setCaptureServer(extensionOptions.captureServer);
+    }
+  };
 
-  const onChangeExcludedProtocols = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedProtocols(serializeExcludedOption(e.target.value)),
-    [],
-  );
-
-  const onChangeExcludedSites = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedSites(serializeExcludedOption(e.target.value)),
-    [],
-  );
-
-  const onChangeExcludedFileTypes = useCallback(
-    (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setExcludedFileTypes(serializeExcludedOption(e.target.value)),
-    [],
-  );
-
-  const onChangeTheme = useCallback((e: ChangeEvent<HTMLInputElement>) => {
-    setTheme(e.target.value as Theme);
-  }, []);
-
-  const onClickSaveExtensionOptions = useCallback(async () => {
+  const onClickSaveExtensionOptions = async () => {
     try {
       const newExtensionOptions = await new ExtensionOptions(
         extensionOptions.servers,
@@ -97,7 +63,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     } catch {
       setAlertProps(AlertProps.error(i18n("serverOptionsError")));
     }
-  }, [captureDownloads, captureServer, excludedFileTypes, excludedProtocols, excludedSites, extensionOptions.servers, setExtensionOptions, theme]);
+  };
 
   return (
     <Form className="row p-3">
@@ -140,8 +106,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
             disabled={!captureDownloads}
-            defaultValue={deserializeExcludedOption(excludedProtocols)}
-            onChange={onChangeExcludedProtocols}
+            value={deserializeExcludedOption(excludedProtocols)}
+            onChange={(e) => setExcludedProtocols(serializeExcludedOption(e.target.value))}
           />
           <FormText id="exclude-protocols-description" muted>
             {i18n("extensionOptionsExcludeProtocolsDescription")}
@@ -157,8 +123,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeSitesInformation")}
             disabled={!captureDownloads}
-            defaultValue={deserializeExcludedOption(excludedSites)}
-            onChange={onChangeExcludedSites}
+            value={deserializeExcludedOption(excludedSites)}
+            onChange={(e) => setExcludedSites(serializeExcludedOption(e.target.value))}
           />
           <FormText id="exclude-sites-description" muted>
             {i18n("extensionOptionsExcludeSitesDescription")}
@@ -174,8 +140,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
             disabled={!captureDownloads}
-            defaultValue={deserializeExcludedOption(excludedFileTypes)}
-            onChange={onChangeExcludedFileTypes}
+            value={deserializeExcludedOption(excludedFileTypes)}
+            onChange={(e) => setExcludedFileTypes(serializeExcludedOption(e.target.value))}
           />
           <Form.Text id="exclude-file-types-description" muted>
             {i18n("extensionOptionsExcludeFileTypesDescription")}
@@ -195,7 +161,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               id="theme-light"
               value={Theme.Light}
               checked={theme === Theme.Light}
-              onChange={onChangeTheme}
+              onChange={(e) => setTheme(e.target.value as Theme)}
             />
             <Form.Check
               inline
@@ -205,7 +171,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               id="theme-dark"
               value={Theme.Dark}
               checked={theme === Theme.Dark}
-              onChange={onChangeTheme}
+              onChange={(e) => setTheme(e.target.value as Theme)}
             />
             <Form.Check
               inline
@@ -215,7 +181,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               id="theme-auto"
               value={Theme.Auto}
               checked={theme === Theme.Auto}
-              onChange={onChangeTheme}
+              onChange={(e) => setTheme(e.target.value as Theme)}
             />
           </Form.Group>
         </Form.Group>
