@@ -1,5 +1,5 @@
-import { ChangeEvent, FormEvent, useCallback, useState } from "react";
-import { InputGroup, Form, Button, Col, Row } from "react-bootstrap";
+import { FormEvent, useState } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import i18n from "../../i18n";
 import { captureTorrentFromFile, captureURL, showNotification } from "../../models/aria2-extension";
 import Server from "../../models/server";
@@ -15,47 +15,37 @@ function ServerAddTasks({ aria2, server }: Props) {
   const [formUrls, setFormUrls] = useState([] as string[]);
   const [formFiles, setFormFiles] = useState(DEFAULT_FORM_FILES);
 
-  const formAddUrlsOnSubmit = useCallback(
-    (formEvent: FormEvent<HTMLFormElement>) => {
-      formEvent.preventDefault();
-      formUrls.forEach(async (url) => {
-        captureURL(aria2, server, url, "", "")
+  const formAddUrlsOnSubmit = (formEvent: FormEvent<HTMLFormElement>) => {
+    formEvent.preventDefault();
+    formUrls.forEach(async (url) => {
+      captureURL(aria2, server, url, "", "")
+        .then(() => {
+          showNotification(i18n("addUrlSuccess", server.name));
+        })
+        .catch(() => {
+          showNotification(i18n("addUrlError", server.name));
+        });
+    });
+    formEvent.currentTarget.reset();
+    setFormUrls([]);
+  };
+
+  const formAddFilesOnSubmit = (formEvent: FormEvent<HTMLFormElement>) => {
+    formEvent.preventDefault();
+    if (formFiles.files !== null) {
+      for (let i = 0; i < formFiles.files.length; i += 1) {
+        captureTorrentFromFile(aria2, server, formFiles.files[i])
           .then(() => {
-            showNotification(i18n("addUrlSuccess", server.name));
+            showNotification(i18n("addFileSuccess", server.name));
           })
           .catch(() => {
-            showNotification(i18n("addUrlError", server.name));
+            showNotification(i18n("addFileError", server.name));
           });
-      });
-      formEvent.currentTarget.reset();
-      setFormUrls([]);
-    },
-    [aria2, formUrls, server],
-  );
-
-  const onChangeInputFiles = useCallback((e: ChangeEvent) => {
-    setFormFiles(e.target as HTMLInputElement);
-  }, []);
-
-  const formAddFilesOnSubmit = useCallback(
-    (formEvent: FormEvent<HTMLFormElement>) => {
-      formEvent.preventDefault();
-      if (formFiles.files !== null) {
-        for (let i = 0; i < formFiles.files.length; i += 1) {
-          captureTorrentFromFile(aria2, server, formFiles.files[i])
-            .then(() => {
-              showNotification(i18n("addFileSuccess", server.name));
-            })
-            .catch(() => {
-              showNotification(i18n("addFileError", server.name));
-            });
-        }
-        formEvent.currentTarget.reset();
-        setFormFiles(DEFAULT_FORM_FILES);
       }
-    },
-    [aria2, formFiles.files, server],
-  );
+      formEvent.currentTarget.reset();
+      setFormFiles(DEFAULT_FORM_FILES);
+    }
+  };
 
   return (
     <Row className="mt-2 gx-0 ps-2 pe-2">
@@ -87,7 +77,7 @@ function ServerAddTasks({ aria2, server }: Props) {
                 type="file"
                 size="sm"
                 accept="application/x-bittorrent, .torrent, application/metalink4+xml, application/metalink+xml, .meta4, .metalink"
-                onChange={onChangeInputFiles}
+                onChange={(e) => setFormFiles(e.target as HTMLInputElement)}
                 multiple
               />
               <Button type="submit" variant="primary" size="sm">

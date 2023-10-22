@@ -122,14 +122,15 @@ function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Do
     const url = new URL(item.finalUrl ?? item.url); // finalUrl exists only on Chromium
     const refererURL = referrer !== "" ? new URL(referrer) : null;
 
-    if (excludedProtocols.indexOf(url.protocol) !== -1) {
+    if (excludedProtocols.includes(url.protocol)) {
       return false;
     }
 
-    if (
-      !!extensionOptions.excludedSites.map((site) => url.hostname.includes(site)).filter((isFound) => isFound).length ||
-      (refererURL && !!extensionOptions.excludedSites.map((site) => refererURL.hostname.includes(site)).filter((include) => include).length)
-    ) {
+    if (extensionOptions.excludedSites.map((site) => url.hostname.includes(site)).includes(true)) {
+      return false;
+    }
+
+    if (refererURL && extensionOptions.excludedSites.map((site) => refererURL.hostname.includes(site)).includes(true)) {
       return false;
     }
 
@@ -166,8 +167,13 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
     }
     const cookies = await getCookies(referrer, currentTab?.cookieStoreId);
     if (downloadItemMustBeCaptured(extensionOptions, downloadItem, referrer)) {
-      await browser.downloads.cancel(downloadItem.id).catch();
-      await browser.downloads.erase({ id: downloadItem.id }).catch();
+      try {
+        await browser.downloads.cancel(downloadItem.id);
+      } catch {
+        await browser.downloads.removeFile(downloadItem.id);
+      } finally {
+        await browser.downloads.erase({ id: downloadItem.id });
+      }
       try {
         await captureDownloadItem(connection, server, downloadItem, referrer, cookies);
         await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));

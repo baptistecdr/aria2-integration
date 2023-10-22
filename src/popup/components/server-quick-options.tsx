@@ -1,5 +1,5 @@
 import { Col, Form, Row } from "react-bootstrap";
-import { ChangeEvent, Dispatch, SetStateAction, useCallback } from "react";
+import { ChangeEvent, Dispatch, SetStateAction } from "react";
 import i18n from "../../i18n";
 import ExtensionOptions from "../../models/extension-options";
 import Server from "../../models/server";
@@ -11,28 +11,18 @@ interface Props {
 }
 
 function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: Props) {
-  const onChangeCaptureDownloads = useCallback(
-    async (e: ChangeEvent<HTMLInputElement>) => {
-      const newExtensionsOptions = new ExtensionOptions(
-        extensionOptions.servers,
-        e.target.checked ? server.uuid : "",
-        e.target.checked,
-        extensionOptions.excludedProtocols,
-        extensionOptions.excludedSites,
-        extensionOptions.excludedFileTypes,
-      );
-      await newExtensionsOptions.toStorage();
-      setExtensionOptions(newExtensionsOptions);
-    },
-    [
-      extensionOptions.excludedFileTypes,
+  const onChangeCaptureDownloads = async (e: ChangeEvent<HTMLInputElement>) => {
+    const newExtensionsOptions = new ExtensionOptions(
+      extensionOptions.servers,
+      e.target.checked ? server.uuid : "",
+      e.target.checked,
       extensionOptions.excludedProtocols,
       extensionOptions.excludedSites,
-      extensionOptions.servers,
-      server.uuid,
-      setExtensionOptions,
-    ],
-  );
+      extensionOptions.excludedFileTypes,
+    );
+    await newExtensionsOptions.toStorage();
+    setExtensionOptions(newExtensionsOptions);
+  };
 
   return (
     <Row className="mt-2 gx-0 ps-2 pe-2">
