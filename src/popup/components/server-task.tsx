@@ -4,7 +4,7 @@ import browser from "webextension-polyfill";
 import { filesize, FileSizeOptionsBase } from "filesize";
 import { useEffect, useState } from "react";
 import { Task } from "../models/task";
-import basename from "../../models/basename";
+import { basename } from "../../stdlib";
 import ServerTaskManagement from "./server-task-management";
 import i18n from "../../i18n";
 

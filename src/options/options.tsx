@@ -1,7 +1,7 @@
 import { createRoot } from "react-dom/client";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.min";
-import { useEffect, useState } from "react";
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap";
+import React, { useEffect, useState } from "react";
 import { Container, Tab, Tabs } from "react-bootstrap";
 import ExtensionOptionsTab from "./components/extension-options-tab";
 import ServerOptionsTab from "./components/server-options-tab";
@@ -30,10 +30,12 @@ function Options() {
   useEffect(() => {
     if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
       document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
+    } else if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: light)").matches) {
+      document.documentElement.setAttribute("data-bs-theme", Theme.Light);
     } else {
       document.documentElement.setAttribute("data-bs-theme", extensionOptions.theme);
     }
-  }, [extensionOptions]);
+  }, [extensionOptions.theme]);
 
   async function addServer() {
     const server = new Server();
@@ -88,14 +90,16 @@ function Options() {
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
-        <ExtensionOptionsTab key={Object.keys(extensionOptions.servers).length} extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
+        <ExtensionOptionsTab key={extensionOptions.serialize()} extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
       </Tab>
     </Tabs>
   );
 }
 
 root.render(
-  <Container className="p-3" fluid>
-    <Options />
-  </Container>,
+  <React.StrictMode>
+    <Container className="p-3" fluid>
+      <Options />
+    </Container>
+  </React.StrictMode>,
 );

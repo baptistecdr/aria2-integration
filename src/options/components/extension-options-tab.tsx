@@ -1,7 +1,5 @@
 import { ChangeEvent, useState } from "react";
-import "bootstrap/dist/css/bootstrap.css";
-import "bootstrap/dist/js/bootstrap";
-import { Alert, Button, Col, Form, FormText } from "react-bootstrap";
+import { Alert, Button, Col, Form, FormText, Modal } from "react-bootstrap";
 import i18n from "../../i18n";
 import AlertProps from "../models/alert-props";
 import ExtensionOptions from "../../models/extension-options";
@@ -18,8 +16,10 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [excludedProtocols, setExcludedProtocols] = useState(extensionOptions.excludedProtocols);
   const [excludedSites, setExcludedSites] = useState(extensionOptions.excludedSites);
   const [excludedFileTypes, setExcludedFileTypes] = useState(extensionOptions.excludedFileTypes);
+  const [useCompleteFilePath, setUseCompleteFilePath] = useState(extensionOptions.useCompleteFilePath);
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
+  const [showModal, setShowModal] = useState(false);
 
   function serializeExcludedOption(excludedOptions: string) {
     return excludedOptions
@@ -56,6 +56,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         excludedProtocols,
         excludedSites,
         excludedFileTypes,
+        useCompleteFilePath,
         theme,
       ).toStorage();
       setExtensionOptions(newExtensionOptions);
@@ -77,8 +78,12 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-capture-downloads">
-          <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
-          <Form.Check checked={captureDownloads} aria-label={i18n("extensionOptionsCaptureDownloads")} onChange={onChangeCaptureDownloads} />
+          <Form.Check
+            checked={captureDownloads}
+            label={i18n("extensionOptionsCaptureDownloads")}
+            aria-label={i18n("extensionOptionsCaptureDownloads")}
+            onChange={onChangeCaptureDownloads}
+          />
         </Form.Group>
       </Col>
 
@@ -148,6 +153,38 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           </Form.Text>
         </Form.Group>
       </Col>
+
+      <Col xs={11} sm={11} className="mb-3">
+        <Form.Group controlId="form-use-complete-path">
+          <Form.Check
+            disabled={!captureDownloads}
+            checked={useCompleteFilePath}
+            label={i18n("extensionOptionsUseCompleteFilePath")}
+            aria-label={i18n("extensionOptionsUseCompleteFilePath")}
+            onChange={(e) => setUseCompleteFilePath(e.target.checked)}
+          />
+        </Form.Group>
+      </Col>
+
+      <Col xs={1} sm={1} className="mb-3 align-self-center">
+        <Form.Group controlId="form-use-complete-path-help">
+          <Button variant="link" disabled={!captureDownloads} onClick={() => setShowModal(true)}>
+            <i className="bi bi-question-circle" />
+          </Button>
+        </Form.Group>
+      </Col>
+
+      <Modal show={showModal} onHide={() => setShowModal(false)}>
+        <Modal.Header closeButton>
+          <Modal.Title>{i18n("extensionOptionsUseCompleteFilePathHelpTitle")}</Modal.Title>
+        </Modal.Header>
+        <Modal.Body style={{ whiteSpace: "pre-wrap" }}>{i18n("extensionOptionsUseCompleteFilePathHelpContent")}</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            {i18n("extensionOptionsUseCompleteFilePathHelpButton")}
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-theme">

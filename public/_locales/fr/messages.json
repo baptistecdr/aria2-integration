@@ -5,9 +5,6 @@
   "extDescription": {
     "message": "Télécharger des fichiers avec Aria2"
   },
-  "optionsNoServers": {
-    "message": "Il n'y a aucun serveur.<br>Créez-en un en cliquant sur le bouton <b>+</b> au dessus."
-  },
   "serverOptionsSuccess": {
     "message": "Les options ont été sauvegardé."
   },
@@ -85,6 +82,18 @@
   },
   "extensionOptionsExcludeFileTypesInformation": {
     "message": "rar, zip"
+  },
+  "extensionOptionsUseCompleteFilePath": {
+    "message": "Utiliser le chemin d'accès complet au fichier lors de l'utilisation \"Enregistrer le lien sous...\""
+  },
+  "extensionOptionsUseCompleteFilePathHelpTitle": {
+    "message": "Aide"
+  },
+  "extensionOptionsUseCompleteFilePathHelpContent": {
+    "message": "Aria2 Integration utilise le nom du fichier lorsque vous utilisez \"Enregistrer le lien sous...\".\nEn activant cette option, Aria2 Integration utilisera également le chemin d'accès au fichier. Cela ne fonctionne que lorsque Aria2 est exécuté localement."
+  },
+  "extensionOptionsUseCompleteFilePathHelpButton": {
+    "message": "Fermer"
   },
   "extensionOptionsTheme": {
     "message": "Thème"

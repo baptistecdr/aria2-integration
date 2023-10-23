@@ -1,8 +1,8 @@
 import { createRoot } from "react-dom/client";
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import "bootstrap/dist/css/bootstrap.min.css";
-import "bootstrap/dist/js/bootstrap.min";
+import "bootstrap/dist/css/bootstrap.css";
+import "bootstrap";
 import "./popup.css";
 import { Container, Tab, Tabs } from "react-bootstrap";
 import i18n from "../i18n.js";
@@ -24,13 +24,13 @@ function Servers() {
     });
   }, []);
 
-  useEffect(() => {
-    if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-      document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
-    } else {
-      document.documentElement.setAttribute("data-bs-theme", extensionOptions.theme);
-    }
-  }, [extensionOptions]);
+  if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
+    document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
+  } else if (extensionOptions.theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: light)").matches) {
+    document.documentElement.setAttribute("data-bs-theme", Theme.Light);
+  } else {
+    document.documentElement.setAttribute("data-bs-theme", extensionOptions.theme);
+  }
 
   if (Object.keys(extensionOptions.servers).length === 0) {
     return (
@@ -40,16 +40,6 @@ function Servers() {
       </div>
     );
   }
-
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", (e) => {
-    if (extensionOptions.theme === Theme.Auto) {
-      if (e.matches) {
-        document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
-      } else {
-        document.documentElement.setAttribute("data-bs-theme", Theme.Light);
-      }
-    }
-  });
 
   return (
     <Tabs id="tabs-servers" defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3">
@@ -63,7 +53,9 @@ function Servers() {
 }
 
 root.render(
-  <Container className="p-3" fluid>
-    <Servers />
-  </Container>,
+  <React.StrictMode>
+    <Container className="p-3" fluid>
+      <Servers />
+    </Container>
+  </React.StrictMode>,
 );

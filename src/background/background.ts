@@ -5,7 +5,7 @@ import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 import ExtensionOptions from "../models/extension-options";
-import basename from "../models/basename";
+import { basename, dirname } from "../stdlib";
 import Server from "../models/server";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
@@ -144,15 +144,16 @@ function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Do
   return false;
 }
 
-async function captureDownloadItem(aria2: any, server: Server, item: Downloads.DownloadItem, referer: string, cookies: string) {
+async function captureDownloadItem(aria2: any, server: Server, item: Downloads.DownloadItem, referer: string, cookies: string, useCompleteFilePath: boolean) {
   // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   // @ts-ignore
   const url = item.finalUrl ?? item.url; // finalUrl (Chrome), url (Firefox)
+  const directory = useCompleteFilePath ? await dirname(item.filename) : undefined;
   const filename = await basename(item.filename);
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/) || filename.match(/\.torrent$|\.meta4$|\.metalink$/)) {
-    return captureTorrentFromURL(aria2, server, url, filename);
+    return captureTorrentFromURL(aria2, server, url, directory, filename);
   }
-  return captureURL(aria2, server, url, referer, cookies, filename);
+  return captureURL(aria2, server, url, referer, cookies, directory, filename);
 }
 
 browser.downloads.onCreated.addListener(async (downloadItem) => {
@@ -175,7 +176,7 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
         await browser.downloads.erase({ id: downloadItem.id });
       }
       try {
-        await captureDownloadItem(connection, server, downloadItem, referrer, cookies);
+        await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath);
         await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));
       } catch {
         await showNotification(browser.i18n.getMessage("addFileError", server.name));

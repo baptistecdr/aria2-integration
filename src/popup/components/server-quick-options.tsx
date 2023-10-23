@@ -19,6 +19,23 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
       extensionOptions.excludedProtocols,
       extensionOptions.excludedSites,
       extensionOptions.excludedFileTypes,
+      extensionOptions.useCompleteFilePath,
+      extensionOptions.theme,
+    );
+    await newExtensionsOptions.toStorage();
+    setExtensionOptions(newExtensionsOptions);
+  };
+
+  const onChangeUseCompleteFilePath = async (e: ChangeEvent<HTMLInputElement>) => {
+    const newExtensionsOptions = new ExtensionOptions(
+      extensionOptions.servers,
+      extensionOptions.captureServer,
+      extensionOptions.captureDownloads,
+      extensionOptions.excludedProtocols,
+      extensionOptions.excludedSites,
+      extensionOptions.excludedFileTypes,
+      e.target.checked,
+      extensionOptions.theme,
     );
     await newExtensionsOptions.toStorage();
     setExtensionOptions(newExtensionsOptions);
@@ -33,6 +50,17 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
             label={i18n("extensionOptionsCaptureDownloads")}
             aria-label={i18n("extensionOptionsCaptureDownloads")}
             onChange={onChangeCaptureDownloads}
+          />
+        </Form.Group>
+      </Col>
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Group controlId="form-use-complete-path">
+          <Form.Check
+            disabled={!extensionOptions.captureDownloads || extensionOptions.captureServer !== server.uuid}
+            checked={extensionOptions.useCompleteFilePath}
+            label={i18n("extensionOptionsUseCompleteFilePath")}
+            aria-label={i18n("extensionOptionsUseCompleteFilePath")}
+            onChange={onChangeUseCompleteFilePath}
           />
         </Form.Group>
       </Col>
