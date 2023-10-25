@@ -14,7 +14,7 @@ if (process.env.BROWSER === "firefox") {
   manifest.browser_specific_settings = {
     gecko: {
       id: "baptistecdr@users.noreply.github.com",
-      strict_min_version: "69.0",
+      strict_min_version: "109.0",
     },
   };
 } else if (process.env.BROWSER === "chromium") {
