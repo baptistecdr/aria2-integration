@@ -47,23 +47,32 @@ export async function captureTorrentFromFile(aria2: any, server: Server, file: F
   return aria2.call("aria2.addMetalink", blobAsBase64, [], server.rpcParameters);
 }
 
-export async function captureTorrentFromURL(aria2: any, server: Server, url: string, filename?: string) {
+export async function captureTorrentFromURL(aria2: any, server: Server, url: string, directory?: string, filename?: string) {
   const blob = await download(url);
   const blobAsBase64 = await encodeFileToBase64(blob);
-  if (url.endsWith(".torrent") || filename?.endsWith(".torrent")) {
-    return aria2.call("aria2.addTorrent", blobAsBase64, [], server.rpcParameters);
+  const aria2Parameters: any = {
+    ...server.rpcParameters,
+  };
+  if (directory) {
+    aria2Parameters.dir = directory;
   }
-  return aria2.call("aria2.addMetalink", blobAsBase64, [], server.rpcParameters);
+  if (url.endsWith(".torrent") || filename?.endsWith(".torrent")) {
+    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
+  }
+  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
 }
 
-export async function captureURL(aria2: any, server: Server, url: string, referer: string, cookies: string, filename?: string) {
+export async function captureURL(aria2: any, server: Server, url: string, referer: string, cookies: string, directory?: string, filename?: string) {
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/)) {
-    return captureTorrentFromURL(aria2, server, url, filename);
+    return captureTorrentFromURL(aria2, server, url, directory, filename);
   }
   const aria2Parameters: any = {
     header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
     ...server.rpcParameters,
   };
+  if (directory) {
+    aria2Parameters.dir = directory;
+  }
   if (filename) {
     aria2Parameters.out = filename;
   }

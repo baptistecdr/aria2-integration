@@ -10,10 +10,11 @@ export default class ExtensionOptions {
     public readonly excludedProtocols: string[] = [],
     public readonly excludedSites: string[] = [],
     public readonly excludedFileTypes: string[] = [],
+    public readonly useCompleteFilePath: boolean = false,
     public readonly theme: Theme = Theme.Auto,
   ) {}
 
-  private serialize(): string {
+  public serialize(): string {
     return JSON.stringify(this);
   }
 

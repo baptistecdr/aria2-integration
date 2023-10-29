@@ -14,7 +14,8 @@
   "dependencies": {
     "@stdlib/regexp-basename-posix": "0.1.1",
     "@stdlib/regexp-basename-windows": "0.1.1",
-    "@testing-library/jest-dom": "6.1.4",
+    "@stdlib/regexp-dirname-posix": "0.1.1",
+    "@stdlib/regexp-dirname-windows": "0.1.1",
     "@testing-library/react": "14.0.0",
     "@testing-library/user-event": "14.5.1",
     "aria2": "4.1.2",
@@ -40,6 +41,8 @@
     "@types/react": "18.2.33",
     "@types/react-dom": "18.2.14",
     "@types/uuid": "9.0.6",
+    "@types/bootstrap": "5.2.8",
+    "@types/react-bootstrap": "0.32.34",
     "@types/webextension-polyfill": "0.10.5",
     "@typescript-eslint/eslint-plugin": "6.9.0",
     "@typescript-eslint/parser": "6.9.0",
