@@ -57,7 +57,7 @@
     "message": "--- 无选中的服务器 ---"
   },
   "extensionOptionsExcludeProtocols": {
-    "message": "排除的协议"
+    "message": "排除协议"
   },
   "extensionOptionsExcludeProtocolsDescription": {
     "message": "留空则拦截任何协议的文件下载."
@@ -81,31 +81,31 @@
     "message": "rar, zip"
   },
   "extensionOptionsUseCompleteFilePath": {
-    "message": "Use complete file path when using \"Save Link As...\""
+    "message": "当使用\"从链接另存文件为...\"时使用完整文件路径"
   },
   "extensionOptionsUseCompleteFilePathHelpTitle": {
-    "message": "Help"
+    "message": "帮助"
   },
   "extensionOptionsUseCompleteFilePathHelpContent": {
-    "message": "Aria2 Integration uses the file name when you are using \"Save Link As...\".\nEnabling this option, Aria2 Integration will also use the file path. It only works when Aria2 is running locally."
+    "message": "当你使用右键选项\"从链接另存文件为...\"时 Aria2 整合使用文件名.\n启用该选项, Aria2 整合将还会使用文件路径. 它只对本机运行的 Aria2 有效果."
   },
   "extensionOptionsUseCompleteFilePathHelpButton": {
-    "message": "Close"
+    "message": "关闭"
   },
   "extensionOptionsExcludeFileTypesInformation": {
     "message": "留空则拦截任何类型的文件下载."
   },
   "extensionOptionsTheme": {
-    "message": "Theme"
+    "message": "主题"
   },
   "extensionOptionsThemeLight": {
-    "message": "Light"
+    "message": "亮色"
   },
   "extensionOptionsThemeDark": {
-    "message": "Dark"
+    "message": "暗色"
   },
   "extensionOptionsThemeAuto": {
-    "message": "Auto"
+    "message": "自动"
   },
   "popupNoServerFound1": {
     "message": "未找到服务器."
