@@ -29,7 +29,7 @@ type WaitingTasks = Task[];
 type StoppedTasks = Task[];
 
 async function getGlobalStat(aria2server: any): Promise<GlobalStat> {
-  const globalStat: unknown = aria2server.call("getGlobalStat", [], {});
+  const globalStat: unknown = await aria2server.call("getGlobalStat", [], {});
   return plainToInstance(GlobalStat, globalStat);
 }
 
