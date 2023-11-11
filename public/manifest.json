@@ -12,7 +12,8 @@
     "downloads",
     "notifications",
     "storage",
-    "activeTab"
+    "activeTab",
+    "alarms"
   ],
   "options_ui": {
     "page": "options/options.html",

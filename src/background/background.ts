@@ -3,12 +3,16 @@
 import Aria2 from "aria2";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
+import { plainToInstance } from "class-transformer";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 import ExtensionOptions from "../models/extension-options";
 import { basename, dirname } from "../stdlib";
 import Server from "../models/server";
+import GlobalStat from "../popup/models/global-stat";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
+const ALARM_NAME = "set-badge";
+const ALARM_INTERVAL_SECONDS = 5;
 
 let connections: Record<string, Aria2> = {};
 
@@ -229,5 +233,30 @@ browser.commands.onCommand.addListener(async (command) => {
       ? browser.i18n.getMessage("toggleCaptureDownloadsEnabled", extensionOptions.servers[newCaptureServer].name)
       : browser.i18n.getMessage("toggleCaptureDownloadsDisabled");
     await showNotification(message);
+  }
+});
+
+browser.alarms.create(ALARM_NAME, {
+  periodInMinutes: ALARM_INTERVAL_SECONDS / 60,
+});
+
+async function getGlobalStat(aria2server: any): Promise<GlobalStat> {
+  const globalStat: unknown = await aria2server.call("getGlobalStat", [], {});
+  return plainToInstance(GlobalStat, globalStat);
+}
+
+browser.alarms.onAlarm.addListener(async (alarmInfo) => {
+  if (alarmInfo.name === ALARM_NAME) {
+    const numActives = Object.values(connections).map(async (server) => {
+      const globalStat = await getGlobalStat(server);
+      return globalStat.numActive;
+    });
+    const totalActive = await Promise.all(numActives).then((n) => n.reduce((partialSum, a) => partialSum + a, 0));
+    browser.action.setBadgeText({
+      text: totalActive ? totalActive.toString(10) : "",
+    });
+    browser.action.setBadgeBackgroundColor({
+      color: "#666666",
+    });
   }
 });
