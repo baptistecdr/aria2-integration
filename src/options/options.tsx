@@ -90,7 +90,7 @@ function Options() {
       ))}
       <Tab eventKey={ADD_SERVER_TAB} title="+" />
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
-        <ExtensionOptionsTab key={extensionOptions.serialize()} extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
+        <ExtensionOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
       </Tab>
     </Tabs>
   );
