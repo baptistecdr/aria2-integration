@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Alert, Button, Col, Form, FormText, Modal } from "react-bootstrap";
 import i18n from "../../i18n";
 import AlertProps from "../models/alert-props";
@@ -11,11 +11,15 @@ interface Props {
 }
 
 function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
+  function deserializeExcludedOption(excludedOption: string[]) {
+    return excludedOption.join(", ");
+  }
+
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
-  const [excludedProtocols, setExcludedProtocols] = useState(extensionOptions.excludedProtocols);
-  const [excludedSites, setExcludedSites] = useState(extensionOptions.excludedSites);
-  const [excludedFileTypes, setExcludedFileTypes] = useState(extensionOptions.excludedFileTypes);
+  const [excludedProtocols, setExcludedProtocols] = useState(deserializeExcludedOption(extensionOptions.excludedProtocols));
+  const [excludedSites, setExcludedSites] = useState(deserializeExcludedOption(extensionOptions.excludedSites));
+  const [excludedFileTypes, setExcludedFileTypes] = useState(deserializeExcludedOption(extensionOptions.excludedFileTypes));
   const [useCompleteFilePath, setUseCompleteFilePath] = useState(extensionOptions.useCompleteFilePath);
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
@@ -28,9 +32,23 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
       .filter((s) => s !== "");
   }
 
-  function deserializeExcludedOption(excludedOption: string[]) {
-    return excludedOption.join(", ");
-  }
+  useEffect(() => {
+    setCaptureDownloads(extensionOptions.captureDownloads);
+    setCaptureServer(extensionOptions.captureServer);
+    setExcludedProtocols(deserializeExcludedOption(extensionOptions.excludedProtocols));
+    setExcludedSites(deserializeExcludedOption(extensionOptions.excludedSites));
+    setExcludedFileTypes(deserializeExcludedOption(extensionOptions.excludedFileTypes));
+    setUseCompleteFilePath(extensionOptions.useCompleteFilePath);
+    setTheme(extensionOptions.theme);
+  }, [
+    extensionOptions.captureDownloads,
+    extensionOptions.captureServer,
+    extensionOptions.excludedFileTypes,
+    extensionOptions.excludedProtocols,
+    extensionOptions.excludedSites,
+    extensionOptions.theme,
+    extensionOptions.useCompleteFilePath,
+  ]);
 
   const onChangeCaptureServer = (event: ChangeEvent<HTMLSelectElement>) => {
     if (extensionOptions.servers[event.target.value]) {
@@ -53,9 +71,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         extensionOptions.servers,
         captureServer,
         captureDownloads,
-        excludedProtocols,
-        excludedSites,
-        excludedFileTypes,
+        serializeExcludedOption(excludedProtocols),
+        serializeExcludedOption(excludedSites),
+        serializeExcludedOption(excludedFileTypes),
         useCompleteFilePath,
         theme,
       ).toStorage();
@@ -111,8 +129,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
             disabled={!captureDownloads}
-            value={deserializeExcludedOption(excludedProtocols)}
-            onChange={(e) => setExcludedProtocols(serializeExcludedOption(e.target.value))}
+            value={excludedProtocols}
+            onChange={(e) => setExcludedProtocols(e.target.value)}
           />
           <FormText id="exclude-protocols-description" muted>
             {i18n("extensionOptionsExcludeProtocolsDescription")}
@@ -128,8 +146,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeSitesInformation")}
             disabled={!captureDownloads}
-            value={deserializeExcludedOption(excludedSites)}
-            onChange={(e) => setExcludedSites(serializeExcludedOption(e.target.value))}
+            value={excludedSites}
+            onChange={(e) => setExcludedSites(e.target.value)}
           />
           <FormText id="exclude-sites-description" muted>
             {i18n("extensionOptionsExcludeSitesDescription")}
@@ -145,8 +163,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             rows={3}
             placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
             disabled={!captureDownloads}
-            value={deserializeExcludedOption(excludedFileTypes)}
-            onChange={(e) => setExcludedFileTypes(serializeExcludedOption(e.target.value))}
+            value={excludedFileTypes}
+            onChange={(e) => setExcludedFileTypes(e.target.value)}
           />
           <Form.Text id="exclude-file-types-description" muted>
             {i18n("extensionOptionsExcludeFileTypesDescription")}
