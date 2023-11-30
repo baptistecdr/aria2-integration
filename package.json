@@ -36,7 +36,7 @@
   },
   "devDependencies": {
     "@types/jest": "29.5.10",
-    "@types/luxon": "3.3.5",
+    "@types/luxon": "3.3.6",
     "@types/node": "20.10.1",
     "@types/react": "18.2.39",
     "@types/react-dom": "18.2.17",
