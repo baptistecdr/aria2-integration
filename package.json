@@ -30,14 +30,14 @@
     "react-bootstrap": "2.9.1",
     "react-dom": "18.2.0",
     "react-loader-spinner": "^5.3.4",
-    "reflect-metadata": "0.1.13",
+    "reflect-metadata": "0.1.14",
     "uuid": "9.0.1",
     "webextension-polyfill": "0.10.0"
   },
   "devDependencies": {
     "@types/jest": "29.5.11",
     "@types/luxon": "3.3.7",
-    "@types/node": "20.10.3",
+    "@types/node": "20.10.4",
     "@types/react": "18.2.42",
     "@types/react-dom": "18.2.17",
     "@types/uuid": "9.0.7",
