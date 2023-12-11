@@ -29,7 +29,7 @@
     "react": "18.2.0",
     "react-bootstrap": "2.9.1",
     "react-dom": "18.2.0",
-    "react-loader-spinner": "^5.3.4",
+    "react-loader-spinner": "^6.0.0",
     "reflect-metadata": "0.1.14",
     "uuid": "9.0.1",
     "webextension-polyfill": "0.10.0"
