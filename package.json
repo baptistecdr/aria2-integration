@@ -17,7 +17,7 @@
     "@stdlib/regexp-dirname-posix": "0.1.1",
     "@stdlib/regexp-dirname-windows": "0.1.1",
     "@testing-library/react": "14.1.2",
-    "@testing-library/user-event": "14.5.1",
+    "@testing-library/user-event": "14.5.2",
     "aria2": "4.1.2",
     "bootstrap": "5.3.2",
     "bootstrap-icons": "1.11.2",
