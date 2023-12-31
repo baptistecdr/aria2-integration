@@ -15,6 +15,9 @@
     "activeTab",
     "alarms"
   ],
+  "content_security_policy": {
+    "extension_pages": "script-src 'self'; connect-src *"
+  },
   "options_ui": {
     "page": "options/options.html",
     "browser_style": false
