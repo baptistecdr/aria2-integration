@@ -2,7 +2,7 @@
   "name": "aria2-integration",
   "private": true,
   "type": "module",
-  "version": "4.7.4",
+  "version": "4.7.5-SNAPSHOT.0",
   "scripts": {
     "lint": "eslint 'src/**/*.{js,ts,jsx,tsx}'",
     "lint:fix": "eslint 'src/**/*.{js,ts,jsx,tsx}' --fix",
