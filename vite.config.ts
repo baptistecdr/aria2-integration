@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
+import { nodePolyfills } from "vite-plugin-node-polyfills";
 
 const r = (...args: string[]) => resolve(__dirname, ...args);
 
@@ -24,5 +25,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react()],
+  plugins: [react(), nodePolyfills()],
 });
