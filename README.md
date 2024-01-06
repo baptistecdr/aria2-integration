@@ -39,7 +39,7 @@
 
 ### Internationalization
 
-* The extension speaks English and French, but you can add your language
+* The extension speaks English, French and Chinese. You can add your language
   in [public/_locales](https://github.com/baptistecdr/aria2-integration/tree/main/public/_locales).
   You can find your language
   code [here](https://src.chromium.org/viewvc/chrome/trunk/src/third_party/cld/languages/internal/languages.cc#l23).
