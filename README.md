@@ -25,7 +25,6 @@
 ## How to build
 
 - Install [Node.JS LTS](https://nodejs.org/)
-- Install [jq](https://github.com/stedolan/jq)
 - Clone the project
 - Run `npm install`
 - Run `npm run build:firefox` to build Firefox extension
