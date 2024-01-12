@@ -9,18 +9,25 @@
 
 <div align="center">
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/baptistecdr/aria2-integration/node.yml)
-![Mozilla Add-on](https://img.shields.io/amo/v/aria2-extension)
-![Chrome Web Store](https://img.shields.io/chrome-web-store/v/hnenidncmoeebipinjdfniagjnfjbapi)
-![GitHub](https://img.shields.io/github/license/baptistecdr/aria2-integration)
+[![](https://img.shields.io/amo/v/aria2-extension.svg)](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
+[![](https://img.shields.io/amo/rating/aria2-extension.svg)](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
+[![](https://img.shields.io/amo/users/aria2-extension.svg)](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
+
+[![](https://img.shields.io/chrome-web-store/v/hnenidncmoeebipinjdfniagjnfjbapi.svg)](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
+[![](https://img.shields.io/chrome-web-store/rating/hnenidncmoeebipinjdfniagjnfjbapi.svg)](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
+[![](https://img.shields.io/chrome-web-store/users/hnenidncmoeebipinjdfniagjnfjbapi.svg)](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
+
+[![](https://img.shields.io/badge/dynamic/json?label=edge%20add-on&prefix=v&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fhmmpdilndjfmceolhbgjejogjaglbiel)](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
+[![](https://img.shields.io/badge/dynamic/json?label=rating&suffix=/5&query=%24.averageRating&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fhmmpdilndjfmceolhbgjejogjaglbiel)](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
+[![](https://img.shields.io/badge/dynamic/json?label=users&query=%24.activeInstallCount&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fhmmpdilndjfmceolhbgjejogjaglbiel)](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
 
 </div>
 
 ## Quick start
 
-- [Microsoft Edge Store](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
+- [Firefox Extension Add Ons](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
-- [Firefox Extension Store](https://addons.mozilla.org/en-US/firefox/addon/aria2-extension/)
+- [Microsoft Edge Store](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
 
 ## How to build
 
