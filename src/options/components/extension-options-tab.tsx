@@ -1,9 +1,9 @@
 import { ChangeEvent, useEffect, useState } from "react";
 import { Alert, Button, Col, Form, FormText, Modal } from "react-bootstrap";
-import i18n from "../../i18n";
-import AlertProps from "../models/alert-props";
-import ExtensionOptions from "../../models/extension-options";
-import Theme from "../../models/theme";
+import i18n from "@/i18n";
+import ExtensionOptions from "@/models/extension-options";
+import Theme from "@/models/theme";
+import AlertProps from "@/options/models/alert-props";
 
 interface Props {
   extensionOptions: ExtensionOptions;

@@ -1,14 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
+// @ts-expect-error No type information for aria2
 import Aria2 from "aria2";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
 import { plainToInstance } from "class-transformer";
+import { basename, dirname } from "path";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
+import GlobalStat from "@/popup/models/global-stat";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
-import ExtensionOptions from "../models/extension-options";
-import { basename, dirname } from "../stdlib";
-import Server from "../models/server";
-import GlobalStat from "../popup/models/global-stat";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 const ALARM_NAME = "set-badge";
