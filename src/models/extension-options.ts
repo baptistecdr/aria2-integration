@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
-import Server from "./server";
-import Theme from "./theme";
+import Server from "@/models/server";
+import Theme from "@/models/theme";
 
 export default class ExtensionOptions {
   constructor(

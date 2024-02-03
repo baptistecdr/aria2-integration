@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import i18n from "../../i18n";
-import { captureTorrentFromFile, captureURL, showNotification } from "../../models/aria2-extension";
+import { captureTorrentFromFile, captureURL, showNotification } from "@/models/aria2-extension";
 import Server from "../../models/server";
 
 interface Props {

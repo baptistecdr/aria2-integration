@@ -2,6 +2,7 @@ import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { nodePolyfills } from "vite-plugin-node-polyfills";
+import tsconfigPaths from "vite-tsconfig-paths";
 
 const r = (...args: string[]) => resolve(__dirname, ...args);
 
@@ -25,5 +26,5 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), nodePolyfills()],
+  plugins: [react(), nodePolyfills(), tsconfigPaths()],
 });

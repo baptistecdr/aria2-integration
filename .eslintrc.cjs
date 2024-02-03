@@ -35,7 +35,18 @@ module.exports = {
     ],
     "@typescript-eslint/no-explicit-any": "off",
     "react/jsx-uses-react": "off",
-    "react/react-in-jsx-scope": "off"
+    "react/react-in-jsx-scope": "off",
+    "import/extensions": [
+      "error",
+      "ignorePackages",
+      {
+        "": "never",
+        "js": "never",
+        "jsx": "never",
+        "ts": "never",
+        "tsx": "never"
+      }
+    ]
   },
   ignorePatterns: ["dist", "public", "scripts", "vite.config.ts"]
 };

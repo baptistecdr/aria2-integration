@@ -2,34 +2,19 @@ import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import { Duration } from "luxon";
 import browser from "webextension-polyfill";
 import { filesize, FileSizeOptionsBase } from "filesize";
-import { useEffect, useState } from "react";
+import Server from "@/models/server";
 import { Task } from "../models/task";
-import { basename } from "../../stdlib";
 import ServerTaskManagement from "./server-task-management";
 import i18n from "../../i18n";
 
 interface Props {
-  task: Task;
+  server: Server;
   aria2: any;
+  task: Task;
 }
 
-async function getFilename(task: Task): Promise<string> {
-  if (task.bittorrent && task.bittorrent.info) {
-    return task.bittorrent.info.name;
-  }
-  if (task.files[0].path !== "") {
-    return basename(task.files[0].path);
-  }
-  return basename(task.files[0].uris[0].uri);
-}
-
-function ServerTask({ task, aria2 }: Props) {
+function ServerTask({ server, aria2, task }: Props) {
   const filesizeParameters = { base: 2 } as FileSizeOptionsBase;
-  const [filename, setFilename] = useState("");
-
-  useEffect(() => {
-    getFilename(task).then((it) => setFilename(it));
-  }, [task]);
 
   function toFirstUppercase(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -82,11 +67,11 @@ function ServerTask({ task, aria2 }: Props) {
               placement="top"
               overlay={
                 <Tooltip id="tooltip-bottom">
-                  <small>{filename}</small>
+                  <small>{task.getFilename()}</small>
                 </Tooltip>
               }
             >
-              <span>{filename}</span>
+              <span>{task.getFilename()}</span>
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
@@ -106,7 +91,7 @@ function ServerTask({ task, aria2 }: Props) {
         </Row>
       </Col>
       <Col xs={3} sm={3} className="align-self-start text-end">
-        <ServerTaskManagement task={task} aria2={aria2} />
+        <ServerTaskManagement server={server} aria2={aria2} task={task} />
       </Col>
       <Col xs={12} sm={12}>
         <div className="progress position-relative">

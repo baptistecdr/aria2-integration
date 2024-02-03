@@ -1,10 +1,10 @@
 import { FormEvent, useState } from "react";
-import "bootstrap-icons/font/bootstrap-icons.css";
 import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import i18n from "../../i18n";
-import AlertProps from "../models/alert-props";
-import ExtensionOptions from "../../models/extension-options";
-import Server from "../../models/server";
+import i18n from "@/i18n";
+import "bootstrap-icons/font/bootstrap-icons.css";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
+import AlertProps from "@/options/models/alert-props";
 
 interface Props {
   extensionOptions: ExtensionOptions;

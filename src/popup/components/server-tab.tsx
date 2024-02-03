@@ -1,22 +1,21 @@
+// @ts-expect-error No type information for aria2
+import Aria2 from "aria2";
+import { plainToInstance } from "class-transformer";
+import { filesize, FileSizeOptionsBase } from "filesize";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { Oval } from "react-loader-spinner";
+import i18n from "@/i18n";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
+import ServerAddTasks from "@/popup/components/server-add-tasks";
+import ServerQuickOptions from "@/popup/components/server-quick-options";
+import ServerTask from "@/popup/components/server-task";
+import GlobalStat from "@/popup/models/global-stat";
+import { Task } from "@/popup/models/task";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import Aria2 from "aria2";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { plainToInstance } from "class-transformer";
-import { filesize, FileSizeOptionsBase } from "filesize";
-import { Oval } from "react-loader-spinner";
-import { Task } from "../models/task";
-import GlobalStat from "../models/global-stat";
-import ServerTask from "./server-task";
-import Server from "../../models/server";
-import i18n from "../../i18n";
-import ServerAddTasks from "./server-add-tasks";
-import ServerQuickOptions from "./server-quick-options";
-import ExtensionOptions from "../../models/extension-options";
 
 interface Props {
   setExtensionOptions: Dispatch<SetStateAction<ExtensionOptions>>;
@@ -147,7 +146,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
           </Col>
         </Row>
       )}
-      {!showAddTask && !showQuickOptions && tasks.map((task) => <ServerTask key={task.gid} task={task} aria2={aria2} />)}
+      {!showAddTask && !showQuickOptions && tasks.map((task) => <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />)}
     </Container>
   );
 }

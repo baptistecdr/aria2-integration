@@ -1,5 +1,5 @@
 import browser, { Notifications } from "webextension-polyfill";
-import Server from "./server";
+import Server from "@/models/server";
 
 export function encodeFileToBase64(file: File | Blob) {
   return new Promise((resolve, reject) => {
