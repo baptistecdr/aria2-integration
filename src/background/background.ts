@@ -118,11 +118,11 @@ function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
 function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Downloads.DownloadItem, referrer: string): boolean {
   if (extensionOptions.captureServer !== "") {
     const excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
+    excludedProtocols.push("blob:", "data:", "file:");
     const excludedFileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
 
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    const url = new URL(item.finalUrl ?? item.url); // finalUrl exists only on Chromium
+    // @ts-expect-error finalUrl exists only on Chromium
+    const url = new URL(item.finalUrl ?? item.url);
     const refererURL = referrer !== "" ? new URL(referrer) : null;
 
     if (excludedProtocols.includes(url.protocol)) {
@@ -152,7 +152,7 @@ async function captureDownloadItem(aria2: any, server: Server, item: Downloads.D
   // @ts-ignore
   const url = item.finalUrl ?? item.url; // finalUrl (Chrome), url (Firefox)
   const directory = useCompleteFilePath ? await dirname(item.filename) : undefined;
-  const filename = await basename(item.filename);
+  const filename = basename(item.filename);
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/) || filename.match(/\.torrent$|\.meta4$|\.metalink$/)) {
     return captureTorrentFromURL(aria2, server, url, directory, filename);
   }
