@@ -117,8 +117,9 @@ function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
 
 function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Downloads.DownloadItem, referrer: string): boolean {
   if (extensionOptions.captureServer !== "") {
-    const excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
+    let excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
     excludedProtocols.push("blob:", "data:", "file:");
+    excludedProtocols = [...new Set(excludedProtocols)];
     const excludedFileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
 
     // @ts-expect-error finalUrl exists only on Chromium
@@ -148,10 +149,9 @@ function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Do
 }
 
 async function captureDownloadItem(aria2: any, server: Server, item: Downloads.DownloadItem, referer: string, cookies: string, useCompleteFilePath: boolean) {
-  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-  // @ts-ignore
-  const url = item.finalUrl ?? item.url; // finalUrl (Chrome), url (Firefox)
-  const directory = useCompleteFilePath ? await dirname(item.filename) : undefined;
+  // @ts-expect-error finalUrl exists only on Chromium
+  const url = item.finalUrl ?? item.url;
+  const directory = useCompleteFilePath ? dirname(item.filename) : undefined;
   const filename = basename(item.filename);
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/) || filename.match(/\.torrent$|\.meta4$|\.metalink$/)) {
     return captureTorrentFromURL(aria2, server, url, directory, filename);
