@@ -40,8 +40,10 @@
 ## Development
 
 - Run `npm run lint:fix` to lint and fix files
-- Run `npm run build:firefox:watch` to build and hot-reloads (on Firefox)
-- Run `npm run build:chromium:watch` to build and hot-reloads (on Chromium)
+- Run `npm run build:firefox:watch` to auto-build for Firefox
+- Run `npm run start:firefox` to install on Firefox with auto-reload
+- Run `npm run build:chromium:watch` to auto-build for Chromium
+- Run `npm run start:chromium` to install on Chromium with auto-reload
 
 ### Internationalization
 
