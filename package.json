@@ -8,8 +8,10 @@
     "lint:fix": "eslint 'src/**/*.{js,ts,jsx,tsx}' --fix",
     "build:firefox": "CI= tsc && vite build --emptyOutDir && BROWSER=firefox node scripts/generate-manifest.js",
     "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox",
+    "start:firefox": "web-ext run --source-dir ./dist/",
     "build:chromium": "CI= tsc && vite build --emptyOutDir && BROWSER=chromium node scripts/generate-manifest.js",
-    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium"
+    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium",
+    "start:chromium": "web-ext run --source-dir ./dist/ -t chromium"
   },
   "dependencies": {
     "@testing-library/react": "14.2.1",
@@ -57,6 +59,7 @@
     "typescript": "5.3.3",
     "vite": "5.0.12",
     "vite-plugin-node-polyfills": "0.19.0",
-    "vite-tsconfig-paths": "4.3.1"
+    "vite-tsconfig-paths": "4.3.1",
+    "web-ext": "7.11.0"
   }
 }

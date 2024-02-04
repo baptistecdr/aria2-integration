@@ -18,7 +18,12 @@ filesToUpdate.forEach((file) => {
       console.error(`Unable to read the content of the file '${file}'. (${err})`);
     } else {
       const content = JSON.parse(data);
-      content.version = version;
+      if (file === "public/manifest.json") {
+        content.version = version.replaceAll(/-SNAPSHOT\.\d+/g, "");
+        content.version_name = version;
+      } else {
+        content.version = version;
+      }
       fs.writeFile(file, `${JSON.stringify(content, null, 2)}\n`, (err1) => {
         if (err1) {
           console.error(`Unable to write the new content of the file '${file}'. (${err1})`);
