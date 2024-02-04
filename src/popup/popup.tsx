@@ -24,7 +24,7 @@ function Servers() {
     });
   }, []);
 
-  applyTheme(extensionOptions);
+  applyTheme(extensionOptions.theme);
 
   if (Object.keys(extensionOptions.servers).length === 0) {
     return (

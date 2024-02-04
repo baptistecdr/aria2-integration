@@ -28,8 +28,8 @@ function Options() {
   }, []);
 
   useEffect(() => {
-    applyTheme(extensionOptions);
-  }, [extensionOptions]);
+    applyTheme(extensionOptions.theme);
+  }, [extensionOptions.theme]);
 
   async function addServer() {
     const server = new Server();
