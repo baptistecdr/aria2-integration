@@ -1,8 +1,10 @@
 {
   "extends": [
     "config:recommended",
-    ":pinVersions"
+    ":pinVersions",
+    ":timezone(Europe/Paris)"
   ],
+  "schedule": ["before 5am"],
   "packageRules": [
     {
       "matchPackagePatterns": [
@@ -20,7 +22,7 @@
   "lockFileMaintenance": {
     "enabled": true,
     "schedule": [
-      "before 3am on the first day of the month"
+      "before 5am on the first day of the month"
     ]
   }
 }
