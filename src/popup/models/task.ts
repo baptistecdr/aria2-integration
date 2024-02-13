@@ -1,7 +1,7 @@
 import "reflect-metadata";
 import { Transform, Type } from "class-transformer";
-import { basename } from "path";
-import { File } from "./file";
+import { basename } from "@/stdlib";
+import { File } from "@/popup/models/file";
 
 export enum TaskStatus {
   Active = "active",

@@ -3,7 +3,7 @@ import Aria2 from "aria2";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
 import { plainToInstance } from "class-transformer";
-import { basename, dirname } from "path";
+import { basename, dirname } from "@/stdlib";
 import ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
 import GlobalStat from "@/popup/models/global-stat";
