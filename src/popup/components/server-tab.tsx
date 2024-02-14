@@ -2,7 +2,7 @@
 import Aria2 from "aria2";
 import { plainToInstance } from "class-transformer";
 import { filesize, FileSizeOptionsBase } from "filesize";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import { Oval } from "react-loader-spinner";
 import i18n from "@/i18n";
@@ -55,22 +55,25 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
     aria2.call("aria2.purgeDownloadResult");
   }
 
+  const updateTasks = useCallback(async () => {
+    try {
+      const gs = await getGlobalStat(aria2);
+      const ts = await getTasks(aria2, gs.numWaiting, gs.numStopped);
+      setGlobalStat(gs);
+      setTasks(ts);
+    } catch (e: any) {
+      setDefaultMessage(i18n("serverError"));
+    }
+    setLoading(false);
+  }, [aria2]);
+
   useEffect(() => {
-    const intervalId = window.setInterval(async () => {
-      try {
-        const gs = await getGlobalStat(aria2);
-        const ts = await getTasks(aria2, gs.numWaiting, gs.numStopped);
-        setGlobalStat(gs);
-        setTasks(ts);
-      } catch (e: any) {
-        setDefaultMessage(i18n("serverError"));
-      }
-      setLoading(false);
-    }, 1000);
+    updateTasks();
+    const intervalId = window.setInterval(updateTasks, 1000);
     return () => {
       clearInterval(intervalId);
     };
-  }, [aria2]);
+  }, [aria2, updateTasks]);
 
   if (loading) {
     return (
