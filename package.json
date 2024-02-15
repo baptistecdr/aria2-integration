@@ -14,10 +14,10 @@
     "start:chromium": "web-ext run --source-dir ./dist/ -t chromium"
   },
   "dependencies": {
-    "@stdlib/regexp-basename-posix": "0.1.1",
-    "@stdlib/regexp-basename-windows": "0.1.1",
-    "@stdlib/regexp-dirname-posix": "0.1.1",
-    "@stdlib/regexp-dirname-windows": "0.1.1",
+    "@stdlib/regexp-basename-posix": "0.2.0",
+    "@stdlib/regexp-basename-windows": "0.2.0",
+    "@stdlib/regexp-dirname-posix": "0.2.0",
+    "@stdlib/regexp-dirname-windows": "0.2.0",
     "@testing-library/react": "14.2.1",
     "@testing-library/user-event": "14.5.2",
     "aria2": "4.1.2",
@@ -61,7 +61,7 @@
     "prettier": "3.2.5",
     "rollup-plugin-html": "0.2.1",
     "typescript": "5.3.3",
-    "vite": "5.1.1",
+    "vite": "5.1.2",
     "vite-plugin-node-polyfills": "0.21.0",
     "vite-tsconfig-paths": "4.3.1",
     "web-ext": "7.11.0"
