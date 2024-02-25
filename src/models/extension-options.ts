@@ -7,6 +7,7 @@ export default class ExtensionOptions {
     public readonly servers: Record<string, Server> = {},
     public readonly captureServer: string = "",
     public readonly captureDownloads: boolean = false,
+    public readonly minFileSizeInBytes: number = 0,
     public readonly excludedProtocols: string[] = [],
     public readonly excludedSites: string[] = [],
     public readonly excludedFileTypes: string[] = [],

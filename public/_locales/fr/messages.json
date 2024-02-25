@@ -56,6 +56,30 @@
   "extensionOptionsNoServerSelected": {
     "message": "--- Aucun serveur sélectionné ---"
   },
+  "extensionOptionsMinimumFileSize": {
+    "message": "Taille minimum du fichier"
+  },
+  "extensionOptionsMinimumFileSizeDescription": {
+    "message": "La valeur 0 permet de capturer des fichiers de n'importe quelle taille."
+  },
+  "B": {
+    "message": "O"
+  },
+  "KiB": {
+    "message": "Kio"
+  },
+  "MiB" : {
+    "message": "Mio"
+  },
+  "GiB": {
+    "message": "Gio"
+  },
+  "TiB": {
+    "message": "Tio"
+  },
+  "seconds": {
+    "message": "s"
+  },
   "extensionOptionsExcludeProtocols": {
     "message": "Exclure des protocoles"
   },

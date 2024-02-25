@@ -1,6 +1,11 @@
 import browser, { Notifications } from "webextension-polyfill";
 import Server from "@/models/server";
 
+export function isFirefox() {
+  // @ts-expect-error Only available on Chromium
+  return browser.downloads.onDeterminingFilename === undefined;
+}
+
 export function encodeFileToBase64(file: File | Blob) {
   return new Promise((resolve, reject) => {
     const temporaryFileReader = new FileReader();

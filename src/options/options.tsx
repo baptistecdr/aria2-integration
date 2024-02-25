@@ -47,6 +47,7 @@ function Options() {
         newExtensionOptions.servers,
         "",
         false,
+        extensionOptions.minFileSizeInBytes,
         newExtensionOptions.excludedProtocols,
         newExtensionOptions.excludedSites,
         newExtensionOptions.excludedFileTypes,

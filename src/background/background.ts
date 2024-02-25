@@ -126,6 +126,10 @@ function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Do
     const url = new URL(item.finalUrl ?? item.url);
     const refererURL = referrer !== "" ? new URL(referrer) : null;
 
+    if (item.totalBytes !== -1 && item.totalBytes < extensionOptions.minFileSizeInBytes) {
+      return false;
+    }
+
     if (excludedProtocols.includes(url.protocol)) {
       return false;
     }
@@ -224,6 +228,7 @@ browser.commands.onCommand.addListener(async (command) => {
       extensionOptions.servers,
       newCaptureServer,
       newCaptureDownloads,
+      extensionOptions.minFileSizeInBytes,
       extensionOptions.excludedProtocols,
       extensionOptions.excludedSites,
       extensionOptions.excludedFileTypes,
