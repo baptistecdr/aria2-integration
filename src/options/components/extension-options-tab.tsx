@@ -1,9 +1,11 @@
 import { ChangeEvent, useEffect, useState } from "react";
-import { Alert, Button, Col, Form, FormText, Modal } from "react-bootstrap";
+import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
+import { filesize } from "filesize";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";
+import { isFirefox } from "@/models/aria2-extension";
 
 interface Props {
   extensionOptions: ExtensionOptions;
@@ -15,8 +17,17 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     return excludedOption.join(", ");
   }
 
+  function formatFileSize(fileSizeInBytes: number) {
+    const { value, exponent } = filesize(fileSizeInBytes, {
+      base: 2,
+      output: "object",
+    });
+    return [parseInt(value, 10), exponent];
+  }
+
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
+  const [minFileSize, setMinFileSize] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[0]);
   const [excludedProtocols, setExcludedProtocols] = useState(deserializeExcludedOption(extensionOptions.excludedProtocols));
   const [excludedSites, setExcludedSites] = useState(deserializeExcludedOption(extensionOptions.excludedSites));
   const [excludedFileTypes, setExcludedFileTypes] = useState(deserializeExcludedOption(extensionOptions.excludedFileTypes));
@@ -24,6 +35,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
   const [showModal, setShowModal] = useState(false);
+  const [minFileSizeExponent, setMinFileSizeExponent] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
 
   function serializeExcludedOption(excludedOptions: string) {
     return excludedOptions
@@ -35,6 +47,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   useEffect(() => {
     setCaptureDownloads(extensionOptions.captureDownloads);
     setCaptureServer(extensionOptions.captureServer);
+    setMinFileSize(formatFileSize(extensionOptions.minFileSizeInBytes)[0]);
+    setMinFileSizeExponent(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
     setExcludedProtocols(deserializeExcludedOption(extensionOptions.excludedProtocols));
     setExcludedSites(deserializeExcludedOption(extensionOptions.excludedSites));
     setExcludedFileTypes(deserializeExcludedOption(extensionOptions.excludedFileTypes));
@@ -43,6 +57,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   }, [
     extensionOptions.captureDownloads,
     extensionOptions.captureServer,
+    extensionOptions.minFileSizeInBytes,
     extensionOptions.excludedFileTypes,
     extensionOptions.excludedProtocols,
     extensionOptions.excludedSites,
@@ -65,12 +80,19 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     }
   };
 
+  const onChangeMinFileSize = (e: ChangeEvent<HTMLInputElement>) => {
+    const fileSizeStr = e.target.value || "0";
+    const fileSize = parseInt(fileSizeStr, 10);
+    setMinFileSize(fileSize);
+  };
+
   const onClickSaveExtensionOptions = async () => {
     try {
       const newExtensionOptions = await new ExtensionOptions(
         extensionOptions.servers,
         captureServer,
         captureDownloads,
+        minFileSize * 1024 ** minFileSizeExponent,
         serializeExcludedOption(excludedProtocols),
         serializeExcludedOption(excludedSites),
         serializeExcludedOption(excludedFileTypes),
@@ -120,6 +142,29 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           </Form.Select>
         </Form.Group>
       </Col>
+
+      {!isFirefox() && (
+        <Form.Group as={Col} controlId="form-minimum-file-size" className="mb-3">
+          <Form.Label>{i18n("extensionOptionsMinimumFileSize")}</Form.Label>
+          <InputGroup>
+            <Form.Control type="number" disabled={!captureDownloads} min={0} value={minFileSize} onChange={onChangeMinFileSize} required />
+            <Form.Select
+              id="form-minimum-file-size-exponent"
+              disabled={!captureDownloads}
+              value={minFileSizeExponent}
+              onChange={(e) => setMinFileSizeExponent(parseInt(e.target.value, 10))}
+            >
+              <option value="0">{i18n("B")}</option>
+              <option value="1">{i18n("KiB")}</option>
+              <option value="2">{i18n("MiB")}</option>
+              <option value="3">{i18n("GiB")}</option>
+            </Form.Select>
+          </InputGroup>
+          <FormText id="minimum-file-size-description" muted>
+            {i18n("extensionOptionsMinimumFileSizeDescription")}
+          </FormText>
+        </Form.Group>
+      )}
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-exclude-protocols">
