@@ -31,7 +31,7 @@
     "react-bootstrap": "2.10.2",
     "react-dom": "18.2.0",
     "react-loader-spinner": "6.1.6",
-    "reflect-metadata": "0.2.1",
+    "reflect-metadata": "0.2.2",
     "uuid": "9.0.1",
     "webextension-polyfill": "0.10.0"
   },
@@ -42,7 +42,7 @@
     "@types/node": "20.11.30",
     "@types/react": "18.2.73",
     "@types/react-bootstrap": "0.32.36",
-    "@types/react-dom": "18.2.22",
+    "@types/react-dom": "18.2.23",
     "@types/uuid": "9.0.8",
     "@types/webextension-polyfill": "0.10.7",
     "@typescript-eslint/eslint-plugin": "6.21.0",
