@@ -1,28 +1,5 @@
 {
   "extends": [
-    "config:recommended",
-    ":pinVersions",
-    ":timezone(Europe/Paris)"
-  ],
-  "schedule": ["before 5am"],
-  "packageRules": [
-    {
-      "matchPackagePatterns": [
-        "*"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch",
-      "automerge": true
-    }
-  ],
-  "lockFileMaintenance": {
-    "enabled": true,
-    "schedule": [
-      "before 5am on the first day of the month"
-    ]
-  }
+    "github>baptistecdr/renovate-config"
+  ]
 }
