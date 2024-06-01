@@ -9,22 +9,22 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        name: Clone repository
+      - name: Clone repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v4
-        name: Setup Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: npm
 
-      - name: Install Dependencies
+      - name: Install dependencies
         run: npm install
 
       - name: Lint
         run: npm run lint
 
-      - name: Build Firefox Extension
+      - name: Build Firefox extension
         run: npm run build:firefox
 
       - uses: actions/upload-artifact@v4
@@ -33,7 +33,7 @@ jobs:
           name: aria2-integration-firefox
           path: ./dist/
 
-      - name: Build Chromium Extension
+      - name: Build Chromium extension
         run: npm run build:chromium
 
       - uses: actions/upload-artifact@v4
@@ -41,3 +41,68 @@ jobs:
         with:
           name: aria2-integration-chromium
           path: ./dist/
+  release:
+    name: Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    env:
+      WEB_EXT_ARTIFACTS_DIR: ${{ vars.WEB_EXT_ARTIFACTS_DIR }}
+      WEB_EXT_FILENAME: ${{ vars.WEB_EXT_FILENAME }}
+      WEB_EXT_OVERWRITE_DEST: ${{ vars.WEB_EXT_OVERWRITE_DEST }}
+      WEB_EXT_SRC_FILENAME: ${{ vars.WEB_EXT_SRC_FILENAME }}
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Archive repository
+        run: |
+          mkdir $WEB_EXT_ARTIFACTS_DIR
+          git archive --format zip --output "$WEB_EXT_ARTIFACTS_DIR/$WEB_EXT_SRC_FILENAME" ${{ github.ref_name }}
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build Firefox extension
+        run: |
+          npm run build:firefox
+          npx web-ext build -s dist
+
+      - name: Release Firefox extension
+        uses: SettingDust/publish-firefox-addon-action@master
+        with:
+          addonId: aria2-extension
+          jwtIssuer: ${{ secrets.WEB_EXT_API_KEY }}
+          jwtSecret: ${{ secrets.WEB_EXT_API_SECRET }}
+          addonFile: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
+          sourceFile: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_SRC_FILENAME }}
+
+      - name: Build Chromium extension
+        run: |
+          npm run build:chromium
+          npx web-ext build -s dist
+
+      - name: Release Microsoft Edge extension
+        uses: inverse/edge-addon@v1.0.1
+        with:
+          product_id: ${{ secrets.EDGE_PRODUCT_ID }}
+          client_id: ${{ secrets.MS_API_CLIENT_ID }}
+          client_secret: ${{ secrets.MS_API_CLIENT_SECRET }}
+          access_token_url: ${{ secrets.MS_API_ACCESS_TOKEN_URL }}
+          zip: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
+          notes: ""
+
+      - name: Release Chrome extension
+        uses: browser-actions/release-chrome-extension@latest
+        with:
+          extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
+          extension-path: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
+          oauth-client-id: ${{ secrets.GOOGLE_API_CLIENT_ID }}
+          oauth-client-secret: ${{ secrets.GOOGLE_API_CLIENT_SECRET }}
+          oauth-refresh-token: ${{ secrets.GOOGLE_API_REFRESH_TOKEN }}
