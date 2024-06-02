@@ -89,7 +89,7 @@ jobs:
           npx web-ext build -s dist
 
       - name: Release Microsoft Edge extension
-        uses: inverse/edge-addon@v1.0.9
+        uses: inverse/edge-addon@master
         with:
           product_id: ${{ secrets.EDGE_PRODUCT_ID }}
           client_id: ${{ secrets.MS_API_CLIENT_ID }}
@@ -99,7 +99,7 @@ jobs:
           notes: ""
 
       - name: Release Chrome extension
-        uses: browser-actions/release-chrome-extension@latest
+        uses: browser-actions/release-chrome-extension@master
         with:
           extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
           extension-path: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
