@@ -14,7 +14,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
+          node-version-file: .nvmrc
           cache: npm
       - name: Set minor version
         id: minor_version

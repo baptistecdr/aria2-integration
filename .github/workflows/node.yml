@@ -2,7 +2,6 @@ name: Node
 
 on:
   - push
-  - pull_request
 
 jobs:
   build:
@@ -15,7 +14,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: npm
 
       - name: Install dependencies
@@ -76,7 +75,7 @@ jobs:
           npx web-ext build -s dist
 
       - name: Release Firefox extension
-        uses: baptistecdr/publish-firefox-addon-action@main
+        uses: baptistecdr/publish-firefox-addon-action@v1.1.0
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
           addonId: aria2-extension
@@ -100,10 +99,9 @@ jobs:
           client_secret: ${{ secrets.MS_API_CLIENT_SECRET }}
           access_token_url: ${{ secrets.MS_API_ACCESS_TOKEN_URL }}
           zip: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
-          notes: ""
 
       - name: Release Chrome extension
-        uses: baptistecdr/release-chrome-extension@latest
+        uses: baptistecdr/release-chrome-extension@v1.0.1
         if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
           extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
