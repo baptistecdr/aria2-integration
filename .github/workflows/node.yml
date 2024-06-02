@@ -70,12 +70,14 @@ jobs:
         run: npm install
 
       - name: Build Firefox extension
+        if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         run: |
           npm run build:firefox
           npx web-ext build -s dist
 
       - name: Release Firefox extension
         uses: baptistecdr/publish-firefox-addon-action@main
+        if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
           addonId: aria2-extension
           jwtIssuer: ${{ secrets.WEB_EXT_API_KEY }}
@@ -84,12 +86,14 @@ jobs:
           sourceFile: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_SRC_FILENAME }}
 
       - name: Build Chromium extension
+        if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' || vars.RELEASE_CHROME_EXTENSION == 'true' }}
         run: |
           npm run build:chromium
           npx web-ext build -s dist
 
       - name: Release Microsoft Edge extension
         uses: inverse/edge-addon@master
+        if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' }}
         with:
           product_id: ${{ secrets.EDGE_PRODUCT_ID }}
           client_id: ${{ secrets.MS_API_CLIENT_ID }}
@@ -100,6 +104,7 @@ jobs:
 
       - name: Release Chrome extension
         uses: browser-actions/release-chrome-extension@master
+        if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
           extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
           extension-path: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
