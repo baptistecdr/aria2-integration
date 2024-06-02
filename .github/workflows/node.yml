@@ -75,7 +75,7 @@ jobs:
           npx web-ext build -s dist
 
       - name: Release Firefox extension
-        uses: SettingDust/publish-firefox-addon-action@master
+        uses: baptistecdr/publish-firefox-addon-action@master
         with:
           addonId: aria2-extension
           jwtIssuer: ${{ secrets.WEB_EXT_API_KEY }}
