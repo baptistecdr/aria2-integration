@@ -103,7 +103,7 @@ jobs:
           notes: ""
 
       - name: Release Chrome extension
-        uses: browser-actions/release-chrome-extension@master
+        uses: baptistecdr/release-chrome-extension@latest
         if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
           extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
