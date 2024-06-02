@@ -89,7 +89,7 @@ jobs:
           npx web-ext build -s dist
 
       - name: Release Microsoft Edge extension
-        uses: inverse/edge-addon@v1.0.1
+        uses: inverse/edge-addon@v1.0.9
         with:
           product_id: ${{ secrets.EDGE_PRODUCT_ID }}
           client_id: ${{ secrets.MS_API_CLIENT_ID }}
