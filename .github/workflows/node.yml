@@ -3,10 +3,26 @@ name: Node
 on:
   - push
 
+env:
+  ARTIFACTS_DIR: ${{ vars.ARTIFACTS_DIR }}
+  ARTIFACT_FIREFOX_FILENAME: ${{ vars.ARTIFACT_FIREFOX_FILENAME }}
+  ARTIFACT_CHROMIUM_FILENAME: ${{ vars.ARTIFACT_CHROMIUM_FILENAME }}
+  ARTIFACT_ARCHIVE_FILENAME: ${{ vars.ARTIFACT_ARCHIVE_FILENAME }}
+  FIREFOX_ADDON_ID: ${{ vars.FIREFOX_ADDON_ID }}
+  CHROME_EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID }}
+  GH_API_VERSION: ${{ vars.GH_API_VERSION }}
+
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      attestations: write
+    outputs:
+      firefox-artifact-id: ${{ steps.upload-firefox-artifact.outputs.artifact-id }}
+      chromium-artifact-id: ${{ steps.upload-chromium-artifact.outputs.artifact-id }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -27,29 +43,43 @@ jobs:
         run: npm run build:firefox
 
       - uses: actions/upload-artifact@v4
+        id: upload-firefox-artifact
         name: Upload Firefox artifact
         with:
           name: aria2-integration-firefox
-          path: ./dist/
+          path: dist
 
       - name: Build Chromium extension
         run: npm run build:chromium
 
       - uses: actions/upload-artifact@v4
+        id: upload-chromium-artifact
         name: Upload Chromium artifact
         with:
           name: aria2-integration-chromium
-          path: ./dist/
+          path: dist
+
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$ARTIFACTS_DIR"
+          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
+            /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-firefox-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
+            /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-chromium-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
+
+      - name: Attest artifacts
+        uses: actions/attest-build-provenance@v1
+        with:
+          subject-path: |
+            ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
+            ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
   release:
     name: Release
     needs: build
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
-    env:
-      WEB_EXT_ARTIFACTS_DIR: ${{ vars.WEB_EXT_ARTIFACTS_DIR }}
-      WEB_EXT_FILENAME: ${{ vars.WEB_EXT_FILENAME }}
-      WEB_EXT_OVERWRITE_DEST: ${{ vars.WEB_EXT_OVERWRITE_DEST }}
-      WEB_EXT_SRC_FILENAME: ${{ vars.WEB_EXT_SRC_FILENAME }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v4
@@ -57,38 +87,31 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version-file: .nvmrc
           cache: npm
 
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$ARTIFACTS_DIR"
+          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
+            /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.firefox-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
+            /repos/${{ github.repository }}/artifacts/${{ needs.build.outputs.chromium-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
+
       - name: Archive repository
-        run: |
-          mkdir $WEB_EXT_ARTIFACTS_DIR
-          git archive --format zip --output "$WEB_EXT_ARTIFACTS_DIR/$WEB_EXT_SRC_FILENAME" ${{ github.ref_name }}
-
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build Firefox extension
-        if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
-        run: |
-          npm run build:firefox
-          npx web-ext build -s dist
+        run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
       - name: Release Firefox extension
         uses: baptistecdr/publish-firefox-addon-action@v1.1.0
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
-          addonId: aria2-extension
-          jwtIssuer: ${{ secrets.WEB_EXT_API_KEY }}
-          jwtSecret: ${{ secrets.WEB_EXT_API_SECRET }}
-          addonFile: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
-          sourceFile: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_SRC_FILENAME }}
-
-      - name: Build Chromium extension
-        if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' || vars.RELEASE_CHROME_EXTENSION == 'true' }}
-        run: |
-          npm run build:chromium
-          npx web-ext build -s dist
+          addonId: $FIREFOX_ADDON_ID
+          jwtIssuer: ${{ secrets.MOZILLA_ADDONS_API_KEY }}
+          jwtSecret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
+          addonFile: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
+          sourceFile: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_ARCHIVE_FILENAME }}
 
       - name: Release Microsoft Edge extension
         uses: inverse/edge-addon@master
@@ -98,14 +121,14 @@ jobs:
           client_id: ${{ secrets.MS_API_CLIENT_ID }}
           client_secret: ${{ secrets.MS_API_CLIENT_SECRET }}
           access_token_url: ${{ secrets.MS_API_ACCESS_TOKEN_URL }}
-          zip: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
+          zip: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
 
       - name: Release Chrome extension
         uses: baptistecdr/release-chrome-extension@v1.0.1
         if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
-          extension-id: "hnenidncmoeebipinjdfniagjnfjbapi"
-          extension-path: ${{ env.WEB_EXT_ARTIFACTS_DIR }}/${{ env.WEB_EXT_FILENAME }}
+          extension-id: ${{ env.CHROME_EXTENSION_ID }}
+          extension-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
           oauth-client-id: ${{ secrets.GOOGLE_API_CLIENT_ID }}
           oauth-client-secret: ${{ secrets.GOOGLE_API_CLIENT_SECRET }}
           oauth-refresh-token: ${{ secrets.GOOGLE_API_REFRESH_TOKEN }}
