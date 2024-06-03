@@ -14,12 +14,20 @@ interface Props {
 }
 
 function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, deleteServer }: Props) {
+  function deserializeRpcParameters(rpcParameters: Record<string, string>): string {
+    return Object.keys(rpcParameters)
+      .reduce((previousValue, currentValue) => {
+        return `${previousValue}${currentValue}: ${rpcParameters[currentValue]}\n`;
+      }, "")
+      .trim();
+  }
+
   const [serverName, setServerName] = useState(server.name);
   const [serverHost, setServerHost] = useState(server.host);
   const [serverPort, setServerPort] = useState(server.port);
   const [serverSecure, setServerSecure] = useState(server.secure);
   const [serverSecret, setServerSecret] = useState(server.secret);
-  const [serverRpcParameters, setServerRpcParameters] = useState(server.rpcParameters);
+  const [serverRpcParameters, setServerRpcParameters] = useState(deserializeRpcParameters(server.rpcParameters));
 
   const [validated, setValidated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -42,14 +50,6 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
     return newRpcParameters;
   }
 
-  function deserializeRpcParameters(rpcParameters: Record<string, string>): string {
-    return Object.keys(rpcParameters)
-      .reduce((previousValue, currentValue) => {
-        return `${previousValue}${currentValue}: ${rpcParameters[currentValue]}\n`;
-      }, "")
-      .trim();
-  }
-
   async function onSubmitSaveServer(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
     formEvent.stopPropagation();
@@ -57,7 +57,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
     if (form.checkValidity()) {
       try {
         const newExtensionOptions = await extensionOptions.addServer(
-          new Server(server.uuid, serverName, serverSecure, serverHost, serverPort, "/jsonrpc", serverSecret, serverRpcParameters),
+          new Server(server.uuid, serverName, serverSecure, serverHost, serverPort, "/jsonrpc", serverSecret, serializeRpcParameters(serverRpcParameters)),
         );
         setExtensionOptions(newExtensionOptions);
         setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
@@ -122,13 +122,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-rpc-parameters">
           <Form.Label>{i18n("serverOptionsRpcParameters")}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder="split: 5"
-            value={deserializeRpcParameters(serverRpcParameters)}
-            onChange={(e) => setServerRpcParameters(serializeRpcParameters(e.target.value))}
-          />
+          <Form.Control as="textarea" rows={3} placeholder="split: 5" value={serverRpcParameters} onChange={(e) => setServerRpcParameters(e.target.value)} />
           <Form.Text id="form-rpc-parameters-description">{i18n("serverOptionsRpcParametersDescription")}</Form.Text>
         </Form.Group>
       </Row>
