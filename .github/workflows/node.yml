@@ -10,7 +10,6 @@ env:
   ARTIFACT_ARCHIVE_FILENAME: ${{ vars.ARTIFACT_ARCHIVE_FILENAME }}
   FIREFOX_ADDON_ID: ${{ vars.FIREFOX_ADDON_ID }}
   CHROME_EXTENSION_ID: ${{ vars.CHROME_EXTENSION_ID }}
-  GH_API_VERSION: ${{ vars.GH_API_VERSION }}
 
 jobs:
   build:
@@ -95,11 +94,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir "$ARTIFACTS_DIR"
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
-            /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.firefox-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
-          gh api -H "Accept: application/vnd.github+json" -H "X-GitHub-Api-Version: $GH_API_VERSION" \
-            /repos/${{ github.repository }}/artifacts/${{ needs.build.outputs.chromium-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
+          gh api /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.firefox-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          gh api /repos/${{ github.repository }}/artifacts/${{ needs.build.outputs.chromium-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
+      - name: Verify artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh attestation verify "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME" --repo ${{ github.repository }}
+          gh attestation verify "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME" --repo ${{ github.repository }}
+        
       - name: Archive repository
         run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
