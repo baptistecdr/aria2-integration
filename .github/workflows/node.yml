@@ -108,14 +108,14 @@ jobs:
         run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
       - name: Release Firefox extension
-        uses: baptistecdr/publish-firefox-addon-action@v1.1.0
+        uses: baptistecdr/release-firefox-addon@v0.2.1
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
-          addonId: $FIREFOX_ADDON_ID
-          jwtIssuer: ${{ secrets.MOZILLA_ADDONS_API_KEY }}
-          jwtSecret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
-          addonFile: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
-          sourceFile: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_ARCHIVE_FILENAME }}
+          addon-id: $FIREFOX_ADDON_ID
+          auth-api-issuer: ${{ secrets.MOZILLA_ADDONS_API_KEY }}
+          auth-api-secret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
+          addon-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
+          source-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_ARCHIVE_FILENAME }}
 
       - name: Release Microsoft Edge extension
         uses: inverse/edge-addon@master
