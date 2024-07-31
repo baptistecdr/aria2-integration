@@ -14,7 +14,7 @@
     "start:chromium": "web-ext run --source-dir ./dist/ -t chromium"
   },
   "dependencies": {
-    "@stdlib/regexp-basename-posix": "0.2.1",
+    "@stdlib/regexp-basename-posix": "0.2.2",
     "@stdlib/regexp-basename-windows": "0.2.1",
     "@stdlib/regexp-dirname-posix": "0.2.1",
     "@stdlib/regexp-dirname-windows": "0.2.1",
