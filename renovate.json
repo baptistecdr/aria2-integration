@@ -1,5 +1,3 @@
 {
-  "extends": [
-    "github>baptistecdr/renovate-config"
-  ]
+  "extends": ["github>baptistecdr/renovate-config"]
 }

@@ -1,6 +1,6 @@
-import browser from "webextension-polyfill";
-import Server from "@/models/server";
+import type Server from "@/models/server";
 import Theme from "@/models/theme";
+import browser from "webextension-polyfill";
 
 export default class ExtensionOptions {
   constructor(
@@ -52,11 +52,11 @@ export default class ExtensionOptions {
       const extensionOptions = ExtensionOptions.deserialize(storage.options);
       if (!extensionOptions.servers) {
         // Legacy
-        Object.keys(storage).forEach((key) => {
+        for (const key of Object.keys(storage)) {
           if (key !== "options") {
             browser.storage.sync.remove(key);
           }
-        });
+        }
       }
       return extensionOptions;
     }

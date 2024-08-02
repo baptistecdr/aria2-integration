@@ -1,11 +1,11 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
-import { filesize } from "filesize";
 import i18n from "@/i18n";
+import { isFirefox } from "@/models/aria2-extension";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";
-import { isFirefox } from "@/models/aria2-extension";
+import { filesize } from "filesize";
+import { type ChangeEvent, useCallback, useEffect, useState } from "react";
+import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
 
 interface Props {
   extensionOptions: ExtensionOptions;
@@ -13,17 +13,17 @@ interface Props {
 }
 
 function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
-  function deserializeExcludedOption(excludedOption: string[]) {
+  const deserializeExcludedOption = useCallback((excludedOption: string[]) => {
     return excludedOption.join(", ");
-  }
+  }, []);
 
-  function formatFileSize(fileSizeInBytes: number) {
+  const formatFileSize = useCallback((fileSizeInBytes: number) => {
     const { value, exponent } = filesize(fileSizeInBytes, {
       base: 2,
       output: "object",
     });
-    return [parseInt(value, 10), exponent];
-  }
+    return [Number.parseInt(value, 10), exponent];
+  }, []);
 
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
@@ -58,11 +58,13 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     extensionOptions.captureDownloads,
     extensionOptions.captureServer,
     extensionOptions.minFileSizeInBytes,
-    extensionOptions.excludedFileTypes,
     extensionOptions.excludedProtocols,
     extensionOptions.excludedSites,
-    extensionOptions.theme,
+    extensionOptions.excludedFileTypes,
     extensionOptions.useCompleteFilePath,
+    extensionOptions.theme,
+    formatFileSize,
+    deserializeExcludedOption,
   ]);
 
   const onChangeCaptureServer = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -82,7 +84,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
 
   const onChangeMinFileSize = (e: ChangeEvent<HTMLInputElement>) => {
     const fileSizeStr = e.target.value || "0";
-    const fileSize = parseInt(fileSizeStr, 10);
+    const fileSize = Number.parseInt(fileSizeStr, 10);
     setMinFileSize(fileSize);
   };
 
@@ -152,7 +154,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               id="form-minimum-file-size-exponent"
               disabled={!captureDownloads}
               value={minFileSizeExponent}
-              onChange={(e) => setMinFileSizeExponent(parseInt(e.target.value, 10))}
+              onChange={(e) => setMinFileSizeExponent(Number.parseInt(e.target.value, 10))}
             >
               <option value="0">{i18n("B")}</option>
               <option value="1">{i18n("KiB")}</option>

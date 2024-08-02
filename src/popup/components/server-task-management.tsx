@@ -1,7 +1,7 @@
-import { Button } from "react-bootstrap";
 import { captureURL } from "@/models/aria2-extension";
-import Server from "@/models/server";
-import { Task } from "@/popup/models/task";
+import type Server from "@/models/server";
+import type { Task } from "@/popup/models/task";
+import { Button } from "react-bootstrap";
 
 interface Props {
   server: Server;

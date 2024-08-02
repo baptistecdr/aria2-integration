@@ -1,13 +1,13 @@
 import "bootstrap/dist/css/bootstrap.css";
-import React, { useEffect, useState } from "react";
-import { createRoot } from "react-dom/client";
-import { Container, Tab, Tabs } from "react-bootstrap";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
 import { applyTheme } from "@/models/theme";
 import ExtensionOptionsTab from "@/options/components/extension-options-tab";
 import ServerOptionsTab from "@/options/components/server-options-tab";
+import React, { useEffect, useState } from "react";
+import { Container, Tab, Tabs } from "react-bootstrap";
+import { createRoot } from "react-dom/client";
 import "bootstrap";
 
 const container = document.getElementById("root");

@@ -1,8 +1,8 @@
-import { ChangeEvent, Dispatch, SetStateAction } from "react";
-import { Col, Form, Row } from "react-bootstrap";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
+import type Server from "@/models/server";
+import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import { Col, Form, Row } from "react-bootstrap";
 
 interface Props {
   setExtensionOptions: Dispatch<SetStateAction<ExtensionOptions>>;

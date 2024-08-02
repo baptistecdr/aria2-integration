@@ -1,7 +1,7 @@
 import "reflect-metadata";
-import { Transform, Type } from "class-transformer";
+import type { File } from "@/popup/models/file";
 import { basename } from "@/stdlib";
-import { File } from "@/popup/models/file";
+import { Transform, Type } from "class-transformer";
 
 export enum TaskStatus {
   Active = "active",
@@ -16,15 +16,15 @@ export class Task {
   bittorrent?: Bittorrent;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   completedLength: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   connections: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   downloadSpeed: number;
 
   files: File[];
@@ -32,21 +32,21 @@ export class Task {
   gid: string;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   numSeeders: number;
 
   status: TaskStatus;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   totalLength: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   uploadLength: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   uploadSpeed: number;
 
   errorMessage: string;
@@ -84,7 +84,7 @@ export class Task {
   }
 
   getFilename(): string {
-    if (this.bittorrent && this.bittorrent.info) {
+    if (this.bittorrent?.info) {
       return this.bittorrent.info.name;
     }
     if (this.files[0].path !== "") {

@@ -1,5 +1,5 @@
-import browser, { Notifications } from "webextension-polyfill";
-import Server from "@/models/server";
+import type Server from "@/models/server";
+import browser, { type Notifications } from "webextension-polyfill";
 
 export function isFirefox() {
   // @ts-expect-error Only available on Chromium

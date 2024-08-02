@@ -1,12 +1,12 @@
+import ExtensionOptions from "@/models/extension-options";
+import type Server from "@/models/server";
+import GlobalStat from "@/popup/models/global-stat";
+import { basename, dirname } from "@/stdlib";
 // @ts-expect-error No type information for aria2
 import Aria2 from "aria2";
+import { plainToInstance } from "class-transformer";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { plainToInstance } from "class-transformer";
-import { basename, dirname } from "@/stdlib";
-import ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
-import GlobalStat from "@/popup/models/global-stat";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
@@ -17,9 +17,9 @@ let connections: Record<string, Aria2> = {};
 
 function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
-  Object.entries(extensionOptions.servers).forEach(([key, server]) => {
+  for (const [key, server] of Object.entries(extensionOptions.servers)) {
     conns[key] = new Aria2(server);
-  });
+  }
   return conns;
 }
 
@@ -35,25 +35,25 @@ async function createExtensionContextMenus(extensionOptions: ExtensionOptions) {
 }
 
 async function createServersContextMenus(extensionOptions: ExtensionOptions) {
-  Object.entries(extensionOptions.servers).forEach(([id, server]) => {
+  for (const [id, server] of Object.entries(extensionOptions.servers)) {
     browser.contextMenus.create({
       title: `${server.name}`,
       parentId: CONTEXT_MENUS_PARENT_ID,
       id,
       contexts: ["link", "selection"],
     });
-  });
+  }
 }
 
 async function createSingleServerContextMenus(extensionOptions: ExtensionOptions) {
   await browser.contextMenus.removeAll();
-  Object.entries(extensionOptions.servers).forEach(([id]) => {
+  for (const [id] of Object.entries(extensionOptions.servers)) {
     browser.contextMenus.create({
       title: browser.i18n.getMessage("contextMenusTitle"),
       id,
       contexts: ["link", "selection"],
     });
-  });
+  }
 }
 
 async function createContextMenus(extensionOptions: ExtensionOptions) {
@@ -200,7 +200,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
   const urls = getSelectedUrls(info);
   const referer = tab?.url ?? "";
   const cookies = await getCookies(referer, tab?.cookieStoreId);
-  urls.forEach((url) => {
+  for (const url of urls) {
     captureURL(connection, server, url, referer, cookies)
       .then(() => {
         showNotification(browser.i18n.getMessage("addUrlSuccess", server.name));
@@ -208,7 +208,7 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
       .catch(() => {
         showNotification(browser.i18n.getMessage("addUrlError", server.name));
       });
-  });
+  }
 });
 
 browser.commands.onCommand.addListener(async (command) => {

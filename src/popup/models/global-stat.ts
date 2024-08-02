@@ -3,27 +3,27 @@ import { Transform, Type } from "class-transformer";
 
 export default class GlobalStat {
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   downloadSpeed: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   uploadSpeed: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   numActive: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   numWaiting: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   numStopped: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   numStoppedTotal: number;
 
   constructor(downloadSpeed: number, uploadSpeed: number, numActive: number, numWaiting: number, numStopped: number, numStoppedTotal: number) {

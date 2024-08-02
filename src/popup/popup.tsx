@@ -1,14 +1,14 @@
-import { createRoot } from "react-dom/client";
 import React, { useEffect, useState } from "react";
+import { createRoot } from "react-dom/client";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap";
 import "./popup.css";
-import { Container, Tab, Tabs } from "react-bootstrap";
-import ExtensionOptions from "@/models/extension-options";
 import i18n from "@/i18n";
+import ExtensionOptions from "@/models/extension-options";
 import { applyTheme } from "@/models/theme";
 import ServerTab from "@/popup/components/server-tab";
+import { Container, Tab, Tabs } from "react-bootstrap";
 
 const container = document.getElementById("root");
 const root = createRoot(container!);

@@ -1,11 +1,11 @@
-import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
+import type Server from "@/models/server";
+import { type FileSizeOptionsBase, filesize } from "filesize";
 import { Duration } from "luxon";
+import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import browser from "webextension-polyfill";
-import { filesize, FileSizeOptionsBase } from "filesize";
-import Server from "@/models/server";
-import { Task } from "../models/task";
-import ServerTaskManagement from "./server-task-management";
 import i18n from "../../i18n";
+import type { Task } from "../models/task";
+import ServerTaskManagement from "./server-task-management";
 
 interface Props {
   server: Server;

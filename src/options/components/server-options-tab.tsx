@@ -1,8 +1,8 @@
-import { FormEvent, useState } from "react";
-import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import i18n from "@/i18n";
+import { type FormEvent, useState } from "react";
+import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import ExtensionOptions from "@/models/extension-options";
+import type ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
 import AlertProps from "@/options/models/alert-props";
 
@@ -35,18 +35,15 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
 
   function serializeRpcParameters(rpcParameters: string): Record<string, string> {
     const newRpcParameters: Record<string, string> = {};
-    rpcParameters
-      .trim()
-      .split("\n")
-      .forEach((parameter: string) => {
-        const [option, ...values] = parameter.split(/\s*:+\s*/);
-        // We need to join on ':' in case the parameter is, for example, proxy: http://localhost:8080
-        // option = proxy, values = ["http", "localhost", "8080"]
-        const value = values.join(":");
-        if (value !== "") {
-          newRpcParameters[option] = value;
-        }
-      });
+    for (const parameter of rpcParameters.trim().split("\n")) {
+      const [option, ...values] = parameter.split(/\s*:+\s*/);
+      // We need to join on ':' in case the parameter is, for example, proxy: http://localhost:8080
+      // option = proxy, values = ["http", "localhost", "8080"]
+      const value = values.join(":");
+      if (value !== "") {
+        newRpcParameters[option] = value;
+      }
+    }
     return newRpcParameters;
   }
 
@@ -95,7 +92,7 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-port">
           <Form.Label>{i18n("serverOptionsPort")}</Form.Label>
-          <Form.Control type="number" min={0} max={49151} value={serverPort} required onChange={(e) => setServerPort(parseInt(e.target.value, 10))} />
+          <Form.Control type="number" min={0} max={49151} value={serverPort} required onChange={(e) => setServerPort(Number.parseInt(e.target.value, 10))} />
         </Form.Group>
 
         <Form.Group as={Col} controlId="form-server-secure">

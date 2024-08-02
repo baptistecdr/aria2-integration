@@ -1,18 +1,18 @@
-// @ts-expect-error No type information for aria2
-import Aria2 from "aria2";
-import { plainToInstance } from "class-transformer";
-import { filesize, FileSizeOptionsBase } from "filesize";
-import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
-import { Button, Col, Container, Row } from "react-bootstrap";
-import { Oval } from "react-loader-spinner";
 import i18n from "@/i18n";
-import ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
+import type ExtensionOptions from "@/models/extension-options";
+import type Server from "@/models/server";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 import ServerTask from "@/popup/components/server-task";
 import GlobalStat from "@/popup/models/global-stat";
 import { Task } from "@/popup/models/task";
+// @ts-expect-error No type information for aria2
+import Aria2 from "aria2";
+import { plainToInstance } from "class-transformer";
+import { type FileSizeOptionsBase, filesize } from "filesize";
+import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
+import { Button, Col, Container, Row } from "react-bootstrap";
+import { Oval } from "react-loader-spinner";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
@@ -73,7 +73,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
     return () => {
       clearInterval(intervalId);
     };
-  }, [aria2, updateTasks]);
+  }, [updateTasks]);
 
   if (loading) {
     return (

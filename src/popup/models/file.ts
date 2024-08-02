@@ -3,11 +3,11 @@ import { Transform, Type } from "class-transformer";
 
 export class File {
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   completedLength: number;
 
   @Type(() => Number)
-  @Transform(({ value }) => parseInt(value, 10))
+  @Transform(({ value }) => Number.parseInt(value, 10))
   length: number;
 
   path: string;

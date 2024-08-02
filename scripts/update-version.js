@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import fs from "fs";
+import fs from "node:fs";
 
 if (process.argv.length <= 2) {
   console.error("You need to specify a new version.");
@@ -12,7 +12,7 @@ if (version.startsWith("v")) {
 }
 const filesToUpdate = ["package.json", "public/manifest.json", "package-lock.json"];
 
-filesToUpdate.forEach((file) => {
+for (const file of filesToUpdate) {
   fs.readFile(file, "utf8", (err, data) => {
     if (err) {
       console.error(`Unable to read the content of the file '${file}'. (${err})`);
@@ -31,4 +31,4 @@ filesToUpdate.forEach((file) => {
       });
     }
   });
-});
+}
