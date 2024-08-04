@@ -25,7 +25,7 @@
     "bootstrap-icons": "1.11.3",
     "class-transformer": "0.5.1",
     "filesize": "10.1.4",
-    "luxon": "3.4.4",
+    "luxon": "3.5.0",
     "path": "0.12.7",
     "react": "18.3.1",
     "react-bootstrap": "2.10.4",
