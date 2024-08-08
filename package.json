@@ -51,7 +51,7 @@
     "typescript": "5.5.4",
     "vite": "5.4.0",
     "vite-plugin-node-polyfills": "0.22.0",
-    "vite-tsconfig-paths": "5.0.0",
+    "vite-tsconfig-paths": "5.0.1",
     "web-ext": "8.2.0"
   }
 }
