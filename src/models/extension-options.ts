@@ -49,7 +49,7 @@ export default class ExtensionOptions {
   static async fromStorage(): Promise<ExtensionOptions> {
     const storage = await browser.storage.sync.get(null);
     if (storage.options) {
-      const extensionOptions = ExtensionOptions.deserialize(storage.options);
+      const extensionOptions = ExtensionOptions.deserialize(storage.options as string);
       if (!extensionOptions.servers) {
         // Legacy
         for (const key of Object.keys(storage)) {
