@@ -109,7 +109,7 @@ jobs:
         uses: baptistecdr/release-firefox-addon@v0.2.4
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
-          addon-id: $FIREFOX_ADDON_ID
+          addon-id: ${{ env.FIREFOX_ADDON_ID }}
           auth-api-issuer: ${{ secrets.MOZILLA_ADDONS_API_KEY }}
           auth-api-secret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
           addon-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
