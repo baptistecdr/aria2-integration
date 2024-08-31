@@ -7,15 +7,7 @@
   "version": "4.9.6",
   "version_name": "4.9.6-SNAPSHOT.0",
   "default_locale": "en",
-  "permissions": [
-    "contextMenus",
-    "cookies",
-    "downloads",
-    "notifications",
-    "storage",
-    "activeTab",
-    "alarms"
-  ],
+  "permissions": ["contextMenus", "cookies", "downloads", "notifications", "storage", "activeTab", "alarms"],
   "content_security_policy": {
     "extension_pages": "script-src 'self'; connect-src *"
   },
