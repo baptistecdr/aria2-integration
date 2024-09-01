@@ -22,6 +22,7 @@ jobs:
           PATCH_VERSION=$(npm version --no-git-tag-version --no-commit-hooks patch)
           node scripts/update-version.js $PATCH_VERSION
           npm install
+          npm run lint:fix
           echo "PATCH_VERSION=$PATCH_VERSION" >> $GITHUB_OUTPUT
       - name: Commit, push and create tag
         uses: EndBug/add-and-commit@v9
@@ -38,6 +39,7 @@ jobs:
           DEV_VERSION=$(npm version --no-git-tag-version --no-commit-hooks --preid SNAPSHOT prerelease)
           node scripts/update-version.js $DEV_VERSION
           npm install
+          npm run lint:fix
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
       - name: Commit and push
         uses: EndBug/add-and-commit@v9
