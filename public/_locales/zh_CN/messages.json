@@ -57,10 +57,10 @@
     "message": "--- 无选中的服务器 ---"
   },
   "extensionOptionsMinimumFileSize": {
-    "message": "Minimum file size"
+    "message": "最小文件大小"
   },
   "extensionOptionsMinimumFileSizeDescription": {
-    "message": "Set to 0 to capture files of any size."
+    "message": "设置为 0 以下载任意大小的文件."
   },
   "B": {
     "message": "B"
