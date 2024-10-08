@@ -106,9 +106,9 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
           <Form.Label>{i18n("serverOptionsSecret")}</Form.Label>
           <InputGroup>
             <Form.Control type={showPassword ? "text" : "password"} value={serverSecret} onChange={(e) => setServerSecret(e.target.value)} />
-            <InputGroup.Text role="button" tabIndex={0} onClick={() => setShowPassword(!showPassword)}>
+            <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
               <i className={showPassword ? "bi-eye-slash" : "bi-eye"} />
-            </InputGroup.Text>
+            </Button>
           </InputGroup>
           <Form.Text id="form-server-secret-description" muted>
             {i18n("serverOptionsSecretDescription")}
