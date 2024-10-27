@@ -32,32 +32,32 @@
     }
   },
   "icons": {
-    "16": "icons/icon16.png",
-    "19": "icons/icon19.png",
-    "24": "icons/icon24.png",
-    "32": "icons/icon32.png",
-    "38": "icons/icon38.png",
-    "48": "icons/icon48.png",
-    "80": "icons/icon80.png",
-    "96": "icons/icon96.png",
-    "128": "icons/icon128.png",
-    "256": "icons/icon256.png",
-    "512": "icons/icon512.png"
+    "16": "icons/icon-browser-16.png",
+    "19": "icons/icon-browser-19.png",
+    "24": "icons/icon-browser-24.png",
+    "32": "icons/icon-browser-32.png",
+    "38": "icons/icon-browser-38.png",
+    "48": "icons/icon-browser-48.png",
+    "80": "icons/icon-browser-80.png",
+    "96": "icons/icon-browser-96.png",
+    "128": "icons/icon-browser-128.png",
+    "256": "icons/icon-browser-256.png",
+    "512": "icons/icon-browser-512.png"
   },
   "action": {
     "default_popup": "popup/popup.html",
     "default_title": "__MSG_extName__",
     "default_icon": {
-      "16": "icons/icon16.png",
-      "19": "icons/icon19.png",
-      "24": "icons/icon24.png",
-      "32": "icons/icon32.png",
-      "38": "icons/icon38.png",
-      "48": "icons/icon48.png",
-      "80": "icons/icon80.png",
-      "128": "icons/icon128.png",
-      "256": "icons/icon256.png",
-      "512": "icons/icon512.png"
+      "16": "icons/icon-browser-16.png",
+      "19": "icons/icon-browser-19.png",
+      "24": "icons/icon-browser-24.png",
+      "32": "icons/icon-browser-32.png",
+      "38": "icons/icon-browser-38.png",
+      "48": "icons/icon-browser-48.png",
+      "80": "icons/icon-browser-80.png",
+      "128": "icons/icon-browser-128.png",
+      "256": "icons/icon-browser-256.png",
+      "512": "icons/icon-browser-512.png"
     }
   }
 }
