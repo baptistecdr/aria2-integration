@@ -56,7 +56,7 @@
   },
   "overrides": {
     "vite-plugin-node-polyfills": {
-      "vite": "^6.0.0"
+      "vite": "6.0.1"
     }
   }
 }
