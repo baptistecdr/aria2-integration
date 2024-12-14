@@ -117,14 +117,13 @@ jobs:
           release-note: 'Release ${{ github.ref_name }}'
 
       - name: Release Microsoft Edge extension
-        uses: inverse/edge-addon@master
+        uses: baptistecdr/release-edge-extension@v1.0.0
         if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' }}
         with:
-          product_id: ${{ secrets.EDGE_PRODUCT_ID }}
-          client_id: ${{ secrets.MS_API_CLIENT_ID }}
-          client_secret: ${{ secrets.MS_API_CLIENT_SECRET }}
-          access_token_url: ${{ secrets.MS_API_ACCESS_TOKEN_URL }}
-          zip: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
+          api-key: ${{ secrets.MS_API_KEY }}
+          client-id: ${{ secrets.MS_API_CLIENT_ID }}
+          product-id: ${{ secrets.EDGE_PRODUCT_ID }}
+          product-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
 
       - name: Release Chrome extension
         uses: baptistecdr/release-chrome-extension@v1.0.5
