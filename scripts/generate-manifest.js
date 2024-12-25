@@ -25,4 +25,4 @@ if (process.env.BROWSER === "firefox") {
   manifest.host_permissions = ["*://*/*"];
 }
 
-fs.writeFileSync("./dist/manifest.json", JSON.stringify(manifest));
+fs.writeFileSync("./dist/manifest.json", JSON.stringify(manifest, null, 2));

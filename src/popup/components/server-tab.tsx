@@ -7,12 +7,11 @@ import ServerTask from "@/popup/components/server-task";
 import GlobalStat from "@/popup/models/global-stat";
 import { Task } from "@/popup/models/task";
 // @ts-expect-error No type information for aria2
-import Aria2 from "aria2";
+import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
 import { type FileSizeOptionsBase, filesize } from "filesize";
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { Oval } from "react-loader-spinner";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
@@ -80,18 +79,9 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
       <Container fluid>
         <Row>
           <Col xs={12} sm={12} className="d-flex justify-content-center">
-            <Oval
-              height={35}
-              width={35}
-              color="#0D6EFD"
-              wrapperStyle={{}}
-              wrapperClass=""
-              visible
-              ariaLabel="oval-loading"
-              secondaryColor="#0D6EFD"
-              strokeWidth={3}
-              strokeWidthSecondary={3}
-            />
+            <div className="spinner-border text-primary">
+              <span className="visually-hidden">Loading...</span>
+            </div>
           </Col>
         </Row>
       </Container>
