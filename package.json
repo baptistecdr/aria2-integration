@@ -49,14 +49,14 @@
     "@vitejs/plugin-react": "4.3.4",
     "nodemon": "3.1.9",
     "typescript": "5.7.2",
-    "vite": "6.0.5",
+    "vite": "6.0.6",
     "vite-plugin-node-polyfills": "0.22.0",
     "vite-tsconfig-paths": "5.1.4",
     "web-ext": "8.3.0"
   },
   "overrides": {
     "vite-plugin-node-polyfills": {
-      "vite": "6.0.5"
+      "vite": "6.0.6"
     },
     "react-loader-spinner": {
       "react": "19.0.0",
