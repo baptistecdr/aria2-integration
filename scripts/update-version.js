@@ -10,7 +10,7 @@ let version = process.argv[2].trim();
 if (version.startsWith("v")) {
   version = version.substring(1);
 }
-const filesToUpdate = ["package.json", "public/manifest.json", "package-lock.json"];
+const filesToUpdate = ["public/manifest.json"];
 
 for (const file of filesToUpdate) {
   fs.readFile(file, "utf8", (err, data) => {
