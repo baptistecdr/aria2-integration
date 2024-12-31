@@ -6,11 +6,11 @@
   "scripts": {
     "lint": "biome check",
     "lint:fix": "biome check --fix --unsafe",
-    "build:firefox": "tsc && NODE_ENV=production vite build --emptyOutDir && BROWSER=firefox node scripts/generate-manifest.js",
+    "build:firefox": "tsc && vite build --emptyOutDir && BROWSER=firefox node scripts/generate-manifest.js",
     "build:firefox:debug": "tsc && NODE_ENV=development vite build --mode development --emptyOutDir && BROWSER=firefox node scripts/generate-manifest.js",
     "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox:debug",
     "start:firefox": "web-ext run --source-dir ./dist/ --devtools",
-    "build:chromium": "tsc && NODE_ENV=production vite build --emptyOutDir && BROWSER=chromium node scripts/generate-manifest.js",
+    "build:chromium": "tsc && vite build --emptyOutDir && BROWSER=chromium node scripts/generate-manifest.js",
     "build:chromium:debug": "tsc && NODE_ENV=development vite build --mode development --emptyOutDir && BROWSER=chromium node scripts/generate-manifest.js",
     "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium:debug",
     "start:chromium": "web-ext run --source-dir ./dist/ -t chromium --devtools"
