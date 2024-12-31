@@ -6,12 +6,17 @@ import tsconfigPaths from "vite-tsconfig-paths";
 
 const r = (...args: string[]) => resolve(__dirname, ...args);
 
+const minify = process.env.NODE_ENV === "production" ? "esbuild" : false;
+const cssMinify = process.env.NODE_ENV === "production" ? "esbuild" : false;
+
 // https://vitejs.dev/config/
 export default defineConfig({
   root: r("src"),
   publicDir: r("public"),
   build: {
     target: "ES2022",
+    cssMinify,
+    minify,
     rollupOptions: {
       input: {
         background: r("src/background/background.ts"),
