@@ -41,7 +41,7 @@
     "@types/bootstrap": "5.2.10",
     "@types/jest": "29.5.14",
     "@types/luxon": "3.4.2",
-    "@types/node": "22.10.2",
+    "@types/node": "22.10.3",
     "@types/react": "19.0.2",
     "@types/react-bootstrap": "0.32.37",
     "@types/react-dom": "19.0.2",
