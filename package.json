@@ -22,7 +22,7 @@
     "@stdlib/regexp-dirname-posix": "0.2.1",
     "@stdlib/regexp-dirname-windows": "0.2.1",
     "@testing-library/react": "16.2.0",
-    "@testing-library/user-event": "14.6.0",
+    "@testing-library/user-event": "14.6.1",
     "bootstrap": "5.3.3",
     "bootstrap-icons": "1.11.3",
     "class-transformer": "0.5.1",
