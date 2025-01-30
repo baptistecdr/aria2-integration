@@ -30,7 +30,7 @@
     "luxon": "3.5.0",
     "path": "0.12.7",
     "react": "19.0.0",
-    "react-bootstrap": "2.10.8",
+    "react-bootstrap": "2.10.9",
     "react-dom": "19.0.0",
     "reflect-metadata": "0.2.2",
     "uuid": "11.0.5",
