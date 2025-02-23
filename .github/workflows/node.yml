@@ -106,7 +106,7 @@ jobs:
         run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
       - name: Release Firefox extension
-        uses: baptistecdr/release-firefox-addon@v1.0.3
+        uses: baptistecdr/release-firefox-addon@v1.0.4
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
           addon-id: ${{ env.FIREFOX_ADDON_ID }}
@@ -117,7 +117,7 @@ jobs:
           release-note: 'Release ${{ github.ref_name }}'
 
       - name: Release Microsoft Edge extension
-        uses: baptistecdr/release-edge-extension@v1.0.1
+        uses: baptistecdr/release-edge-extension@v1.0.2
         if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' }}
         with:
           api-key: ${{ secrets.MS_API_KEY }}
@@ -126,7 +126,7 @@ jobs:
           product-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
 
       - name: Release Chrome extension
-        uses: baptistecdr/release-chrome-extension@v1.0.6
+        uses: baptistecdr/release-chrome-extension@v1.0.7
         if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
           extension-id: ${{ env.CHROME_EXTENSION_ID }}
