@@ -46,7 +46,7 @@
     "@types/react-bootstrap": "0.32.37",
     "@types/react-dom": "19.0.4",
     "@types/uuid": "10.0.0",
-    "@types/webextension-polyfill": "0.12.1",
+    "@types/webextension-polyfill": "0.12.2",
     "@vitejs/plugin-react": "4.3.4",
     "nodemon": "3.1.9",
     "typescript": "5.7.3",
