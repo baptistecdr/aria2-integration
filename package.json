@@ -50,7 +50,7 @@
     "@vitejs/plugin-react": "4.3.4",
     "nodemon": "3.1.9",
     "typescript": "5.8.2",
-    "vite": "6.2.3",
+    "vite": "6.2.4",
     "vite-plugin-node-polyfills": "0.23.0",
     "vite-tsconfig-paths": "5.1.4",
     "web-ext": "8.5.0"
