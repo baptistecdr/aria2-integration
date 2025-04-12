@@ -21,6 +21,9 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
       extensionOptions.excludedSites,
       extensionOptions.excludedFileTypes,
       extensionOptions.useCompleteFilePath,
+      extensionOptions.notifyUrlIsAdded,
+      extensionOptions.notifyFileIsAdded,
+      extensionOptions.notifyErrorOccurs,
       extensionOptions.theme,
     );
     await newExtensionsOptions.toStorage();
@@ -37,6 +40,9 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
       extensionOptions.excludedSites,
       extensionOptions.excludedFileTypes,
       e.target.checked,
+      extensionOptions.notifyUrlIsAdded,
+      extensionOptions.notifyFileIsAdded,
+      extensionOptions.notifyErrorOccurs,
       extensionOptions.theme,
     );
     await newExtensionsOptions.toStorage();

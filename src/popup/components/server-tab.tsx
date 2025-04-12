@@ -130,7 +130,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
           <hr className="mt-2 mb-2" />
         </Col>
       </Row>
-      {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
+      {showAddTask && <ServerAddTasks aria2={aria2} server={server} extensionOptions={extensionOptions} />}
       {showQuickOptions && <ServerQuickOptions setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />}
       {!showAddTask && !showQuickOptions && tasks.length === 0 && (
         <Row>

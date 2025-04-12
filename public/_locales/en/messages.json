@@ -101,8 +101,11 @@
   "extensionOptionsExcludeFileTypes": {
     "message": "Exclude File Types"
   },
-  "extensionOptionsExcludeFileTypesDescription": {
+  "extensionOptionsExcludeFileTypesInformation": {
     "message": "rar, zip"
+  },
+  "extensionOptionsExcludeFileTypesDescription": {
+    "message": "Leave it blank to capture files of any type."
   },
   "extensionOptionsUseCompleteFilePath": {
     "message": "Use complete file path when using \"Save Link As...\""
@@ -116,8 +119,17 @@
   "extensionOptionsUseCompleteFilePathHelpButton": {
     "message": "Close"
   },
-  "extensionOptionsExcludeFileTypesInformation": {
-    "message": "Leave it blank to capture files of any type."
+  "extensionOptionsNotify": {
+    "message": "Notifications"
+  },
+  "extensionOptionsNotifyUrlIsAdded": {
+    "message": "Notify when an URL is added"
+  },
+  "extensionOptionsNotifyFileIsAdded": {
+    "message": "Notify when a file is added"
+  },
+  "extensionOptionsNotifyErrorOccurs": {
+    "message": "Notify when an error occurs"
   },
   "extensionOptionsTheme": {
     "message": "Theme"
