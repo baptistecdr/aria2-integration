@@ -1,17 +1,19 @@
+import i18n from "@/i18n";
 import { captureTorrentFromFile, captureURL, showNotification } from "@/models/aria2-extension";
+import type ExtensionOptions from "@/models/extension-options.ts";
+import type Server from "@/models/server.ts";
 import { type FormEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import i18n from "../../i18n";
-import type Server from "../../models/server";
 
 interface Props {
   aria2: any;
   server: Server;
+  extensionOptions: ExtensionOptions;
 }
 
 const DEFAULT_FORM_FILES = { files: null } as HTMLInputElement;
 
-function ServerAddTasks({ aria2, server }: Props) {
+function ServerAddTasks({ aria2, server, extensionOptions }: Props) {
   const [formUrls, setFormUrls] = useState([] as string[]);
   const [formFiles, setFormFiles] = useState(DEFAULT_FORM_FILES);
 
@@ -20,10 +22,14 @@ function ServerAddTasks({ aria2, server }: Props) {
     for (const url of formUrls) {
       captureURL(aria2, server, url, "", "")
         .then(() => {
-          showNotification(i18n("addUrlSuccess", server.name));
+          if (extensionOptions.notifyUrlIsAdded) {
+            showNotification(i18n("addUrlSuccess", server.name));
+          }
         })
         .catch(() => {
-          showNotification(i18n("addUrlError", server.name));
+          if (extensionOptions.notifyErrorOccurs) {
+            showNotification(i18n("addUrlError", server.name));
+          }
         });
     }
     formEvent.currentTarget.reset();
@@ -36,10 +42,14 @@ function ServerAddTasks({ aria2, server }: Props) {
       for (let i = 0; i < formFiles.files.length; i += 1) {
         captureTorrentFromFile(aria2, server, formFiles.files[i])
           .then(() => {
-            showNotification(i18n("addFileSuccess", server.name));
+            if (extensionOptions.notifyFileIsAdded) {
+              showNotification(i18n("addFileSuccess", server.name));
+            }
           })
           .catch(() => {
-            showNotification(i18n("addFileError", server.name));
+            if (extensionOptions.notifyErrorOccurs) {
+              showNotification(i18n("addFileError", server.name));
+            }
           });
       }
       formEvent.currentTarget.reset();

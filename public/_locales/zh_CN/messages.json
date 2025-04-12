@@ -102,6 +102,9 @@
     "message": "排除文件类型"
   },
   "extensionOptionsExcludeFileTypesDescription": {
+    "message": "留空则拦截任何类型的文件下载."
+  },
+  "extensionOptionsExcludeFileTypesInformation": {
     "message": "rar, zip"
   },
   "extensionOptionsUseCompleteFilePath": {
@@ -116,8 +119,17 @@
   "extensionOptionsUseCompleteFilePathHelpButton": {
     "message": "关闭"
   },
-  "extensionOptionsExcludeFileTypesInformation": {
-    "message": "留空则拦截任何类型的文件下载."
+  "extensionOptionsNotify": {
+    "message": "Notifications"
+  },
+  "extensionOptionsNotifyUrlIsAdded": {
+    "message": "Notify when an URL is added"
+  },
+  "extensionOptionsNotifyFileIsAdded": {
+    "message": "Notify when a file is added"
+  },
+  "extensionOptionsNotifyErrorOccurs": {
+    "message": "Notify when an error occurs"
   },
   "extensionOptionsTheme": {
     "message": "主题"

@@ -184,9 +184,13 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
       }
       try {
         await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath);
-        await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));
+        if (extensionOptions.notifyFileIsAdded) {
+          await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));
+        }
       } catch {
-        await showNotification(browser.i18n.getMessage("addFileError", server.name));
+        if (extensionOptions.notifyErrorOccurs) {
+          await showNotification(browser.i18n.getMessage("addFileError", server.name));
+        }
       }
     }
   }
@@ -203,10 +207,14 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
   for (const url of urls) {
     captureURL(connection, server, url, referer, cookies)
       .then(() => {
-        showNotification(browser.i18n.getMessage("addUrlSuccess", server.name));
+        if (extensionOptions.notifyUrlIsAdded) {
+          showNotification(browser.i18n.getMessage("addUrlSuccess", server.name));
+        }
       })
       .catch(() => {
-        showNotification(browser.i18n.getMessage("addUrlError", server.name));
+        if (extensionOptions.notifyErrorOccurs) {
+          showNotification(browser.i18n.getMessage("addUrlError", server.name));
+        }
       });
   }
 });

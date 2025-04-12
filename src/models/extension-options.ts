@@ -12,6 +12,9 @@ export default class ExtensionOptions {
     public readonly excludedSites: string[] = [],
     public readonly excludedFileTypes: string[] = [],
     public readonly useCompleteFilePath: boolean = false,
+    public readonly notifyUrlIsAdded: boolean = true,
+    public readonly notifyFileIsAdded: boolean = true,
+    public readonly notifyErrorOccurs: boolean = true,
     public readonly theme: Theme = Theme.Auto,
   ) {}
 

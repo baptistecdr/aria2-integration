@@ -119,6 +119,18 @@
   "extensionOptionsUseCompleteFilePathHelpButton": {
     "message": "Fermer"
   },
+  "extensionOptionsNotify": {
+    "message": "Notifications"
+  },
+  "extensionOptionsNotifyUrlIsAdded": {
+    "message": "Notifier lorsqu'une URL est ajoutée"
+  },
+  "extensionOptionsNotifyFileIsAdded": {
+    "message": "Notifier lorsqu'un fichier est ajouté"
+  },
+  "extensionOptionsNotifyErrorOccurs": {
+    "message": "Notifier lorsqu'une erreur se produit"
+  },
   "extensionOptionsTheme": {
     "message": "Thème"
   },

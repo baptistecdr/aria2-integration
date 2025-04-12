@@ -32,6 +32,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [excludedSites, setExcludedSites] = useState(deserializeExcludedOption(extensionOptions.excludedSites));
   const [excludedFileTypes, setExcludedFileTypes] = useState(deserializeExcludedOption(extensionOptions.excludedFileTypes));
   const [useCompleteFilePath, setUseCompleteFilePath] = useState(extensionOptions.useCompleteFilePath);
+  const [notifyUrlIsAdded, setNotifyUrlIsAdded] = useState(extensionOptions.notifyUrlIsAdded);
+  const [notifyFileIsAdded, setNotifyFileIsAdded] = useState(extensionOptions.notifyFileIsAdded);
+  const [notifyErrorOccurs, setNotifyErrorOccurs] = useState(extensionOptions.notifyErrorOccurs);
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
   const [showModal, setShowModal] = useState(false);
@@ -53,6 +56,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     setExcludedSites(deserializeExcludedOption(extensionOptions.excludedSites));
     setExcludedFileTypes(deserializeExcludedOption(extensionOptions.excludedFileTypes));
     setUseCompleteFilePath(extensionOptions.useCompleteFilePath);
+    setNotifyUrlIsAdded(extensionOptions.notifyUrlIsAdded);
+    setNotifyFileIsAdded(extensionOptions.notifyFileIsAdded);
+    setNotifyErrorOccurs(extensionOptions.notifyErrorOccurs);
     setTheme(extensionOptions.theme);
   }, [
     extensionOptions.captureDownloads,
@@ -62,6 +68,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     extensionOptions.excludedSites,
     extensionOptions.excludedFileTypes,
     extensionOptions.useCompleteFilePath,
+    extensionOptions.notifyUrlIsAdded,
+    extensionOptions.notifyFileIsAdded,
+    extensionOptions.notifyErrorOccurs,
     extensionOptions.theme,
     formatFileSize,
     deserializeExcludedOption,
@@ -99,6 +108,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         serializeExcludedOption(excludedSites),
         serializeExcludedOption(excludedFileTypes),
         useCompleteFilePath,
+        notifyUrlIsAdded,
+        notifyFileIsAdded,
+        notifyErrorOccurs,
         theme,
       ).toStorage();
       setExtensionOptions(newExtensionOptions);
@@ -250,6 +262,31 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
+        <Form.Check
+          id="notify-url-added"
+          checked={notifyUrlIsAdded}
+          onChange={(e) => setNotifyUrlIsAdded(e.target.checked)}
+          label={i18n("extensionOptionsNotifyUrlIsAdded")}
+          aria-label={i18n("extensionOptionsNotifyUrlIsAdded")}
+        />
+        <Form.Check
+          id="notify-file-added"
+          checked={notifyFileIsAdded}
+          onChange={(e) => setNotifyFileIsAdded(e.target.checked)}
+          label={i18n("extensionOptionsNotifyFileIsAdded")}
+          aria-label={i18n("extensionOptionsNotifyFileIsAdded")}
+        />
+        <Form.Check
+          id="notify-error-occurs"
+          checked={notifyErrorOccurs}
+          onChange={(e) => setNotifyErrorOccurs(e.target.checked)}
+          label={i18n("extensionOptionsNotifyErrorOccurs")}
+          aria-label={i18n("extensionOptionsNotifyErrorOccurs")}
+        />
+      </Col>
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-theme">
