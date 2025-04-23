@@ -48,7 +48,7 @@
     "@types/uuid": "10.0.0",
     "@types/webextension-polyfill": "0.12.3",
     "@vitejs/plugin-react": "4.4.1",
-    "nodemon": "3.1.9",
+    "nodemon": "3.1.10",
     "typescript": "5.8.3",
     "vite": "6.3.2",
     "vite-plugin-node-polyfills": "0.23.0",
