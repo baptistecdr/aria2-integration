@@ -24,7 +24,7 @@
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
     "bootstrap": "5.3.5",
-    "bootstrap-icons": "1.11.3",
+    "bootstrap-icons": "1.11.4",
     "class-transformer": "0.5.1",
     "filesize": "10.1.6",
     "luxon": "3.6.1",
