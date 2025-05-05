@@ -23,7 +23,7 @@
     "@stdlib/regexp-dirname-windows": "0.2.1",
     "@testing-library/react": "16.3.0",
     "@testing-library/user-event": "14.6.1",
-    "bootstrap": "5.3.5",
+    "bootstrap": "5.3.6",
     "bootstrap-icons": "1.12.1",
     "class-transformer": "0.5.1",
     "filesize": "10.1.6",
