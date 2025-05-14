@@ -44,7 +44,7 @@
     "@types/node": "22.15.17",
     "@types/react": "19.1.4",
     "@types/react-bootstrap": "0.32.37",
-    "@types/react-dom": "19.1.4",
+    "@types/react-dom": "19.1.5",
     "@types/uuid": "10.0.0",
     "@types/webextension-polyfill": "0.12.3",
     "@vitejs/plugin-react": "4.4.1",
