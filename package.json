@@ -43,7 +43,7 @@
     "@types/luxon": "3.6.2",
     "@types/node": "22.15.18",
     "@types/react": "19.1.4",
-    "@types/react-bootstrap": "0.32.37",
+    "@types/react-bootstrap": "1.1.0",
     "@types/react-dom": "19.1.5",
     "@types/uuid": "10.0.0",
     "@types/webextension-polyfill": "0.12.3",
