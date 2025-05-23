@@ -46,7 +46,7 @@
     "@types/react-dom": "19.1.5",
     "@types/uuid": "10.0.0",
     "@types/webextension-polyfill": "0.12.3",
-    "@vitejs/plugin-react": "4.4.1",
+    "@vitejs/plugin-react": "4.5.0",
     "nodemon": "3.1.10",
     "typescript": "5.8.3",
     "vite": "6.3.5",
