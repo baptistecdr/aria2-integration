@@ -39,7 +39,7 @@
   "devDependencies": {
     "@biomejs/biome": "1.9.4",
     "@types/bootstrap": "5.2.10",
-    "@types/jest": "29.5.14",
+    "@types/jest": "30.0.0",
     "@types/luxon": "3.6.2",
     "@types/node": "22.15.31",
     "@types/react": "19.1.8",
