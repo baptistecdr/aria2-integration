@@ -1,12 +1,12 @@
-import ExtensionOptions from "@/models/extension-options";
-import type Server from "@/models/server";
-import GlobalStat from "@/popup/models/global-stat";
-import { basename, dirname } from "@/stdlib";
 // @ts-expect-error No type information for aria2
 import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
+import ExtensionOptions from "@/models/extension-options";
+import type Server from "@/models/server";
+import GlobalStat from "@/popup/models/global-stat";
+import { basename, dirname } from "@/stdlib";
 import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 
 const CONTEXT_MENUS_PARENT_ID = "aria2-integration";

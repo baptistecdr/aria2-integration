@@ -1,9 +1,9 @@
+import { type FormEvent, useState } from "react";
+import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import i18n from "@/i18n";
 import { captureTorrentFromFile, captureURL, showNotification } from "@/models/aria2-extension";
 import type ExtensionOptions from "@/models/extension-options.ts";
 import type Server from "@/models/server.ts";
-import { type FormEvent, useState } from "react";
-import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 
 interface Props {
   aria2: any;
