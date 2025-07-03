@@ -1,16 +1,17 @@
 import "bootstrap/dist/css/bootstrap.css";
+import React, { useEffect, useId, useState } from "react";
+import { Container, Tab, Tabs } from "react-bootstrap";
+import { createRoot } from "react-dom/client";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
 import { applyTheme } from "@/models/theme";
 import ExtensionOptionsTab from "@/options/components/extension-options-tab";
 import ServerOptionsTab from "@/options/components/server-options-tab";
-import React, { useEffect, useState } from "react";
-import { Container, Tab, Tabs } from "react-bootstrap";
-import { createRoot } from "react-dom/client";
 import "bootstrap";
 
 const container = document.getElementById("root");
+// biome-ignore lint/style/noNonNullAssertion: We are sure the container exists
 const root = createRoot(container!);
 
 const ADD_SERVER_TAB = "add-server";
@@ -61,7 +62,7 @@ function Options() {
 
   return (
     <Tabs
-      id="tabs-servers-options"
+      id={useId()}
       defaultActiveKey={defaultActiveTab}
       activeKey={activeTab}
       onSelect={async (selectedTab) => {

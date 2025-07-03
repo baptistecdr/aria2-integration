@@ -1,11 +1,11 @@
+import { filesize } from "filesize";
+import { type ChangeEvent, useCallback, useEffect, useId, useState } from "react";
+import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
 import i18n from "@/i18n";
 import { isFirefox } from "@/models/aria2-extension";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";
-import { filesize } from "filesize";
-import { type ChangeEvent, useCallback, useEffect, useState } from "react";
-import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
 
 interface Props {
   extensionOptions: ExtensionOptions;
@@ -39,6 +39,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [alertProps, setAlertProps] = useState(new AlertProps());
   const [showModal, setShowModal] = useState(false);
   const [minFileSizeExponent, setMinFileSizeExponent] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
+
+  const formMinimumFileSizeExponentId = useId();
+  const minimumFileSizeDescriptionId = useId();
 
   function serializeExcludedOption(excludedOptions: string) {
     return excludedOptions
@@ -163,7 +166,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           <InputGroup>
             <Form.Control type="number" disabled={!captureDownloads} min={0} value={minFileSize} onChange={onChangeMinFileSize} required />
             <Form.Select
-              id="form-minimum-file-size-exponent"
+              id={formMinimumFileSizeExponentId}
               disabled={!captureDownloads}
               value={minFileSizeExponent}
               onChange={(e) => setMinFileSizeExponent(Number.parseInt(e.target.value, 10))}
@@ -174,7 +177,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               <option value="3">{i18n("GiB")}</option>
             </Form.Select>
           </InputGroup>
-          <FormText id="minimum-file-size-description" muted>
+          <FormText id={minimumFileSizeDescriptionId} muted>
             {i18n("extensionOptionsMinimumFileSizeDescription")}
           </FormText>
         </Form.Group>
@@ -191,7 +194,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedProtocols}
             onChange={(e) => setExcludedProtocols(e.target.value)}
           />
-          <FormText id="exclude-protocols-description" muted>
+          <FormText id={useId()} muted>
             {i18n("extensionOptionsExcludeProtocolsDescription")}
           </FormText>
         </Form.Group>
@@ -208,7 +211,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedSites}
             onChange={(e) => setExcludedSites(e.target.value)}
           />
-          <FormText id="exclude-sites-description" muted>
+          <FormText id={useId()} muted>
             {i18n("extensionOptionsExcludeSitesDescription")}
           </FormText>
         </Form.Group>
@@ -225,7 +228,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedFileTypes}
             onChange={(e) => setExcludedFileTypes(e.target.value)}
           />
-          <Form.Text id="exclude-file-types-description" muted>
+          <Form.Text id={useId()} muted>
             {i18n("extensionOptionsExcludeFileTypesDescription")}
           </Form.Text>
         </Form.Group>
@@ -266,21 +269,21 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
       <Col xs={12} sm={12} className="mb-3">
         <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
         <Form.Check
-          id="notify-url-added"
+          id={useId()}
           checked={notifyUrlIsAdded}
           onChange={(e) => setNotifyUrlIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyUrlIsAdded")}
           aria-label={i18n("extensionOptionsNotifyUrlIsAdded")}
         />
         <Form.Check
-          id="notify-file-added"
+          id={useId()}
           checked={notifyFileIsAdded}
           onChange={(e) => setNotifyFileIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyFileIsAdded")}
           aria-label={i18n("extensionOptionsNotifyFileIsAdded")}
         />
         <Form.Check
-          id="notify-error-occurs"
+          id={useId()}
           checked={notifyErrorOccurs}
           onChange={(e) => setNotifyErrorOccurs(e.target.checked)}
           label={i18n("extensionOptionsNotifyErrorOccurs")}
@@ -297,7 +300,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeLight")}
               name="group-theme"
               type="radio"
-              id="theme-light"
+              id={useId()}
               value={Theme.Light}
               checked={theme === Theme.Light}
               onChange={(e) => setTheme(e.target.value as Theme)}
@@ -307,7 +310,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeDark")}
               name="group-theme"
               type="radio"
-              id="theme-dark"
+              id={useId()}
               value={Theme.Dark}
               checked={theme === Theme.Dark}
               onChange={(e) => setTheme(e.target.value as Theme)}
@@ -317,7 +320,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeAuto")}
               name="group-theme"
               type="radio"
-              id="theme-auto"
+              id={useId()}
               value={Theme.Auto}
               checked={theme === Theme.Auto}
               onChange={(e) => setTheme(e.target.value as Theme)}

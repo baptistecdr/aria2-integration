@@ -1,8 +1,9 @@
-import type Server from "@/models/server";
 import { type FileSizeOptionsBase, filesize } from "filesize";
 import { Duration } from "luxon";
+import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import browser from "webextension-polyfill";
+import type Server from "@/models/server";
 import i18n from "../../i18n";
 import type { Task } from "../models/task";
 import ServerTaskManagement from "./server-task-management";
@@ -66,7 +67,7 @@ function ServerTask({ server, aria2, task }: Props) {
               key="bottom"
               placement="top"
               overlay={
-                <Tooltip id="tooltip-bottom">
+                <Tooltip id={useId()}>
                   <small>{task.getFilename()}</small>
                 </Tooltip>
               }
@@ -75,17 +76,13 @@ function ServerTask({ server, aria2, task }: Props) {
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
-            <>
-              {getStatus()}, {filesize(task.completedLength, filesizeParameters)} / {filesize(task.totalLength, filesizeParameters)}
-              {task.isActive() && `, ${getETA()}`}
-            </>
+            {getStatus()}, {filesize(task.completedLength, filesizeParameters)} / {filesize(task.totalLength, filesizeParameters)}
+            {task.isActive() && `, ${getETA()}`}
           </Col>
           {task.isActive() && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
-              <>
-                {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, filesizeParameters)}/s -{" "}
-                <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, filesizeParameters)}/s
-              </>
+              {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, filesizeParameters)}/s -{" "}
+              <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, filesizeParameters)}/s
             </Col>
           )}
         </Row>
@@ -102,7 +99,6 @@ function ServerTask({ server, aria2, task }: Props) {
             aria-valuenow={getDownloadPer(1000)}
             aria-valuemin={0}
             aria-valuemax={1000}
-            tabIndex={0}
           />
           <small
             className="justify-content-center d-flex position-absolute w-100"
