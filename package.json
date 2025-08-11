@@ -42,7 +42,7 @@
     "@types/jest": "30.0.0",
     "@types/luxon": "3.7.1",
     "@types/node": "22.17.1",
-    "@types/react": "19.1.9",
+    "@types/react": "19.1.10",
     "@types/react-dom": "19.1.7",
     "@types/uuid": "10.0.0",
     "@types/webextension-polyfill": "0.12.3",
