@@ -1,7 +1,7 @@
 // @ts-expect-error No type information for aria2
 import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
-import { type FileSizeOptionsBase, filesize } from "filesize";
+import { type FilesizeOptions, filesize } from "filesize";
 import { type Dispatch, type SetStateAction, useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import i18n from "@/i18n";
@@ -48,7 +48,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
-  const fileSizeBase = { base: 2 } as FileSizeOptionsBase;
+  const fileSizeBase = { base: 2 } as FilesizeOptions;
 
   function onClickPurge() {
     aria2.call("aria2.purgeDownloadResult");

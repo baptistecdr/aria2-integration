@@ -1,4 +1,4 @@
-import { type FileSizeOptionsBase, filesize } from "filesize";
+import { type FilesizeOptions, filesize } from "filesize";
 import { Duration } from "luxon";
 import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 function ServerTask({ server, aria2, task }: Props) {
-  const filesizeParameters = { base: 2 } as FileSizeOptionsBase;
+  const filesizeParameters = { base: 2 } as FilesizeOptions;
 
   function toFirstUppercase(s: string): string {
     return s.charAt(0).toUpperCase() + s.slice(1);
