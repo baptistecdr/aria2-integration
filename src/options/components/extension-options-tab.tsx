@@ -22,7 +22,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
       base: 2,
       output: "object",
     });
-    return [Number.parseInt(value, 10), exponent];
+    return [value as number, exponent];
   }, []);
 
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
