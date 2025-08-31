@@ -67,7 +67,7 @@ jobs:
           gh api /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-chromium-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
       - name: Attest artifacts
-        uses: actions/attest-build-provenance@v2
+        uses: actions/attest-build-provenance@v3
         with:
           subject-path: |
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
