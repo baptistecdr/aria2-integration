@@ -120,16 +120,16 @@
     "message": "关闭"
   },
   "extensionOptionsNotify": {
-    "message": "Notifications"
+    "message": "通知"
   },
   "extensionOptionsNotifyUrlIsAdded": {
-    "message": "Notify when an URL is added"
+    "message": "当 URL 被添加时通知"
   },
   "extensionOptionsNotifyFileIsAdded": {
-    "message": "Notify when a file is added"
+    "message": "当文件被添加时通知"
   },
   "extensionOptionsNotifyErrorOccurs": {
-    "message": "Notify when an error occurs"
+    "message": "当出现错误时通知"
   },
   "extensionOptionsTheme": {
     "message": "主题"
