@@ -16,7 +16,7 @@
     "start:chromium": "web-ext run --source-dir ./dist/ -t chromium --devtools"
   },
   "dependencies": {
-    "@baptistecdr/aria2": "5.0.2",
+    "@baptistecdr/aria2": "5.0.3",
     "@stdlib/regexp-basename-posix": "0.2.2",
     "@stdlib/regexp-basename-windows": "0.2.3",
     "@stdlib/regexp-dirname-posix": "0.2.1",
