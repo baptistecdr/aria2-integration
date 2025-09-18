@@ -52,6 +52,6 @@
     "vite": "7.1.6",
     "vite-plugin-node-polyfills": "0.24.0",
     "vite-tsconfig-paths": "5.1.4",
-    "web-ext": "8.9.0"
+    "web-ext": "8.10.0"
   }
 }
