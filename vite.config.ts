@@ -1,3 +1,4 @@
+/// <reference types="vitest" />
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vite";
@@ -19,9 +20,9 @@ export default defineConfig({
     minify,
     rollupOptions: {
       input: {
-        background: r("src/background/background.ts"),
-        options: r("src/options/options.html"),
-        popup: r("src/popup/popup.html"),
+        background: r("src", "background", "background.ts"),
+        options: r("src", "options", "options.html"),
+        popup: r("src", "popup", "popup.html"),
       },
       output: {
         dir: r("dist"),
@@ -32,4 +33,17 @@ export default defineConfig({
     },
   },
   plugins: [react(), nodePolyfills(), tsconfigPaths()],
+  test: {
+    root: r("."),
+    environment: "jsdom",
+    globals: true,
+    setupFiles: [r("test", "setupTests.ts")],
+    coverage: {
+      reporter: ["text", "json", "json-summary", "html"],
+      reportsDirectory: r("coverage"),
+    },
+    chaiConfig: {
+      truncateThreshold: 0,
+    },
+  },
 });
