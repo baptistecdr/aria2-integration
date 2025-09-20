@@ -3,7 +3,7 @@ import reBasenameWindows from "@stdlib/regexp-basename-windows";
 import reDirnamePosix from "@stdlib/regexp-dirname-posix";
 import reDirnameWindows from "@stdlib/regexp-dirname-windows";
 
-function isWindowsPath(filepath: string): boolean {
+export function isWindowsPath(filepath: string): boolean {
   const windowsPathRegex = /^[a-zA-Z]:\\|^\\|^\.\.?\\/;
   return windowsPathRegex.test(filepath);
 }
