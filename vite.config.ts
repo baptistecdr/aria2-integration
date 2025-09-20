@@ -14,7 +14,7 @@ export default defineConfig({
   root: r("src"),
   publicDir: r("public"),
   build: {
-    target: "ES2022",
+    target: "ES2023",
     cssMinify,
     minify,
     rollupOptions: {
