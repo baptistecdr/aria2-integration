@@ -125,7 +125,7 @@ jobs:
           product-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
 
       - name: Release Chrome extension
-        uses: baptistecdr/release-chrome-extension@v1.0.7
+        uses: baptistecdr/release-chrome-extension@v2.0.0
         if: ${{ vars.RELEASE_CHROME_EXTENSION == 'true' }}
         with:
           extension-id: ${{ env.CHROME_EXTENSION_ID }}
