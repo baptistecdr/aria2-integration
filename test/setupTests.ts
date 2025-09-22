@@ -92,8 +92,6 @@ const mockBrowser = {
   },
 };
 
-// Stub the global browser object
 vi.stubGlobal("browser", mockBrowser);
 
-// If your code also uses `chrome`, alias it to the mock
 vi.stubGlobal("chrome", mockBrowser);
