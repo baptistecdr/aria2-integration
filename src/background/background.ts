@@ -206,7 +206,9 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
   }
 });
 
-browser.contextMenus.onClicked.addListener(async (info, tab) => {
+browser.contextMenus.onClicked.addListener(listenerOnClicked);
+
+export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
   const extensionOptions = await ExtensionOptions.fromStorage();
   const connection = connections[info.menuItemId];
   const server = extensionOptions.servers[info.menuItemId];
@@ -227,9 +229,11 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
         }
       });
   }
-});
+}
 
-browser.commands.onCommand.addListener(async (command) => {
+browser.commands.onCommand.addListener(listenerOnCommand);
+
+export async function listenerOnCommand(command: string) {
   // As documented in https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions
   // It must always be first.
   // << Also, if a user input handler waits on a promise, then its status as a user input handler is lost. >>
@@ -261,7 +265,7 @@ browser.commands.onCommand.addListener(async (command) => {
       : i18n("toggleCaptureDownloadsDisabled");
     await showNotification(message);
   }
-});
+}
 
 browser.alarms.create(ALARM_NAME, {
   periodInMinutes: ALARM_INTERVAL_SECONDS / 60,

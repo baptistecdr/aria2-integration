@@ -115,6 +115,7 @@ function ServerTab({ setExtensionOptions, extensionOptions, server }: Props) {
             variant="secondary"
             size="sm"
             className="btn-right"
+            aria-label="quick-options"
             onClick={() => {
               setShowQuickOptions(!showQuickOptions);
               setShowAddTask(false);
