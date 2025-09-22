@@ -3,19 +3,19 @@ import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
+import { captureTorrentFromURL, captureURL, showNotification } from "@/models/aria2-extension";
 import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
 import GlobalStat from "@/popup/models/global-stat";
 import { basename, dirname } from "@/stdlib";
-import { captureTorrentFromURL, captureURL, showNotification } from "../models/aria2-extension";
 
-const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
+export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
 let connections: Record<string, Aria2> = {};
 
-function createConnections(extensionOptions: ExtensionOptions) {
+export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
   for (const [key, server] of Object.entries(extensionOptions.servers)) {
     conns[key] = new Aria2(server);
@@ -23,15 +23,13 @@ function createConnections(extensionOptions: ExtensionOptions) {
   return conns;
 }
 
-async function createExtensionContextMenus(extensionOptions: ExtensionOptions) {
+async function createExtensionContextMenus() {
   await browser.contextMenus.removeAll();
-  if (Object.keys(extensionOptions.servers).length > 0) {
-    browser.contextMenus.create({
-      title: browser.i18n.getMessage("contextMenusTitle"),
-      id: CONTEXT_MENUS_PARENT_ID,
-      contexts: ["link", "selection"],
-    });
-  }
+  browser.contextMenus.create({
+    title: browser.i18n.getMessage("contextMenusTitle"),
+    id: CONTEXT_MENUS_PARENT_ID,
+    contexts: ["link", "selection"],
+  });
 }
 
 async function createServersContextMenus(extensionOptions: ExtensionOptions) {
@@ -56,12 +54,14 @@ async function createSingleServerContextMenus(extensionOptions: ExtensionOptions
   }
 }
 
-async function createContextMenus(extensionOptions: ExtensionOptions) {
+export async function createContextMenus(extensionOptions: ExtensionOptions) {
   if (Object.keys(extensionOptions.servers).length === 1) {
     await createSingleServerContextMenus(extensionOptions);
   } else if (Object.keys(extensionOptions.servers).length > 1) {
-    await createExtensionContextMenus(extensionOptions);
+    await createExtensionContextMenus();
     await createServersContextMenus(extensionOptions);
+  } else {
+    await browser.contextMenus.removeAll();
   }
 }
 
@@ -76,15 +76,17 @@ browser.runtime.onInstalled.addListener(async (details) => {
   }
 });
 
-browser.storage.onChanged.addListener(async (changes) => {
+browser.storage.onChanged.addListener(listenerStorageOnChanged);
+
+export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
   if (changes.options) {
     const extensionOptions = await ExtensionOptions.fromStorage();
     connections = createConnections(extensionOptions);
     await createContextMenus(extensionOptions);
   }
-});
+}
 
-function formatCookies(cookies: Cookies.Cookie[]) {
+export function formatCookies(cookies: Cookies.Cookie[]) {
   return cookies.reduce((acc, cookie) => {
     return `${acc}${cookie.name}=${cookie.value};`;
   }, "");
@@ -105,7 +107,7 @@ async function findCurrentTab(): Promise<Tabs.Tab | undefined> {
   return tabs[0];
 }
 
-function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
+export function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
   if (onClickData.linkUrl) {
     return [onClickData.linkUrl];
   }
@@ -115,7 +117,7 @@ function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
   return [];
 }
 
-function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Downloads.DownloadItem, referrer: string): boolean {
+export function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Downloads.DownloadItem, referrer: string): boolean {
   if (extensionOptions.captureServer !== "") {
     let excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
     excludedProtocols.push("blob:", "data:", "file:");
@@ -152,7 +154,14 @@ function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, item: Do
   return false;
 }
 
-async function captureDownloadItem(aria2: any, server: Server, item: Downloads.DownloadItem, referer: string, cookies: string, useCompleteFilePath: boolean) {
+export async function captureDownloadItem(
+  aria2: any,
+  server: Server,
+  item: Downloads.DownloadItem,
+  referer: string,
+  cookies: string,
+  useCompleteFilePath: boolean,
+) {
   // @ts-expect-error finalUrl exists only on Chromium
   const url = item.finalUrl ?? item.url;
   const directory = useCompleteFilePath ? dirname(item.filename) : undefined;

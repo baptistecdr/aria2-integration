@@ -2,6 +2,7 @@ name: Node
 
 on:
   - push
+  - pull_request
 
 env:
   ARTIFACTS_DIR: ${{ vars.ARTIFACTS_DIR }}
@@ -19,6 +20,7 @@ jobs:
       id-token: write
       contents: read
       attestations: write
+      pull-requests: write
     outputs:
       firefox-artifact-id: ${{ steps.upload-firefox-artifact.outputs.artifact-id }}
       chromium-artifact-id: ${{ steps.upload-chromium-artifact.outputs.artifact-id }}
@@ -36,6 +38,12 @@ jobs:
 
       - name: Lint
         run: npm run lint
+
+      - name: Test
+        run: npm run test:coverage
+
+      - name: Report coverage
+        uses: davelosert/vitest-coverage-report-action@v2
 
       - name: Build Firefox extension
         run: npm run build:firefox

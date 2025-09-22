@@ -31,19 +31,19 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
   if (task.isActive() || task.isPaused() || task.isError()) {
     return (
       <>
-        <Button variant="primary" size="sm" className="btn-left" onClick={onClickPlayPauseRetry}>
+        <Button variant="primary" size="sm" className="btn-left" aria-label="play-pause-retry" onClick={onClickPlayPauseRetry}>
           {task.isActive() && <i className="bi bi-pause" />}
           {task.isPaused() && <i className="bi bi-play" />}
           {task.isError() && <i className="bi bi-arrow-repeat" />}
         </Button>
-        <Button variant="danger" size="sm" className="btn-right" onClick={onClickDelete}>
+        <Button variant="danger" size="sm" className="btn-right" aria-label="delete" onClick={onClickDelete}>
           <i className="bi bi-trash" />
         </Button>
       </>
     );
   }
   return (
-    <Button variant="danger" size="sm" onClick={onClickDelete}>
+    <Button variant="danger" size="sm" aria-label="delete" onClick={onClickDelete}>
       <i className="bi bi-trash" />
     </Button>
   );
