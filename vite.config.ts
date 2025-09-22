@@ -1,4 +1,5 @@
 /// <reference types="vitest" />
+import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vite";
@@ -32,7 +33,17 @@ export default defineConfig({
       },
     },
   },
-  plugins: [react(), nodePolyfills(), tsconfigPaths()],
+  plugins: [
+    react(),
+    nodePolyfills(),
+    tsconfigPaths(),
+    {
+      name: "generate-manifest",
+      closeBundle() {
+        execSync("node scripts/generate-manifest.js", { stdio: "inherit", env: process.env });
+      },
+    },
+  ],
   test: {
     root: r("."),
     environment: "jsdom",
