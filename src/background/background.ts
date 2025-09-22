@@ -3,6 +3,7 @@ import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
+import i18n from "@/i18n";
 import { captureTorrentFromURL, captureURL, showNotification } from "@/models/aria2-extension";
 import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
@@ -10,7 +11,7 @@ import GlobalStat from "@/popup/models/global-stat";
 import { basename, dirname } from "@/stdlib";
 
 export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
-const ALARM_NAME = "set-badge";
+export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
 let connections: Record<string, Aria2> = {};
@@ -26,7 +27,7 @@ export function createConnections(extensionOptions: ExtensionOptions) {
 async function createExtensionContextMenus() {
   await browser.contextMenus.removeAll();
   browser.contextMenus.create({
-    title: browser.i18n.getMessage("contextMenusTitle"),
+    title: i18n("contextMenusTitle"),
     id: CONTEXT_MENUS_PARENT_ID,
     contexts: ["link", "selection"],
   });
@@ -47,7 +48,7 @@ async function createSingleServerContextMenus(extensionOptions: ExtensionOptions
   await browser.contextMenus.removeAll();
   for (const [id] of Object.entries(extensionOptions.servers)) {
     browser.contextMenus.create({
-      title: browser.i18n.getMessage("contextMenusTitle"),
+      title: i18n("contextMenusTitle"),
       id,
       contexts: ["link", "selection"],
     });
@@ -194,11 +195,11 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
       try {
         await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath);
         if (extensionOptions.notifyFileIsAdded) {
-          await showNotification(browser.i18n.getMessage("addFileSuccess", server.name));
+          await showNotification(i18n("addFileSuccess", server.name));
         }
       } catch {
         if (extensionOptions.notifyErrorOccurs) {
-          await showNotification(browser.i18n.getMessage("addFileError", server.name));
+          await showNotification(i18n("addFileError", server.name));
         }
       }
     }
@@ -217,12 +218,12 @@ browser.contextMenus.onClicked.addListener(async (info, tab) => {
     captureURL(connection, server, url, referer, cookies)
       .then(() => {
         if (extensionOptions.notifyUrlIsAdded) {
-          showNotification(browser.i18n.getMessage("addUrlSuccess", server.name));
+          showNotification(i18n("addUrlSuccess", server.name));
         }
       })
       .catch(() => {
         if (extensionOptions.notifyErrorOccurs) {
-          showNotification(browser.i18n.getMessage("addUrlError", server.name));
+          showNotification(i18n("addUrlError", server.name));
         }
       });
   }
@@ -241,7 +242,7 @@ browser.commands.onCommand.addListener(async (command) => {
     if (newCaptureServer === "") {
       const serverKeys = Object.keys(extensionOptions.servers);
       if (serverKeys.length === 0) {
-        await showNotification(browser.i18n.getMessage("toggleCaptureDownloadsNoServer"));
+        await showNotification(i18n("toggleCaptureDownloadsNoServer"));
         return;
       }
       [newCaptureServer] = serverKeys;
@@ -256,8 +257,8 @@ browser.commands.onCommand.addListener(async (command) => {
       extensionOptions.excludedFileTypes,
     ).toStorage();
     const message = newCaptureDownloads
-      ? browser.i18n.getMessage("toggleCaptureDownloadsEnabled", extensionOptions.servers[newCaptureServer].name)
-      : browser.i18n.getMessage("toggleCaptureDownloadsDisabled");
+      ? i18n("toggleCaptureDownloadsEnabled", extensionOptions.servers[newCaptureServer].name)
+      : i18n("toggleCaptureDownloadsDisabled");
     await showNotification(message);
   }
 });
@@ -271,8 +272,10 @@ async function getGlobalStat(aria2server: any): Promise<GlobalStat> {
   return plainToInstance(GlobalStat, globalStat);
 }
 
-browser.alarms.onAlarm.addListener(async (alarmInfo) => {
-  if (alarmInfo.name === ALARM_NAME) {
+browser.alarms.onAlarm.addListener(listenerOnAlarm);
+
+export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
+  if (alarm.name === ALARM_NAME) {
     const numActives = Object.values(connections).map(async (server) => {
       const globalStat = await getGlobalStat(server);
       return globalStat.numActive;
@@ -285,4 +288,4 @@ browser.alarms.onAlarm.addListener(async (alarmInfo) => {
       color: "#666666",
     });
   }
-});
+}

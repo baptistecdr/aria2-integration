@@ -86,6 +86,10 @@ const mockBrowser = {
     getMessage: vi.fn((key: string) => `Translated: ${key}`),
     getUILanguage: vi.fn(() => "en"),
   },
+  action: {
+    setBadgeText: vi.fn(),
+    setBadgeBackgroundColor: vi.fn(),
+  },
 };
 
 // Stub the global browser object

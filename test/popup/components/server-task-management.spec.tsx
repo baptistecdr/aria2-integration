@@ -9,7 +9,7 @@ const aria2 = { call: vi.fn() };
 const server: Server = { uuid: "server-1" } as Server;
 
 vi.mock("@/models/aria2-extension", async () => {
-  const actual: object = await vi.importActual("@/models/aria2-extension");
+  const actual = await vi.importActual("@/models/aria2-extension");
   return {
     ...actual,
     captureURL: vi.fn(),
