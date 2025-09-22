@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
 // Create a full mock for the browser API
-const mockBrowser = {
+const browser = {
   runtime: {
     sendMessage: vi.fn(),
     onMessage: {
@@ -16,7 +16,7 @@ const mockBrowser = {
       hasListener: vi.fn(),
     },
     id: "test-extension-id",
-    getURL: vi.fn((path: string) => `http://example.com/${path}`),
+    getURL: vi.fn((path: string) => `https://example.com/${path}`),
   },
   storage: {
     local: {
@@ -92,6 +92,6 @@ const mockBrowser = {
   },
 };
 
-vi.stubGlobal("browser", mockBrowser);
+vi.stubGlobal("browser", browser);
 
-vi.stubGlobal("chrome", mockBrowser);
+vi.stubGlobal("chrome", browser);
