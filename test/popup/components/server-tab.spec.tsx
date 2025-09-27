@@ -1,3 +1,5 @@
+// @ts-expect-error No type available
+import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
@@ -66,5 +68,35 @@ describe("ServerTab", () => {
     fireEvent.click(screen.getByRole("button", { name: "quick-options" }));
 
     expect(screen.getByText("ServerQuickOptions")).toBeInTheDocument();
+  });
+
+  it("calls aria2.purgeDownloadResult when Purge button is clicked", async () => {
+    const mockCall = vi.fn().mockResolvedValue({});
+    vi.mocked(Aria2).mockImplementation(() => ({
+      call: mockCall,
+      multicall: vi.fn().mockResolvedValue([[], [], []]),
+    }));
+
+    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
+
+    fireEvent.click(screen.getByRole("button", { name: /serverPurge/ }));
+
+    expect(mockCall).toHaveBeenCalledWith("aria2.purgeDownloadResult");
+  });
+
+  it("shows error message when server call fails", async () => {
+    const mockCall = vi.fn().mockRejectedValue(new Error("Connection failed"));
+    const mockMulticall = vi.fn().mockRejectedValue(new Error("Connection failed"));
+    vi.mocked(Aria2).mockImplementation(() => ({
+      call: mockCall,
+      multicall: mockMulticall,
+    }));
+
+    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
+
+    await waitFor(() => expect(screen.getByText(/serverError/)).toBeInTheDocument());
+
+    expect(screen.queryByText(/serverNoTasks/)).not.toBeInTheDocument();
   });
 });
