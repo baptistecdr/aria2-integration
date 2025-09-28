@@ -1,4 +1,4 @@
-/// <reference types="vitest" />
+/// <reference types="vitest/config" />
 import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
