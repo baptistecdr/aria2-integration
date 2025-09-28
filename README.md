@@ -41,11 +41,13 @@
 
 - Run `npm run lint:fix` to lint and fix files
 - Run `npm run test` to run tests
-- Run `npm run test:coverage` to run tests with coverage
-- Run `npm run build:firefox:watch` to auto-build for Firefox
-- Run `npm run start:firefox` to install on Firefox with auto-reload
-- Run `npm run build:chromium:watch` to auto-build for Chromium
-- Run `npm run start:chromium` to install on Chromium with auto-reload
+  - Run `npm run test:coverage` to run tests with coverage
+- Firefox
+  - Run `npm run build:firefox:debug:watch` to auto-build for Firefox
+  - Run `npm run start:firefox` to install on Firefox with auto-reload
+- Chromium
+  - Run `npm run build:chromium:debug:watch` to auto-build for Chromium
+  - Run `npm run start:chromium` to install on Chromium with auto-reload
 
 ### Internationalization
 

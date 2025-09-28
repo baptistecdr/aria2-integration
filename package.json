@@ -10,11 +10,11 @@
     "test:coverage": "vitest --coverage",
     "build:firefox": "tsc && BROWSER=firefox vite build --emptyOutDir",
     "build:firefox:debug": "tsc && BROWSER=firefox NODE_ENV=development vite build --mode development --emptyOutDir",
-    "build:firefox:watch": "nodemon --watch . --exec npm run build:firefox:debug",
+    "build:firefox:debug:watch": "tsc && BROWSER=firefox NODE_ENV=development vite build --mode development --emptyOutDir --watch",
     "start:firefox": "web-ext run --source-dir ./dist/ --devtools",
     "build:chromium": "tsc && BROWSER=chromium vite build --emptyOutDir",
     "build:chromium:debug": "tsc && BROWSER=chromium NODE_ENV=development vite build --mode development --emptyOutDir",
-    "build:chromium:watch": "nodemon --watch . --exec npm run build:chromium:debug",
+    "build:chromium:debug:watch": "tsc && BROWSER=chromium NODE_ENV=development vite build --mode development --emptyOutDir --watch",
     "start:chromium": "web-ext run --source-dir ./dist/ -t chromium --devtools"
   },
   "dependencies": {
@@ -52,7 +52,6 @@
     "@vitejs/plugin-react": "5.0.4",
     "@vitest/coverage-v8": "3.2.4",
     "jsdom": "27.0.0",
-    "nodemon": "3.1.10",
     "typescript": "5.9.2",
     "vite": "7.1.7",
     "vite-plugin-node-polyfills": "0.24.0",
