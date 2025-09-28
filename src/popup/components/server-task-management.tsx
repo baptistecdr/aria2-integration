@@ -1,5 +1,5 @@
 import { Button } from "react-bootstrap";
-import { captureURL } from "@/models/aria2-extension";
+import { captureURL } from "@/aria2-extension";
 import type Server from "@/models/server";
 import type { Task } from "@/popup/models/task";
 

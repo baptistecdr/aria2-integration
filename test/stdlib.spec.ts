@@ -1,5 +1,5 @@
 import { expect } from "vitest";
-import { isWindowsPath } from "@/stdlib.ts";
+import { isWindowsPath } from "@/stdlib";
 
 describe("Windows Path", () => {
   it("should detect as Windows path", () => {

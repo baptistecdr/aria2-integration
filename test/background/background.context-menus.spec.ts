@@ -1,8 +1,8 @@
 import { expect, vi } from "vitest";
 import browser from "webextension-polyfill";
-import { CONTEXT_MENUS_PARENT_ID, createContextMenus } from "@/background/background.ts";
-import ExtensionOptions from "@/models/extension-options.ts";
-import Server from "@/models/server.ts";
+import { CONTEXT_MENUS_PARENT_ID, createContextMenus } from "@/background/background";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
 
 describe("Context Menus", () => {
   beforeEach(() => {

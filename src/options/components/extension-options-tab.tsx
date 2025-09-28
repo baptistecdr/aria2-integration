@@ -1,8 +1,8 @@
 import { filesize } from "filesize";
 import { type ChangeEvent, useCallback, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
+import { isFirefox } from "@/aria2-extension";
 import i18n from "@/i18n";
-import { isFirefox } from "@/models/aria2-extension";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";

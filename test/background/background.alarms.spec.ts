@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
-import { ALARM_NAME, listenerOnAlarm } from "@/background/background.ts";
+import { ALARM_NAME, listenerOnAlarm } from "@/background/background";
 
 describe("Alarm", () => {
   beforeEach(() => {

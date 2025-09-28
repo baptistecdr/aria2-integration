@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
-import ExtensionOptions from "@/models/extension-options.ts";
-import type Server from "@/models/server.ts";
+import ExtensionOptions from "@/models/extension-options";
+import type Server from "@/models/server";
 
 describe("ExtensionOptions", () => {
   const server: Server = {

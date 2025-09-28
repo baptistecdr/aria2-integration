@@ -1,9 +1,9 @@
 // @ts-expect-error No types available
 import Aria2 from "@baptistecdr/aria2";
 import { expect } from "vitest";
-import { createConnections } from "@/background/background.ts";
-import ExtensionOptions from "@/models/extension-options.ts";
-import Server from "@/models/server.ts";
+import { createConnections } from "@/background/background";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
 
 describe("Connections", () => {
   it("should create one connection per server", () => {

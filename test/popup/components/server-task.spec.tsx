@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type Server from "@/models/server.ts";
-import ServerTask from "@/popup/components/server-task.tsx";
-import { type Task, TaskStatus } from "@/popup/models/task.ts";
+import type Server from "@/models/server";
+import ServerTask from "@/popup/components/server-task";
+import { type Task, TaskStatus } from "@/popup/models/task";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,

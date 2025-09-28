@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, vi } from "vitest";
-import { captureURL } from "@/models/aria2-extension.ts";
+import { captureURL } from "@/aria2-extension";
 import type Server from "@/models/server";
 import ServerTaskManagement from "@/popup/components/server-task-management";
 import type { Task } from "@/popup/models/task";
@@ -8,8 +8,8 @@ import type { Task } from "@/popup/models/task";
 const aria2 = { call: vi.fn() };
 const server: Server = { uuid: "server-1" } as Server;
 
-vi.mock("@/models/aria2-extension", async () => {
-  const actual = await vi.importActual("@/models/aria2-extension");
+vi.mock("@/aria2-extension", async () => {
+  const actual = await vi.importActual("@/aria2-extension");
   return {
     ...actual,
     captureURL: vi.fn(),

@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import type { Cookies } from "webextension-polyfill";
-import { formatCookies } from "@/background/background.ts";
+import { formatCookies } from "@/background/background";
 
 describe("Cookies", () => {
   function createCookie(name: string, value: string): Cookies.Cookie {

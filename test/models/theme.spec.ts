@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import Theme, { applyTheme } from "@/models/theme.ts";
+import Theme, { applyTheme } from "@/models/theme";
 
 describe("Apply Theme", () => {
   const originalDocumentElement = document.documentElement;

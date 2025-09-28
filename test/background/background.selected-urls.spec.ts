@@ -1,6 +1,6 @@
 import { expect } from "vitest";
 import type { Menus } from "webextension-polyfill";
-import { getSelectedUrls } from "@/background/background.ts";
+import { getSelectedUrls } from "@/background/background";
 
 describe("Selected URLs", () => {
   it("should return the link URL if filled", () => {

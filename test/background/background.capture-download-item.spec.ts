@@ -2,10 +2,10 @@
 import Aria2 from "@baptistecdr/aria2";
 import { expect, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
-import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background.ts";
-import { captureTorrentFromURL, captureURL } from "@/models/aria2-extension.ts";
-import ExtensionOptions from "@/models/extension-options.ts";
-import Server from "@/models/server.ts";
+import { captureTorrentFromURL, captureURL } from "@/aria2-extension";
+import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
 
 describe("Capture Download Item", () => {
   function createDownloadItem(url: string, customize?: (di: Downloads.DownloadItem) => void) {
@@ -187,7 +187,7 @@ describe("Capture Download Item", () => {
     expect(captured).toBe(expected);
   });
 
-  vi.mock("@/models/aria2-extension", () => ({
+  vi.mock("@/aria2-extension", () => ({
     captureTorrentFromURL: vi.fn(),
     captureURL: vi.fn(),
   }));

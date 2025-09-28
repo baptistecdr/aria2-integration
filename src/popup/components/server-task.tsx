@@ -3,10 +3,10 @@ import { Duration } from "luxon";
 import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import browser from "webextension-polyfill";
+import i18n from "@/i18n";
 import type Server from "@/models/server";
-import i18n from "../../i18n";
-import type { Task } from "../models/task";
-import ServerTaskManagement from "./server-task-management";
+import ServerTaskManagement from "@/popup/components/server-task-management";
+import type { Task } from "@/popup/models/task";
 
 interface Props {
   server: Server;

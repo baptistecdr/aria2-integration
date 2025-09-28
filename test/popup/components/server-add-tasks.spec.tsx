@@ -2,16 +2,16 @@
 import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { captureTorrentFromFile, captureURL, showNotification } from "@/models/aria2-extension.ts";
-import ExtensionOptions from "@/models/extension-options.ts";
-import Server from "@/models/server.ts";
-import ServerAddTasks from "@/popup/components/server-add-tasks.tsx";
+import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
+import ExtensionOptions from "@/models/extension-options";
+import Server from "@/models/server";
+import ServerAddTasks from "@/popup/components/server-add-tasks";
 
 const aria2 = vi.mockObject(new Aria2());
 const server = vi.mockObject(new Server("uuid", "TestServer"));
 const extensionOptions = vi.mockObject(new ExtensionOptions());
 
-vi.mock("@/models/aria2-extension", () => ({
+vi.mock("@/aria2-extension", () => ({
   captureURL: vi.fn(),
   captureTorrentFromFile: vi.fn(),
   showNotification: vi.fn(),

@@ -1,9 +1,9 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ExtensionOptions from "@/models/extension-options.ts";
-import type Server from "@/models/server.ts";
-import Theme from "@/models/theme.ts";
-import ServersTabs from "@/popup/components/servers-tabs.tsx";
+import ExtensionOptions from "@/models/extension-options";
+import type Server from "@/models/server";
+import Theme from "@/models/theme";
+import ServersTabs from "@/popup/components/servers-tabs";
 
 vi.mock("@/models/theme", () => ({
   default: vi.importActual("@/models/theme"),
