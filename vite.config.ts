@@ -40,6 +40,7 @@ export default defineConfig({
     {
       name: "generate-manifest",
       closeBundle() {
+        if (process.env.VITEST) return;
         execSync("node scripts/generate-manifest.js", { stdio: "inherit", env: process.env });
       },
     },
