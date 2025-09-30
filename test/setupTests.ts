@@ -2,7 +2,7 @@ import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
 // Create a full mock for the browser API
-const browser = {
+const browser: { [k: string]: any } = {
   runtime: {
     sendMessage: vi.fn(),
     onMessage: {
@@ -90,8 +90,19 @@ const browser = {
     setBadgeText: vi.fn(),
     setBadgeBackgroundColor: vi.fn(),
   },
+  notifications: {
+    create: vi.fn(),
+    clear: vi.fn(),
+    onClicked: {
+      addListener: vi.fn(),
+      removeListener: vi.fn(),
+      hasListener: vi.fn(),
+    },
+  },
 };
 
 vi.stubGlobal("browser", browser);
 
 vi.stubGlobal("chrome", browser);
+
+export default browser;
