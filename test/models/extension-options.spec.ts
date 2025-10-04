@@ -4,7 +4,7 @@ import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
 
 describe("ExtensionOptions", () => {
-  const server: Server = {
+  const server = {
     uuid: "test-uuid",
     name: "Test Server",
     rpcParameters: {},
