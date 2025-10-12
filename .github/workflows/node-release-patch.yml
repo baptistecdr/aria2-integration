@@ -19,7 +19,7 @@ jobs:
         id: patch_version
         run: |
           PATCH_VERSION=$(npm version --no-git-tag-version --no-commit-hooks patch)
-          node scripts/update-version.js $PATCH_VERSION
+          node scripts/update-manifest-version.js $PATCH_VERSION
           npm install
           npm run lint:fix
           echo "PATCH_VERSION=$PATCH_VERSION" >> $GITHUB_OUTPUT
@@ -40,7 +40,7 @@ jobs:
         id: dev_version
         run: |
           DEV_VERSION=$(npm version --no-git-tag-version --no-commit-hooks --preid SNAPSHOT prerelease)
-          node scripts/update-version.js $DEV_VERSION
+          node scripts/update-manifest-version.js $DEV_VERSION
           npm install
           npm run lint:fix
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
