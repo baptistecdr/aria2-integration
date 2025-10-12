@@ -23,6 +23,9 @@
   "serverOptionsSecureConnection": {
     "message": "安全连接"
   },
+  "serverOptionsUrl": {
+    "message": "URL"
+  },
   "serverOptionsSecret": {
     "message": "加密"
   },

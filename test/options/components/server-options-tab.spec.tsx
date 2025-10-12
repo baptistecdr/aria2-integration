@@ -30,6 +30,7 @@ describe("ServerOptionsTab", () => {
     expect(screen.getByLabelText("serverOptionsHost")).toHaveValue("localhost");
     expect(screen.getByLabelText("serverOptionsPort")).toHaveValue(6800);
     expect(screen.getByLabelText("serverOptionsSecureConnection")).toBeChecked();
+    expect(screen.getByLabelText("serverOptionsUrl")).toHaveValue("https://localhost:6800/jsonrpc");
     expect(screen.getByLabelText("serverOptionsSecret")).toHaveValue("secret123");
     expect(screen.getByLabelText("serverOptionsRpcParameters")).toHaveValue("split: 5");
   });
@@ -125,5 +126,13 @@ describe("ServerOptionsTab", () => {
 
     expect(screen.getByText("serverOptionsError")).toBeInTheDocument();
     expect(setExtensionOptions).not.toHaveBeenCalled();
+  });
+
+  it("shows empty URL when server host is empty", async () => {
+    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+
+    await userEvent.clear(screen.getByLabelText("serverOptionsHost"));
+
+    expect(screen.getByLabelText("serverOptionsUrl")).toHaveValue("");
   });
 });

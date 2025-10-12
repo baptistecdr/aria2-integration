@@ -47,6 +47,14 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
     return newRpcParameters;
   }
 
+  function serverUrl(): URL | null {
+    try {
+      return new URL(`http${serverSecure ? "s" : ""}://${serverHost}:${serverPort}/jsonrpc`);
+    } catch (_) {
+      return null;
+    }
+  }
+
   async function onSubmitSaveServer(formEvent: FormEvent<HTMLFormElement>) {
     formEvent.preventDefault();
     formEvent.stopPropagation();
@@ -98,6 +106,13 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
         <Form.Group as={Col} controlId="form-server-secure">
           <Form.Label>{i18n("serverOptionsSecureConnection")}</Form.Label>
           <Form.Check checked={serverSecure} onChange={(e) => setServerSecure(e.target.checked)} />
+        </Form.Group>
+      </Row>
+
+      <Row className="mb-3">
+        <Form.Group as={Col} controlId="form-server-url">
+          <Form.Label>{i18n("serverOptionsUrl")}</Form.Label>
+          <Form.Control type="text" value={serverUrl()?.toString() ?? ""} disabled={true} />
         </Form.Group>
       </Row>
 
