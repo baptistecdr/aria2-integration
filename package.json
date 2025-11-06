@@ -54,7 +54,7 @@
     "jsdom": "27.1.0",
     "memfs": "4.50.0",
     "typescript": "5.9.3",
-    "vite": "7.1.12",
+    "vite": "7.2.1",
     "vite-plugin-node-polyfills": "0.24.0",
     "vite-tsconfig-paths": "5.1.4",
     "vitest": "3.2.4",
