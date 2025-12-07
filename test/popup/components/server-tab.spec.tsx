@@ -4,22 +4,8 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
 
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn().mockImplementation(() => ({
-    call: vi.fn().mockResolvedValue({}),
-    multicall: vi.fn().mockResolvedValue([
-      [
-        /* active */
-      ],
-      [
-        /* waiting */
-      ],
-      [
-        /* stopped */
-      ],
-    ]),
-  })),
-}));
+vi.mock("@baptistecdr/aria2", { spy: true });
+
 vi.mock("filesize", () => ({
   filesize: vi.fn(() => "1 MB"),
 }));
@@ -41,6 +27,10 @@ describe("ServerTab", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(Aria2).mockImplementation(() => ({
+      call: vi.fn().mockResolvedValue({}),
+      multicall: vi.fn().mockResolvedValue([[], [], []]),
+    }));
   });
 
   it("shows stats and buttons after loading", async () => {
