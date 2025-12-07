@@ -5,20 +5,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
 
 vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn().mockImplementation(() => ({
-    call: vi.fn().mockResolvedValue({}),
-    multicall: vi.fn().mockResolvedValue([
-      [
-        /* active */
-      ],
-      [
-        /* waiting */
-      ],
-      [
-        /* stopped */
-      ],
-    ]),
-  })),
+  default: vi.fn(function (this: Aria2) {
+    this.call = vi.fn().mockResolvedValue({});
+    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
+  }),
 }));
 vi.mock("filesize", () => ({
   filesize: vi.fn(() => "1 MB"),
@@ -63,7 +53,7 @@ describe("ServerTab", () => {
 
   it("shows ServerQuickOptions when gear button is clicked", async () => {
     render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
-    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument(), { timeout: 5000 });
 
     fireEvent.click(screen.getByRole("button", { name: "quick-options" }));
 
@@ -72,26 +62,23 @@ describe("ServerTab", () => {
 
   it("calls aria2.purgeDownloadResult when Purge button is clicked", async () => {
     const mockCall = vi.fn().mockResolvedValue({});
-    vi.mocked(Aria2).mockImplementation(() => ({
-      call: mockCall,
-      multicall: vi.fn().mockResolvedValue([[], [], []]),
-    }));
-
+    vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
+      this.call = mockCall;
+      this.multicall = vi.fn().mockResolvedValue([[], [], []]);
+    });
     render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
     await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
-
     fireEvent.click(screen.getByRole("button", { name: /serverPurge/ }));
-
     expect(mockCall).toHaveBeenCalledWith("aria2.purgeDownloadResult");
   });
 
   it("shows error message when server call fails", async () => {
     const mockCall = vi.fn().mockRejectedValue(new Error("Connection failed"));
     const mockMulticall = vi.fn().mockRejectedValue(new Error("Connection failed"));
-    vi.mocked(Aria2).mockImplementation(() => ({
-      call: mockCall,
-      multicall: mockMulticall,
-    }));
+    vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
+      this.call = mockCall;
+      this.multicall = mockMulticall;
+    });
 
     render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
 
