@@ -29,9 +29,9 @@
     "filesize": "11.0.13",
     "luxon": "3.7.2",
     "path": "0.12.7",
-    "react": "19.2.1",
+    "react": "19.2.3",
     "react-bootstrap": "2.10.10",
-    "react-dom": "19.2.1",
+    "react-dom": "19.2.3",
     "reflect-metadata": "0.2.2",
     "uuid": "13.0.0",
     "webextension-polyfill": "0.12.0"
