@@ -45,7 +45,7 @@
     "@types/bootstrap": "5.2.10",
     "@types/jest": "30.0.0",
     "@types/luxon": "3.7.1",
-    "@types/node": "24.10.3",
+    "@types/node": "24.10.4",
     "@types/react": "19.2.7",
     "@types/react-dom": "19.2.3",
     "@types/webextension-polyfill": "0.12.4",
