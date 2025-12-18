@@ -76,7 +76,7 @@ describe("showNotification", () => {
     expect(browser.notifications.create).toHaveBeenCalledWith(undefined, {
       type: "basic",
       title: "Aria2",
-      iconUrl: "../icons/icon80.png",
+      iconUrl: "../icons/icon-browser-80.png",
       message: "Test message",
     });
   });

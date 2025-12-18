@@ -33,7 +33,7 @@ export async function showNotification(message: string) {
   const options: Notifications.CreateNotificationOptions = {
     type: "basic",
     title: "Aria2",
-    iconUrl: "../icons/icon80.png",
+    iconUrl: "../icons/icon-browser-80.png",
     message,
   };
   await browser.notifications.create(undefined, options);
