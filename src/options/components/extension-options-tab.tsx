@@ -1,7 +1,7 @@
 import { filesize } from "filesize";
 import { type ChangeEvent, useCallback, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
-import { isFirefox } from "@/aria2-extension";
+import { isChromium } from "@/aria2-extension";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
@@ -160,7 +160,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         </Form.Group>
       </Col>
 
-      {!isFirefox() && (
+      {isChromium() && (
         <Form.Group as={Col} controlId="form-minimum-file-size" className="mb-3">
           <Form.Label>{i18n("extensionOptionsMinimumFileSize")}</Form.Label>
           <InputGroup>

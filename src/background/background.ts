@@ -3,7 +3,7 @@ import Aria2 from "@baptistecdr/aria2";
 import { plainToInstance } from "class-transformer";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { captureTorrentFromURL, captureURL, showNotification } from "@/aria2-extension";
+import { captureTorrentFromURL, captureURL, isChromium, isFirefox, showNotification } from "@/aria2-extension";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
@@ -15,6 +15,7 @@ export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
 let connections: Record<string, Aria2> = {};
+const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
@@ -173,7 +174,17 @@ export async function captureDownloadItem(
   return captureURL(aria2, server, url, referer, cookies, directory, filename);
 }
 
-browser.downloads.onCreated.addListener(async (downloadItem) => {
+async function removeDownloadItemCompletely(downloadItem: Downloads.DownloadItem) {
+  try {
+    await browser.downloads.cancel(downloadItem.id);
+  } catch {
+    await browser.downloads.removeFile(downloadItem.id);
+  } finally {
+    await browser.downloads.erase({ id: downloadItem.id });
+  }
+}
+
+async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (connection: Aria2, server: Server, referer: string, cookies: string) => void) {
   const extensionOptions = await ExtensionOptions.fromStorage();
   if (extensionOptions.captureDownloads && connections[extensionOptions.captureServer] !== undefined) {
     const connection = connections[extensionOptions.captureServer];
@@ -185,13 +196,40 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
     }
     const cookies = await getCookies(referrer, currentTab?.cookieStoreId);
     if (downloadItemMustBeCaptured(extensionOptions, downloadItem, referrer)) {
-      try {
-        await browser.downloads.cancel(downloadItem.id);
-      } catch {
-        await browser.downloads.removeFile(downloadItem.id);
-      } finally {
-        await browser.downloads.erase({ id: downloadItem.id });
-      }
+      handler(connection, server, referrer, cookies);
+    }
+  }
+}
+
+if (isChromium()) {
+  browser.downloads.onChanged.addListener(async (downloadDelta: Downloads.OnChangedDownloadDeltaType) => {
+    const downloadItem = downloadItems[downloadDelta.id];
+    if (downloadItem.id in downloadItems && downloadDelta.filename?.previous === "" && downloadDelta.filename.current) {
+      const extensionOptions = await ExtensionOptions.fromStorage();
+      downloadItem.filename = downloadDelta.filename.current;
+      await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
+        await removeDownloadItemCompletely(downloadItem);
+        try {
+          await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath);
+          if (extensionOptions.notifyFileIsAdded) {
+            await showNotification(i18n("addFileSuccess", server.name));
+          }
+        } catch {
+          if (extensionOptions.notifyErrorOccurs) {
+            await showNotification(i18n("addFileError", server.name));
+          }
+        }
+        delete downloadItems[downloadItem.id];
+      });
+    }
+  });
+}
+
+browser.downloads.onCreated.addListener(async (downloadItem) => {
+  const extensionOptions = await ExtensionOptions.fromStorage();
+  await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
+    if (isFirefox()) {
+      await removeDownloadItemCompletely(downloadItem);
       try {
         await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath);
         if (extensionOptions.notifyFileIsAdded) {
@@ -202,8 +240,10 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
           await showNotification(i18n("addFileError", server.name));
         }
       }
+    } else {
+      downloadItems[downloadItem.id] = downloadItem;
     }
-  }
+  });
 });
 
 browser.contextMenus.onClicked.addListener(listenerOnClicked);

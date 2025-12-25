@@ -190,6 +190,7 @@ describe("Capture Download Item", () => {
   vi.mock("@/aria2-extension", () => ({
     captureTorrentFromURL: vi.fn(),
     captureURL: vi.fn(),
+    isChromium: vi.fn().mockReturnValue(false),
   }));
 
   beforeEach(() => {
