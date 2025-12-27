@@ -123,7 +123,7 @@ jobs:
           release-note: 'Release ${{ github.ref_name }}'
 
       - name: Release Microsoft Edge extension
-        uses: baptistecdr/release-edge-extension@main
+        uses: baptistecdr/release-edge-extension@v2.1.0
         if: ${{ vars.RELEASE_EDGE_EXTENSION == 'true' }}
         with:
           api-key: ${{ secrets.MS_API_KEY }}
