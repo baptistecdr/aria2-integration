@@ -2,8 +2,12 @@ import browser, { type Notifications } from "webextension-polyfill";
 import type Server from "@/models/server";
 
 export function isFirefox() {
+  return !isChromium();
+}
+
+export function isChromium() {
   // @ts-expect-error Only available on Chromium
-  return browser.downloads.onDeterminingFilename === undefined;
+  return browser.downloads.onDeterminingFilename !== undefined;
 }
 
 export function encodeFileToBase64(file: File | Blob) {
