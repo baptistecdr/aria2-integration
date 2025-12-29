@@ -266,5 +266,80 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "没有可用的服务器来拦截下载."
+  },
+  "folderPickerTitle": {
+    "message": "下载到..."
+  },
+  "folderPickerSelectFolder": {
+    "message": "选择目标文件夹"
+  },
+  "folderPickerUseCustomPath": {
+    "message": "使用自定义路径"
+  },
+  "folderPickerCustomPath": {
+    "message": "自定义路径"
+  },
+  "folderPickerCustomPathPlaceholder": {
+    "message": "/路径/到/文件夹"
+  },
+  "folderPickerDownload": {
+    "message": "下载"
+  },
+  "folderPickerCancel": {
+    "message": "取消"
+  },
+  "folderPickerNoPresets": {
+    "message": "未配置文件夹预设"
+  },
+  "folderPickerNoFolderSelected": {
+    "message": "请选择文件夹或输入自定义路径"
+  },
+  "extensionOptionsAskForFolder": {
+    "message": "下载时询问文件夹"
+  },
+  "extensionOptionsAskForFolderDescription": {
+    "message": "通过右键菜单下载时显示文件夹选择器"
+  },
+  "extensionOptionsDefaultFolder": {
+    "message": "默认下载文件夹"
+  },
+  "extensionOptionsDefaultFolderPlaceholder": {
+    "message": "/路径/到/下载"
+  },
+  "extensionOptionsDefaultFolderDescription": {
+    "message": "留空则使用服务器默认值。当文件夹选择器禁用时使用。"
+  },
+  "extensionOptionsFolderPresets": {
+    "message": "文件夹预设"
+  },
+  "extensionOptionsFolderPresetsDescription": {
+    "message": "下载选择器的快速访问文件夹"
+  },
+  "folderPresetName": {
+    "message": "名称"
+  },
+  "folderPresetPath": {
+    "message": "路径"
+  },
+  "folderPresetNamePlaceholder": {
+    "message": "预设名称"
+  },
+  "folderPresetPathPlaceholder": {
+    "message": "/路径/到/文件夹"
+  },
+  "folderPresetAdd": {
+    "message": "添加"
+  },
+  "folderPickerNoPresetsHint": {
+    "message": "未配置文件夹预设。请在下方输入自定义路径，或"
+  },
+  "folderPickerAddPresets": {
+    "message": "在选项中添加预设"
+  },
+  "folderPickerDownloadNormally": {
+    "message": "浏览器"
+  },
+  "folderPickerDownloadNormallyHint": {
+    "message": "使用浏览器默认下载器代替 Aria2"
   }
 }

@@ -1,0 +1,30 @@
+.folder-picker-container {
+  min-width: 400px;
+}
+
+.folder-picker-header {
+  margin-bottom: 1rem;
+}
+
+.folder-picker-url {
+  font-size: 0.85rem;
+  color: var(--bs-secondary);
+  word-break: break-all;
+  max-height: 3rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.folder-picker-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--bs-border-color);
+}
+
+.folder-picker-actions-right {
+  display: flex;
+  gap: 0.5rem;
+}
