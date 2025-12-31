@@ -73,6 +73,12 @@ jobs:
 
       - name: Attest artifacts
         uses: actions/attest-build-provenance@v3
+        if: >
+          github.event_name == 'push' || 
+          (
+            github.event_name == 'pull_request' && 
+            github.event.pull_request.head.repo.full_name == github.repository
+          )
         with:
           subject-path: |
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
