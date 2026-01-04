@@ -1,4 +1,5 @@
 import browser from "webextension-polyfill";
+import type FolderPreset from "@/models/folder-preset";
 import type Server from "@/models/server";
 import Theme from "@/models/theme";
 
@@ -16,6 +17,9 @@ export default class ExtensionOptions {
     public readonly notifyFileIsAdded: boolean = true,
     public readonly notifyErrorOccurs: boolean = true,
     public readonly theme: Theme = Theme.Auto,
+    public readonly folderPresets: FolderPreset[] = [],
+    public readonly askForFolderOnDownload: boolean = false,
+    public readonly defaultFolder: string = "",
   ) {}
 
   public serialize(): string {
@@ -46,6 +50,30 @@ export default class ExtensionOptions {
   async deleteServer(server: Server): Promise<ExtensionOptions> {
     const newExtensionOptions = this.copy();
     delete newExtensionOptions.servers[server.uuid];
+    return newExtensionOptions.toStorage();
+  }
+
+  async addFolderPreset(preset: FolderPreset): Promise<ExtensionOptions> {
+    const newExtensionOptions = this.copy();
+    (newExtensionOptions.folderPresets as FolderPreset[]).push(preset);
+    return newExtensionOptions.toStorage();
+  }
+
+  async updateFolderPreset(preset: FolderPreset): Promise<ExtensionOptions> {
+    const newExtensionOptions = this.copy();
+    const index = newExtensionOptions.folderPresets.findIndex((p) => p.id === preset.id);
+    if (index !== -1) {
+      (newExtensionOptions.folderPresets as FolderPreset[])[index] = preset;
+    }
+    return newExtensionOptions.toStorage();
+  }
+
+  async deleteFolderPreset(id: string): Promise<ExtensionOptions> {
+    const newExtensionOptions = this.copy();
+    const index = newExtensionOptions.folderPresets.findIndex((p) => p.id === id);
+    if (index !== -1) {
+      (newExtensionOptions.folderPresets as FolderPreset[]).splice(index, 1);
+    }
     return newExtensionOptions.toStorage();
   }
 

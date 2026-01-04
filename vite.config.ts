@@ -24,6 +24,7 @@ export default defineConfig({
         background: r("src", "background", "background.ts"),
         options: r("src", "options", "options.html"),
         popup: r("src", "popup", "popup.html"),
+        "folder-picker": r("src", "folder-picker", "folder-picker.html"),
       },
       output: {
         dir: r("dist"),

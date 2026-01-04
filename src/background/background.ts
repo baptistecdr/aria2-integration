@@ -88,6 +88,40 @@ export async function listenerStorageOnChanged(changes: Record<string, browser.S
   }
 }
 
+// Handle folder picker response messages
+browser.runtime.onMessage.addListener(async (msg: unknown) => {
+  const message = msg as { type: string; folder?: string; cancelled?: boolean };
+  if (message.type === "folderPickerResponse") {
+    const storage = await browser.storage.local.get("pendingDownload");
+    const pendingDownload = storage.pendingDownload as { serverId: string; urls: string[]; referer: string; cookies: string } | undefined;
+
+    if (!pendingDownload) return;
+
+    // Clear pending download
+    await browser.storage.local.remove("pendingDownload");
+
+    if (message.cancelled) return;
+
+    const extensionOptions = await ExtensionOptions.fromStorage();
+    const connection = connections[pendingDownload.serverId];
+    const server = extensionOptions.servers[pendingDownload.serverId];
+
+    for (const url of pendingDownload.urls) {
+      captureURL(connection, server, url, pendingDownload.referer, pendingDownload.cookies, message.folder)
+        .then(() => {
+          if (extensionOptions.notifyUrlIsAdded) {
+            showNotification(i18n("addUrlSuccess", server.name));
+          }
+        })
+        .catch(() => {
+          if (extensionOptions.notifyErrorOccurs) {
+            showNotification(i18n("addUrlError", server.name));
+          }
+        });
+    }
+  }
+});
+
 export function formatCookies(cookies: Cookies.Cookie[]) {
   return cookies.reduce((acc, cookie) => {
     return `${acc}${cookie.name}=${cookie.value};`;
@@ -256,8 +290,33 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
   const urls = getSelectedUrls(info);
   const referer = tab?.url ?? "";
   const cookies = await getCookies(referer, tab?.cookieStoreId);
+
+  // Check if folder picker should be shown
+  if (extensionOptions.askForFolderOnDownload) {
+    // Store pending download info
+    await browser.storage.local.set({
+      pendingDownload: {
+        serverId: info.menuItemId as string,
+        urls,
+        referer,
+        cookies,
+      },
+    });
+
+    // Open folder picker popup
+    await browser.windows.create({
+      url: browser.runtime.getURL("folder-picker/folder-picker.html"),
+      type: "popup",
+      width: 450,
+      height: 420,
+    });
+    return;
+  }
+
+  // Direct download with optional default folder
+  const directory = extensionOptions.defaultFolder || undefined;
   for (const url of urls) {
-    captureURL(connection, server, url, referer, cookies)
+    captureURL(connection, server, url, referer, cookies, directory)
       .then(() => {
         if (extensionOptions.notifyUrlIsAdded) {
           showNotification(i18n("addUrlSuccess", server.name));
