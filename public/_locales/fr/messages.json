@@ -266,5 +266,80 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "Aucun serveur disponible pour capturer les téléchargements."
+  },
+  "folderPickerTitle": {
+    "message": "Télécharger vers..."
+  },
+  "folderPickerSelectFolder": {
+    "message": "Sélectionner le dossier de destination"
+  },
+  "folderPickerUseCustomPath": {
+    "message": "Utiliser un chemin personnalisé"
+  },
+  "folderPickerCustomPath": {
+    "message": "Chemin personnalisé"
+  },
+  "folderPickerCustomPathPlaceholder": {
+    "message": "/chemin/vers/dossier"
+  },
+  "folderPickerDownload": {
+    "message": "Télécharger"
+  },
+  "folderPickerCancel": {
+    "message": "Annuler"
+  },
+  "folderPickerNoPresets": {
+    "message": "Aucun dossier prédéfini configuré"
+  },
+  "folderPickerNoFolderSelected": {
+    "message": "Veuillez sélectionner un dossier ou entrer un chemin personnalisé"
+  },
+  "extensionOptionsAskForFolder": {
+    "message": "Demander le dossier lors du téléchargement"
+  },
+  "extensionOptionsAskForFolderDescription": {
+    "message": "Afficher le sélecteur de dossier lors du téléchargement via le menu contextuel"
+  },
+  "extensionOptionsDefaultFolder": {
+    "message": "Dossier de téléchargement par défaut"
+  },
+  "extensionOptionsDefaultFolderPlaceholder": {
+    "message": "/chemin/vers/téléchargements"
+  },
+  "extensionOptionsDefaultFolderDescription": {
+    "message": "Laissez vide pour utiliser le dossier par défaut du serveur. Utilisé lorsque le sélecteur de dossier est désactivé."
+  },
+  "extensionOptionsFolderPresets": {
+    "message": "Dossiers prédéfinis"
+  },
+  "extensionOptionsFolderPresetsDescription": {
+    "message": "Dossiers d'accès rapide pour le sélecteur de téléchargement"
+  },
+  "folderPresetName": {
+    "message": "Nom"
+  },
+  "folderPresetPath": {
+    "message": "Chemin"
+  },
+  "folderPresetNamePlaceholder": {
+    "message": "Nom du préréglage"
+  },
+  "folderPresetPathPlaceholder": {
+    "message": "/chemin/vers/dossier"
+  },
+  "folderPresetAdd": {
+    "message": "Ajouter"
+  },
+  "folderPickerNoPresetsHint": {
+    "message": "Aucun dossier prédéfini. Entrez un chemin personnalisé ci-dessous ou"
+  },
+  "folderPickerAddPresets": {
+    "message": "ajoutez des préréglages dans les Options"
+  },
+  "folderPickerDownloadNormally": {
+    "message": "Navigateur"
+  },
+  "folderPickerDownloadNormallyHint": {
+    "message": "Télécharger avec le gestionnaire par défaut du navigateur au lieu d'Aria2"
   }
 }
