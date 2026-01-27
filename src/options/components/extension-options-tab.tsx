@@ -5,6 +5,7 @@ import { isChromium } from "@/aria2-extension";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
+import FolderPresetsEditor from "@/options/components/folder-presets-editor";
 import AlertProps from "@/options/models/alert-props";
 
 interface Props {
@@ -36,6 +37,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [notifyFileIsAdded, setNotifyFileIsAdded] = useState(extensionOptions.notifyFileIsAdded);
   const [notifyErrorOccurs, setNotifyErrorOccurs] = useState(extensionOptions.notifyErrorOccurs);
   const [theme, setTheme] = useState(extensionOptions.theme);
+  const [askForFolderOnDownload, setAskForFolderOnDownload] = useState(extensionOptions.askForFolderOnDownload);
+  const [defaultFolder, setDefaultFolder] = useState(extensionOptions.defaultFolder);
   const [alertProps, setAlertProps] = useState(new AlertProps());
   const [showModal, setShowModal] = useState(false);
   const [minFileSizeExponent, setMinFileSizeExponent] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
@@ -63,6 +66,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     setNotifyFileIsAdded(extensionOptions.notifyFileIsAdded);
     setNotifyErrorOccurs(extensionOptions.notifyErrorOccurs);
     setTheme(extensionOptions.theme);
+    setAskForFolderOnDownload(extensionOptions.askForFolderOnDownload);
+    setDefaultFolder(extensionOptions.defaultFolder);
   }, [
     extensionOptions.captureDownloads,
     extensionOptions.captureServer,
@@ -75,6 +80,8 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     extensionOptions.notifyFileIsAdded,
     extensionOptions.notifyErrorOccurs,
     extensionOptions.theme,
+    extensionOptions.askForFolderOnDownload,
+    extensionOptions.defaultFolder,
     formatFileSize,
     deserializeExcludedOption,
   ]);
@@ -115,6 +122,9 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
         notifyFileIsAdded,
         notifyErrorOccurs,
         theme,
+        extensionOptions.folderPresets,
+        askForFolderOnDownload,
+        defaultFolder,
       ).toStorage();
       setExtensionOptions(newExtensionOptions);
       setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
@@ -265,6 +275,37 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Group controlId="form-ask-for-folder">
+          <Form.Check
+            checked={askForFolderOnDownload}
+            label={i18n("extensionOptionsAskForFolder")}
+            aria-label={i18n("extensionOptionsAskForFolder")}
+            onChange={(e) => setAskForFolderOnDownload(e.target.checked)}
+          />
+          <Form.Text className="text-muted">{i18n("extensionOptionsAskForFolderDescription")}</Form.Text>
+        </Form.Group>
+      </Col>
+
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Group controlId="form-default-folder">
+          <Form.Label>{i18n("extensionOptionsDefaultFolder")}</Form.Label>
+          <Form.Control
+            type="text"
+            placeholder={i18n("extensionOptionsDefaultFolderPlaceholder")}
+            value={defaultFolder}
+            onChange={(e) => setDefaultFolder(e.target.value)}
+          />
+          <Form.Text className="text-muted">{i18n("extensionOptionsDefaultFolderDescription")}</Form.Text>
+        </Form.Group>
+      </Col>
+
+      <Col xs={12} sm={12} className="mb-3">
+        <Form.Group controlId="form-folder-presets">
+          <FolderPresetsEditor extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} />
+        </Form.Group>
+      </Col>
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
