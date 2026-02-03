@@ -20,7 +20,7 @@
   "dependencies": {
     "@baptistecdr/aria2": "5.0.3",
     "@stdlib/regexp-basename-posix": "0.2.3",
-    "@stdlib/regexp-basename-windows": "0.2.3",
+    "@stdlib/regexp-basename-windows": "0.2.4",
     "@stdlib/regexp-dirname-posix": "0.2.1",
     "@stdlib/regexp-dirname-windows": "0.2.1",
     "bootstrap": "5.3.8",
