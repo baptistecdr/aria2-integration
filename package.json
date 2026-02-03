@@ -22,7 +22,7 @@
     "@stdlib/regexp-basename-posix": "0.2.3",
     "@stdlib/regexp-basename-windows": "0.2.4",
     "@stdlib/regexp-dirname-posix": "0.2.2",
-    "@stdlib/regexp-dirname-windows": "0.2.1",
+    "@stdlib/regexp-dirname-windows": "0.2.2",
     "bootstrap": "5.3.8",
     "bootstrap-icons": "1.13.1",
     "class-transformer": "0.5.1",
