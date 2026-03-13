@@ -45,7 +45,10 @@ describe("generate-manifest", () => {
     expect(parsedManifest.browser_specific_settings).toEqual({
       gecko: {
         id: "baptistecdr@users.noreply.github.com",
-        strict_min_version: "115.0",
+        strict_min_version: "142.0",
+        data_collection_permissions: {
+          required: ["none"],
+        },
       },
     });
   });
