@@ -40,7 +40,7 @@ jobs:
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit, push and create tag
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           fetch: true
           default_author: github_actions
@@ -64,7 +64,7 @@ jobs:
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
 
       - name: Commit and push
-        uses: EndBug/add-and-commit@v9
+        uses: EndBug/add-and-commit@v10
         with:
           fetch: true
           default_author: github_actions
