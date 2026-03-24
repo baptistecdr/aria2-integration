@@ -50,14 +50,14 @@
     "@types/react-dom": "19.2.3",
     "@types/webextension-polyfill": "0.12.5",
     "@vitejs/plugin-react": "5.2.0",
-    "@vitest/coverage-v8": "4.1.0",
+    "@vitest/coverage-v8": "4.1.1",
     "jsdom": "29.0.1",
     "memfs": "4.57.1",
     "typescript": "6.0.2",
     "vite": "7.3.1",
     "vite-plugin-node-polyfills": "0.25.0",
     "vite-tsconfig-paths": "6.1.1",
-    "vitest": "4.1.0",
+    "vitest": "4.1.1",
     "web-ext": "10.0.0"
   }
 }
