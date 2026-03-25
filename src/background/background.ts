@@ -322,6 +322,10 @@ export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === ALARM_NAME) {
     const numActives = Object.values(connections).map(async (server) => {
       const globalStat = await getGlobalStat(server);
+      const currentTab = await findCurrentTab();
+      if (currentTab?.incognito && globalStat.numStopped > 0) {
+        server.call("aria2.purgeDownloadResult");
+      }
       return globalStat.numActive;
     });
     const totalActive = await Promise.all(numActives).then((n) => n.reduce((partialSum, a) => partialSum + a, 0));

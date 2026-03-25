@@ -137,6 +137,28 @@ function ServerOptionsTab({ extensionOptions, setExtensionOptions, server, delet
         </Form.Group>
       </Row>
 
+      <div className="my-3">
+        <div className="d-flex align-items-center">
+          <hr className="flex-grow-1 m-0" />
+          <span className="px-2 small text-nowrap">Incognito Mode</span>
+          <hr className="flex-grow-1 m-0" />
+        </div>
+      </div>
+
+      <Row className="mb-3">
+        <Form.Group controlId="form-capture-downloads">
+          <Form.Check label="Automatically purge downloads" aria-label="Automatically purge downloads" />
+        </Form.Group>
+      </Row>
+
+      <Row className="mb-3">
+        <Form.Group as={Col} controlId="form-incognito-mode-rpc-parameters">
+          <Form.Label>RPC Parameters</Form.Label>
+          <Form.Control as="textarea" rows={3} placeholder="split: 5" />
+          <Form.Text>RPC parameters</Form.Text>
+        </Form.Group>
+      </Row>
+
       <Row className="mb-3">
         <Col xs={12} sm={12}>
           <Button type="submit" variant="primary">
