@@ -1,26 +1,29 @@
-import { type FormEvent, useState } from "react";
+import type Aria2 from "@baptistecdr/aria2";
+import { type SubmitEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
+import { useCurrentTab } from "@/current-tab-provider";
+import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import type ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
 
 interface Props {
-  aria2: any;
+  aria2: Aria2;
   server: Server;
-  extensionOptions: ExtensionOptions;
 }
 
 const DEFAULT_FORM_FILES = { files: null } as HTMLInputElement;
 
-function ServerAddTasks({ aria2, server, extensionOptions }: Props) {
-  const [formUrls, setFormUrls] = useState([] as string[]);
+function ServerAddTasks({ aria2, server }: Props) {
+  const { extensionOptions } = useExtensionOptions();
+  const [formUrls, setFormUrls] = useState<string[]>([]);
   const [formFiles, setFormFiles] = useState(DEFAULT_FORM_FILES);
+  const currentTab = useCurrentTab();
 
-  const formAddUrlsOnSubmit = (formEvent: FormEvent<HTMLFormElement>) => {
+  const formAddUrlsOnSubmit = (formEvent: SubmitEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     for (const url of formUrls) {
-      captureURL(aria2, server, url, "", "")
+      captureURL(aria2, server, url, "", "", !!currentTab?.incognito)
         .then(() => {
           if (extensionOptions.notifyUrlIsAdded) {
             showNotification(i18n("addUrlSuccess", server.name));
@@ -36,7 +39,7 @@ function ServerAddTasks({ aria2, server, extensionOptions }: Props) {
     setFormUrls([]);
   };
 
-  const formAddFilesOnSubmit = (formEvent: FormEvent<HTMLFormElement>) => {
+  const formAddFilesOnSubmit = (formEvent: SubmitEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     if (formFiles.files !== null) {
       for (let i = 0; i < formFiles.files.length; i += 1) {
@@ -52,7 +55,6 @@ function ServerAddTasks({ aria2, server, extensionOptions }: Props) {
             }
           });
       }
-      formEvent.currentTarget.reset();
       setFormFiles(DEFAULT_FORM_FILES);
     }
   };

@@ -19,7 +19,7 @@
     "strict": true,
     "strictNullChecks": true,
     "target": "ES2023",
-    "types": ["bootstrap", "jest", "luxon", "node", "react", "react-dom", "webextension-polyfill"],
+    "types": ["bootstrap", "jest", "luxon", "node", "react", "react-dom", "webextension-polyfill", "zod"],
     "useDefineForClassFields": true
   },
   "include": ["src", "test"]

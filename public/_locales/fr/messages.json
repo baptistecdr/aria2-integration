@@ -38,6 +38,12 @@
   "serverOptionsRpcParametersDescription": {
     "message": "Les paramètres RPC seront appliqués pour chaque téléchargement envoyé à ce serveur."
   },
+  "serverOptionsIncognitoMode": {
+    "message": "Mode Privée"
+  },
+  "serverOptionsAutomaticallyPurgeDownloads": {
+    "message": "Supprimer automatiquement les téléchargements"
+  },
   "serverOptionsSave": {
     "message": "Sauvegarder"
   },

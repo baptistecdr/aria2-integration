@@ -1,41 +1,34 @@
-import "reflect-metadata";
-import { Transform, Type } from "class-transformer";
+import * as z from "zod/mini";
 
-export default class GlobalStat {
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  downloadSpeed: number;
+const parseIntStr = z.pipe(
+  z.string(),
+  z.transform((v) => Number.parseInt(v, 10)),
+);
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  uploadSpeed: number;
+const GlobalStatSchema = z.object({
+  downloadSpeed: parseIntStr,
+  uploadSpeed: parseIntStr,
+  numActive: parseIntStr,
+  numWaiting: parseIntStr,
+  numStopped: parseIntStr,
+  numStoppedTotal: parseIntStr,
+});
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  numActive: number;
+export type GlobalStat = z.infer<typeof GlobalStatSchema>;
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  numWaiting: number;
+const DEFAULT_GLOBAL_STAT: GlobalStat = {
+  downloadSpeed: 0,
+  uploadSpeed: 0,
+  numActive: 0,
+  numWaiting: 0,
+  numStopped: 0,
+  numStoppedTotal: 0,
+};
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  numStopped: number;
+export function parseGlobalStat(data: unknown): GlobalStat {
+  return GlobalStatSchema.parse(data);
+}
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  numStoppedTotal: number;
-
-  constructor(downloadSpeed: number, uploadSpeed: number, numActive: number, numWaiting: number, numStopped: number, numStoppedTotal: number) {
-    this.downloadSpeed = downloadSpeed;
-    this.uploadSpeed = uploadSpeed;
-    this.numActive = numActive;
-    this.numWaiting = numWaiting;
-    this.numStopped = numStopped;
-    this.numStoppedTotal = numStoppedTotal;
-  }
-
-  static default(): GlobalStat {
-    return new GlobalStat(0, 0, 0, 0, 0, 0);
-  }
+export function defaultGlobalStat(): GlobalStat {
+  return { ...DEFAULT_GLOBAL_STAT };
 }

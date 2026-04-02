@@ -5,6 +5,8 @@ import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap";
 import "./popup.css";
 import { Container } from "react-bootstrap";
+import { CurrentTabProvider } from "@/current-tab-provider";
+import { ExtensionOptionsProvider } from "@/extension-options-provider";
 import ServersTabs from "./components/servers-tabs";
 
 const container = document.getElementById("root");
@@ -14,7 +16,11 @@ const root = createRoot(container!);
 root.render(
   <React.StrictMode>
     <Container className="p-3" fluid>
-      <ServersTabs />
+      <ExtensionOptionsProvider>
+        <CurrentTabProvider>
+          <ServersTabs />
+        </CurrentTabProvider>
+      </ExtensionOptionsProvider>
     </Container>
   </React.StrictMode>,
 );

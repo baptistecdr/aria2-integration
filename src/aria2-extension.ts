@@ -1,3 +1,4 @@
+import type Aria2 from "@baptistecdr/aria2";
 import browser, { type Notifications } from "webextension-polyfill";
 import type Server from "@/models/server";
 
@@ -48,7 +49,7 @@ export async function download(url: string): Promise<Blob> {
   return res.blob();
 }
 
-export async function captureTorrentFromFile(aria2: any, server: Server, file: File) {
+export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File) {
   const blobAsBase64 = await encodeFileToBase64(file);
   if (file.name.endsWith("torrent")) {
     return aria2.call("aria2.addTorrent", blobAsBase64, [], server.rpcParameters);
@@ -56,12 +57,10 @@ export async function captureTorrentFromFile(aria2: any, server: Server, file: F
   return aria2.call("aria2.addMetalink", blobAsBase64, [], server.rpcParameters);
 }
 
-export async function captureTorrentFromURL(aria2: any, server: Server, url: string, directory?: string, filename?: string) {
+export async function captureTorrentFromURL(aria2: Aria2, server: Server, url: string, isInIncognitoMode: boolean, directory?: string, filename?: string) {
   const blob = await download(url);
   const blobAsBase64 = await encodeFileToBase64(blob);
-  const aria2Parameters: any = {
-    ...server.rpcParameters,
-  };
+  const aria2Parameters: any = { ...(isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters) };
   if (directory) {
     aria2Parameters.dir = directory;
   }
@@ -71,14 +70,24 @@ export async function captureTorrentFromURL(aria2: any, server: Server, url: str
   return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
 }
 
-export async function captureURL(aria2: any, server: Server, url: string, referer: string, cookies: string, directory?: string, filename?: string) {
+export async function captureURL(
+  aria2: Aria2,
+  server: Server,
+  url: string,
+  referer: string,
+  cookies: string,
+  isInIncognitoMode: boolean,
+  directory?: string,
+  filename?: string,
+) {
   if (url.match(/\.torrent$|\.meta4$|\.metalink$/)) {
-    return captureTorrentFromURL(aria2, server, url, directory, filename);
+    return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);
   }
   const aria2Parameters: any = {
     header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
-    ...server.rpcParameters,
+    ...(isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
   };
+
   if (directory) {
     aria2Parameters.dir = directory;
   }

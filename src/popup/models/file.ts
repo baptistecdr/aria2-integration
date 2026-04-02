@@ -1,27 +1,20 @@
-import "reflect-metadata";
-import { Transform, Type } from "class-transformer";
+import * as z from "zod/mini";
 
-export class File {
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  completedLength: number;
+export const UrisSchema = z.object({
+  uri: z.string(),
+});
 
-  @Type(() => Number)
-  @Transform(({ value }) => Number.parseInt(value, 10))
-  length: number;
+export const FileSchema = z.object({
+  completedLength: z.pipe(
+    z.string(),
+    z.transform((v) => Number.parseInt(v, 10)),
+  ),
+  length: z.pipe(
+    z.string(),
+    z.transform((v) => Number.parseInt(v, 10)),
+  ),
+  path: z.string(),
+  uris: z.array(UrisSchema),
+});
 
-  path: string;
-
-  uris: Uris[];
-
-  constructor(completedLength: number, length: number, path: string, uris: Uris[]) {
-    this.completedLength = completedLength;
-    this.length = length;
-    this.path = path;
-    this.uris = uris;
-  }
-}
-
-export interface Uris {
-  uri: string;
-}
+export type File = z.infer<typeof FileSchema>;

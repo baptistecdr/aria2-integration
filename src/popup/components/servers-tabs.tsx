@@ -1,24 +1,18 @@
 import { useEffect, useId, useState } from "react";
 import { Tab, Tabs } from "react-bootstrap";
+import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import ExtensionOptions from "@/models/extension-options";
-import { applyTheme } from "@/models/theme";
 import ServerTab from "@/popup/components/server-tab";
 
 function ServersTabs() {
-  const [extensionOptions, setExtensionOptions] = useState(new ExtensionOptions());
+  const { extensionOptions } = useExtensionOptions();
   const [activeTab, setActiveTab] = useState("");
 
   const tabServersId = useId();
 
   useEffect(() => {
-    ExtensionOptions.fromStorage().then((result) => {
-      setExtensionOptions(result);
-      setActiveTab(Object.keys(result.servers)[0] ?? "");
-    });
-  }, []);
-
-  applyTheme(extensionOptions.theme);
+    setActiveTab(Object.keys(extensionOptions.servers)[0] ?? "");
+  }, [extensionOptions.servers]);
 
   if (Object.keys(extensionOptions.servers).length === 0) {
     return (
@@ -33,7 +27,7 @@ function ServersTabs() {
     <Tabs id={tabServersId} defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3">
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
         <Tab key={`tab-${id}`} eventKey={id} title={server.name}>
-          <ServerTab key={`server-${id}`} setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions} server={server} />
+          <ServerTab key={`server-${id}`} server={server} />
         </Tab>
       ))}
     </Tabs>
