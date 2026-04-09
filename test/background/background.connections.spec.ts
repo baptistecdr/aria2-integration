@@ -1,4 +1,3 @@
-// @ts-expect-error No types available
 import Aria2 from "@baptistecdr/aria2";
 import { expect } from "vitest";
 import { createConnections } from "@/background/background";

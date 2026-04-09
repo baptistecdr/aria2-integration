@@ -1,4 +1,3 @@
-// @ts-expect-error No types available
 import Aria2 from "@baptistecdr/aria2";
 import { expect, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
@@ -6,6 +5,12 @@ import { captureTorrentFromURL, captureURL } from "@/aria2-extension";
 import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background";
 import ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
+
+vi.mock("@/aria2-extension", () => ({
+  captureTorrentFromURL: vi.fn(),
+  captureURL: vi.fn(),
+  isChromium: vi.fn().mockReturnValue(false),
+}));
 
 describe("Capture Download Item", () => {
   function createDownloadItem(url: string, customize?: (di: Downloads.DownloadItem) => void) {
@@ -187,12 +192,6 @@ describe("Capture Download Item", () => {
     expect(captured).toBe(expected);
   });
 
-  vi.mock("@/aria2-extension", () => ({
-    captureTorrentFromURL: vi.fn(),
-    captureURL: vi.fn(),
-    isChromium: vi.fn().mockReturnValue(false),
-  }));
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -235,10 +234,10 @@ describe("Capture Download Item", () => {
       di.filename = filename;
     });
 
-    await captureDownloadItem(aria2, server, downloadItem, "", "", false);
+    await captureDownloadItem(aria2, server, downloadItem, "", "", false, false);
 
     expect(captureTorrentFromURL).toHaveBeenCalledTimes(1);
-    expect(captureTorrentFromURL).toHaveBeenCalledWith(aria2, server, url, undefined, filename);
+    expect(captureTorrentFromURL).toHaveBeenCalledWith(aria2, server, url, false, undefined, filename);
     expect(captureURL).not.toHaveBeenCalled();
   });
 
@@ -249,10 +248,10 @@ describe("Capture Download Item", () => {
     const aria2 = vi.mockObject(new Aria2());
     const server = vi.mockObject(new Server());
 
-    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", false);
+    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", false, false);
 
     expect(captureURL).toHaveBeenCalledTimes(1);
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.zip", "referer", "cookies", undefined, "file.zip");
+    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.zip", "referer", "cookies", false, undefined, "file.zip");
     expect(captureTorrentFromURL).not.toHaveBeenCalled();
   });
 
@@ -263,10 +262,10 @@ describe("Capture Download Item", () => {
     const aria2 = vi.mockObject(new Aria2());
     const server = vi.mockObject(new Server());
 
-    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true);
+    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);
 
     expect(captureTorrentFromURL).toHaveBeenCalledTimes(1);
-    expect(captureTorrentFromURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.torrent", "/path/to", "file.torrent");
+    expect(captureTorrentFromURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.torrent", false, "/path/to", "file.torrent");
     expect(captureURL).not.toHaveBeenCalled();
   });
 
@@ -277,10 +276,10 @@ describe("Capture Download Item", () => {
     const aria2 = vi.mockObject(new Aria2());
     const server = vi.mockObject(new Server());
 
-    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true);
+    await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);
 
     expect(captureURL).toHaveBeenCalledTimes(1);
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.zip", "referer", "cookies", "/path/to", "file.zip");
+    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.zip", "referer", "cookies", false, "/path/to", "file.zip");
     expect(captureTorrentFromURL).not.toHaveBeenCalled();
   });
 });

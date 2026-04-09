@@ -1,3 +1,4 @@
+import Aria2 from "@baptistecdr/aria2";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type Server from "@/models/server";
@@ -8,15 +9,20 @@ vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,
 }));
 
+vi.mock("@baptistecdr/aria2", () => ({
+  default: vi.fn(function (this: Aria2) {
+    this.call = vi.fn().mockResolvedValue({});
+    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
+  }),
+}));
+
 describe("ServerTask", () => {
   const server: Server = {
     uuid: "test-uuid",
     name: "Test Server",
     rpcParameters: {},
   } as Server;
-  const aria2 = {
-    call: vi.fn(),
-  };
+  const aria2 = new Aria2();
   let task: Task;
 
   beforeEach(() => {
@@ -66,7 +72,7 @@ describe("ServerTask", () => {
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
     expect(screen.getByText(/taskStatusComplete/)).toBeInTheDocument();
-    expect(screen.queryByText(/∞/)).not.toBeInTheDocument(); // ETA not shown for completed tasks
+    expect(screen.queryByText(/∞/)).not.toBeInTheDocument(); // ETA isn't shown for completed tasks
 
     const progressBar = document.querySelector(".bg-success");
     expect(progressBar).toBeInTheDocument();

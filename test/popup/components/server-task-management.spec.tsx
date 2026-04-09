@@ -1,3 +1,4 @@
+import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { captureURL } from "@/aria2-extension";
@@ -5,7 +6,14 @@ import type Server from "@/models/server";
 import ServerTaskManagement from "@/popup/components/server-task-management";
 import type { Task } from "@/popup/models/task";
 
-const aria2 = { call: vi.fn() };
+vi.mock("@baptistecdr/aria2", () => ({
+  default: vi.fn(function (this: Aria2) {
+    this.call = vi.fn().mockResolvedValue({});
+    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
+  }),
+}));
+
+const aria2 = new Aria2();
 const server: Server = { uuid: "server-1" } as Server;
 
 vi.mock("@/aria2-extension", async () => {
@@ -32,10 +40,6 @@ function createTask(overrides: Partial<Task>): Task {
 }
 
 describe("ServerTaskManagement", () => {
-  beforeEach(() => {
-    aria2.call.mockClear();
-  });
-
   it("shows pause button when task is active", () => {
     const task = createTask({ isActive: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
@@ -72,7 +76,7 @@ describe("ServerTaskManagement", () => {
     const task = createTask({ isError: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "play-pause-retry" }));
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "http://test", "", "", "/downloads", "file.txt");
+    expect(captureURL).toHaveBeenCalledWith(aria2, server, "http://test", "", "", false, "/downloads", "file.txt");
   });
 
   it("calls aria2.removeDownloadResult when deleting completed task", () => {
