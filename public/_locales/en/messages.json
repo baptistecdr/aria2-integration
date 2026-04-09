@@ -266,5 +266,80 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "No server available to capture downloads."
+  },
+  "folderPickerTitle": {
+    "message": "Download to..."
+  },
+  "folderPickerSelectFolder": {
+    "message": "Select destination folder"
+  },
+  "folderPickerUseCustomPath": {
+    "message": "Use custom path"
+  },
+  "folderPickerCustomPath": {
+    "message": "Custom path"
+  },
+  "folderPickerCustomPathPlaceholder": {
+    "message": "/path/to/folder"
+  },
+  "folderPickerDownload": {
+    "message": "Download"
+  },
+  "folderPickerCancel": {
+    "message": "Cancel"
+  },
+  "folderPickerNoPresets": {
+    "message": "No folder presets configured"
+  },
+  "folderPickerNoFolderSelected": {
+    "message": "Please select a folder or enter a custom path"
+  },
+  "extensionOptionsAskForFolder": {
+    "message": "Ask for folder on download"
+  },
+  "extensionOptionsAskForFolderDescription": {
+    "message": "Show folder picker when downloading via context menu"
+  },
+  "extensionOptionsDefaultFolder": {
+    "message": "Default download folder"
+  },
+  "extensionOptionsDefaultFolderPlaceholder": {
+    "message": "/path/to/downloads"
+  },
+  "extensionOptionsDefaultFolderDescription": {
+    "message": "Leave empty to use server default. Used when folder picker is disabled."
+  },
+  "extensionOptionsFolderPresets": {
+    "message": "Folder Presets"
+  },
+  "extensionOptionsFolderPresetsDescription": {
+    "message": "Quick access folders for the download picker"
+  },
+  "folderPresetName": {
+    "message": "Name"
+  },
+  "folderPresetPath": {
+    "message": "Path"
+  },
+  "folderPresetNamePlaceholder": {
+    "message": "Preset name"
+  },
+  "folderPresetPathPlaceholder": {
+    "message": "/path/to/folder"
+  },
+  "folderPresetAdd": {
+    "message": "Add"
+  },
+  "folderPickerNoPresetsHint": {
+    "message": "No folder presets configured. Enter a custom path below or"
+  },
+  "folderPickerAddPresets": {
+    "message": "add presets in Options"
+  },
+  "folderPickerDownloadNormally": {
+    "message": "Browser"
+  },
+  "folderPickerDownloadNormallyHint": {
+    "message": "Download using browser's default downloader instead of Aria2"
   }
 }
