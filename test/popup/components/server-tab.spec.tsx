@@ -1,12 +1,22 @@
-// @ts-expect-error No type available
 import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
 
+vi.mock("@/extension-options-provider", () => ({
+  useExtensionOptions: vi.fn(),
+}));
+
 vi.mock("@baptistecdr/aria2", () => ({
   default: vi.fn(function (this: Aria2) {
-    this.call = vi.fn().mockResolvedValue({});
+    this.call = vi.fn().mockResolvedValue({
+      downloadSpeed: "1048576",
+      uploadSpeed: "1048576",
+      numActive: "0",
+      numWaiting: "0",
+      numStopped: "0",
+      numStoppedTotal: "0",
+    });
     this.multicall = vi.fn().mockResolvedValue([[], [], []]);
   }),
 }));
@@ -23,37 +33,34 @@ vi.mock("@/popup/components/server-task", () => ({
   default: ({ task }: any) => <div>ServerTask {task.gid}</div>,
 }));
 
-const extensionOptions = { servers: { s1: { name: "Server1" } } };
 const server = { name: "Server1" };
 
 describe("ServerTab", () => {
-  const setExtensionOptions = vi.fn();
-
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it("shows stats and buttons after loading", async () => {
-    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
-    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
 
     expect(screen.getByText(/1 MB\/s/)).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /serverAdd/ })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /serverPurge/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Translated: serverAdd/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Translated: serverPurge/ })).toBeInTheDocument();
   });
 
   it("shows ServerAddTasks when Add button is clicked", async () => {
-    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
-    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
 
-    fireEvent.click(screen.getByRole("button", { name: /serverAdd/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Translated: serverAdd/ }));
 
     expect(screen.getByText("ServerAddTasks")).toBeInTheDocument();
   });
 
   it("shows ServerQuickOptions when gear button is clicked", async () => {
-    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
-    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument(), { timeout: 5000 });
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument(), { timeout: 5000 });
 
     fireEvent.click(screen.getByRole("button", { name: "quick-options" }));
 
@@ -61,14 +68,21 @@ describe("ServerTab", () => {
   });
 
   it("calls aria2.purgeDownloadResult when Purge button is clicked", async () => {
-    const mockCall = vi.fn().mockResolvedValue({});
+    const mockCall = vi.fn().mockResolvedValue({
+      downloadSpeed: "1048576",
+      uploadSpeed: "1048576",
+      numActive: "0",
+      numWaiting: "0",
+      numStopped: "0",
+      numStoppedTotal: "0",
+    });
     vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
       this.call = mockCall;
       this.multicall = vi.fn().mockResolvedValue([[], [], []]);
     });
-    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
-    await waitFor(() => expect(screen.getByText(/serverNoTasks/)).toBeInTheDocument());
-    fireEvent.click(screen.getByRole("button", { name: /serverPurge/ }));
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
+    fireEvent.click(screen.getByRole("button", { name: /Translated: serverPurge/ }));
     expect(mockCall).toHaveBeenCalledWith("aria2.purgeDownloadResult");
   });
 
@@ -80,10 +94,10 @@ describe("ServerTab", () => {
       this.multicall = mockMulticall;
     });
 
-    render(<ServerTab setExtensionOptions={setExtensionOptions} extensionOptions={extensionOptions as any} server={server as any} />);
+    render(<ServerTab server={server as any} />);
 
-    await waitFor(() => expect(screen.getByText(/serverError/)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/Translated: serverError/)).toBeInTheDocument());
 
-    expect(screen.queryByText(/serverNoTasks/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Translated: serverNoTasks/)).not.toBeInTheDocument();
   });
 });

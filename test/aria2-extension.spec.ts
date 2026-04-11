@@ -1,9 +1,25 @@
+import Aria2 from "@baptistecdr/aria2";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as aria2Ext from "@/aria2-extension";
 import type Server from "@/models/server";
 import browser from "./setupTests";
 
+const aria2Call = vi.fn();
+
+vi.mock("@baptistecdr/aria2", () => ({
+  default: vi.fn(function (this: Aria2) {
+    this.call = aria2Call;
+    this.multicall = vi.fn();
+  }),
+}));
+
+const aria2 = new Aria2();
+
 describe("isFirefox", () => {
+  afterEach(() => {
+    browser.downloads.onDeterminingFilename = undefined;
+  });
+
   it("returns true if downloads.onDeterminingFilename is undefined", () => {
     expect(aria2Ext.isFirefox()).toBe(true);
   });
@@ -11,11 +27,16 @@ describe("isFirefox", () => {
   it("returns false if downloads.onDeterminingFilename is defined", () => {
     browser.downloads.onDeterminingFilename = {};
     expect(aria2Ext.isFirefox()).toBe(false);
-    browser.downloads.onDeterminingFilename = undefined;
   });
 });
 
 describe("encodeFileToBase64", () => {
+  const originalFileReader = global.FileReader;
+
+  afterEach(() => {
+    global.FileReader = originalFileReader;
+  });
+
   it("resolves with base64 string for valid file", async () => {
     const file = new Blob(["test"], { type: "text/plain" });
     Object.defineProperty(file, "name", { value: "test.txt" });
@@ -26,7 +47,6 @@ describe("encodeFileToBase64", () => {
 
   it("rejects if FileReader fails", async () => {
     const file = new Blob(["test"]);
-    const original = global.FileReader;
     global.FileReader = class {
       onerror: any;
       onloadend: any;
@@ -35,13 +55,12 @@ describe("encodeFileToBase64", () => {
         this.onerror();
       }
     } as any;
+
     await expect(aria2Ext.encodeFileToBase64(file)).rejects.toThrow();
-    global.FileReader = original;
   });
 
   it("rejects if result doesn't contain valid base64", async () => {
     const file = new Blob(["test"]);
-    const original = global.FileReader;
     global.FileReader = class {
       onloadend: any;
       result = "invalid";
@@ -50,13 +69,12 @@ describe("encodeFileToBase64", () => {
         setTimeout(() => this.onloadend(), 0);
       }
     } as any;
-    await expect(aria2Ext.encodeFileToBase64(file)).rejects.toThrow("Cannot get base64");
-    global.FileReader = original;
+
+    await expect(aria2Ext.encodeFileToBase64(file)).rejects.toThrow("Cannot get base64 encoded string");
   });
 
   it("rejects if result is empty", async () => {
     const file = new Blob(["test"]);
-    const original = global.FileReader;
     global.FileReader = class {
       onloadend: any;
       result = null;
@@ -65,12 +83,16 @@ describe("encodeFileToBase64", () => {
         setTimeout(() => this.onloadend(), 0);
       }
     } as any;
+
     await expect(aria2Ext.encodeFileToBase64(file)).rejects.toThrow("Result is empty");
-    global.FileReader = original;
   });
 });
 
 describe("showNotification", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("calls browser.notifications.create with correct options", async () => {
     await aria2Ext.showNotification("Test message");
     expect(browser.notifications.create).toHaveBeenCalledWith(undefined, {
@@ -83,11 +105,14 @@ describe("showNotification", () => {
 });
 
 describe("download", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     global.fetch = vi.fn();
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
@@ -106,12 +131,15 @@ describe("download", () => {
 });
 
 describe("captureTorrentFromFile", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   const server = {
     rpcParameters: { key: "value" },
   } as unknown as Server;
 
   it("calls aria2.addTorrent for .torrent file", async () => {
-    const aria2 = { call: vi.fn() };
     const file = new File(["data"], "file.torrent");
     Object.defineProperty(file, "name", { value: "file.torrent" });
 
@@ -121,7 +149,6 @@ describe("captureTorrentFromFile", () => {
   });
 
   it("calls aria2.addMetalink for non-torrent file", async () => {
-    const aria2 = { call: vi.fn() };
     const file = new Blob(["data"]);
     Object.defineProperty(file, "name", { value: "file.meta4" });
 
@@ -132,57 +159,60 @@ describe("captureTorrentFromFile", () => {
 });
 
 describe("captureTorrentFromURL", () => {
+  const originalFetch = global.fetch;
+
   beforeEach(() => {
     global.fetch = vi.fn().mockResolvedValue({ blob: () => new Blob(["data"]) });
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
+    global.fetch = originalFetch;
     vi.restoreAllMocks();
   });
 
   it("calls aria2.addTorrent for .torrent url", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.torrent");
+    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.torrent", false);
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("calls aria2.addTorrent when filename ends with .torrent", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test/download", undefined, "file.torrent");
+    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test/download", false, undefined, "file.torrent");
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("calls aria2.addMetalink for .meta4 url", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4");
+    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4", false);
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("includes directory in parameters when provided", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4", "/downloads");
+    await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4", false, "/downloads");
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value", dir: "/downloads" });
   });
 });
 
 describe("captureURL", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("calls aria2.addUri for normal url", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie", "/downloads", "output.mp4");
+    await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie", false, "/downloads", "output.mp4");
 
     expect(aria2.call).toHaveBeenCalledWith(
       "aria2.addUri",
@@ -198,9 +228,8 @@ describe("captureURL", () => {
 
   it("calls aria2.addUri without directory or filename if not provided", async () => {
     const server = { rpcParameters: { key: "value" } } as unknown as Server;
-    const aria2 = { call: vi.fn() };
 
-    await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie");
+    await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie", false);
 
     expect(aria2.call).toHaveBeenCalledWith(
       "aria2.addUri",
@@ -211,7 +240,7 @@ describe("captureURL", () => {
       }),
     );
 
-    expect(aria2.call.mock.calls[0][2]).not.toHaveProperty("dir");
-    expect(aria2.call.mock.calls[0][2]).not.toHaveProperty("out");
+    expect(vi.mocked(aria2.call).mock.calls[0][2]).not.toHaveProperty("dir");
+    expect(vi.mocked(aria2.call).mock.calls[0][2]).not.toHaveProperty("out");
   });
 });

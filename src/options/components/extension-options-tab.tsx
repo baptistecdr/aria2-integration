@@ -1,33 +1,37 @@
 import { filesize } from "filesize";
-import { type ChangeEvent, useCallback, useEffect, useId, useState } from "react";
+import { type ChangeEvent, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
 import { isChromium } from "@/aria2-extension";
+import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";
 
-interface Props {
-  extensionOptions: ExtensionOptions;
-  setExtensionOptions: React.Dispatch<React.SetStateAction<ExtensionOptions>>;
+const FILESIZE_BASE = { base: 2, output: "object" } as const;
+
+function serializeExcludedOption(excludedOptions: string): string[] {
+  return excludedOptions
+    .trim()
+    .split(/\s*,+\s*/)
+    .filter((s) => s !== "");
 }
 
-function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
-  const deserializeExcludedOption = useCallback((excludedOption: string[]) => {
-    return excludedOption.join(", ");
-  }, []);
+function deserializeExcludedOption(excludedOption: string[]): string {
+  return excludedOption.join(", ");
+}
 
-  const formatFileSize = useCallback((fileSizeInBytes: number) => {
-    const { value, exponent } = filesize(fileSizeInBytes, {
-      base: 2,
-      output: "object",
-    });
-    return [value as number, exponent];
-  }, []);
+function parseFileSize(fileSizeInBytes: number): [number, number] {
+  const { value, exponent } = filesize(fileSizeInBytes, FILESIZE_BASE);
+  return [value as number, exponent as number];
+}
+
+function ExtensionOptionsTab() {
+  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
 
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
-  const [minFileSize, setMinFileSize] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[0]);
+  const [minFileSize, setMinFileSize] = useState(parseFileSize(extensionOptions.minFileSizeInBytes)[0]);
   const [excludedProtocols, setExcludedProtocols] = useState(deserializeExcludedOption(extensionOptions.excludedProtocols));
   const [excludedSites, setExcludedSites] = useState(deserializeExcludedOption(extensionOptions.excludedSites));
   const [excludedFileTypes, setExcludedFileTypes] = useState(deserializeExcludedOption(extensionOptions.excludedFileTypes));
@@ -38,23 +42,25 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
   const [theme, setTheme] = useState(extensionOptions.theme);
   const [alertProps, setAlertProps] = useState(new AlertProps());
   const [showModal, setShowModal] = useState(false);
-  const [minFileSizeExponent, setMinFileSizeExponent] = useState(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
+  const [minFileSizeExponent, setMinFileSizeExponent] = useState(parseFileSize(extensionOptions.minFileSizeInBytes)[1]);
 
   const formMinimumFileSizeExponentId = useId();
   const minimumFileSizeDescriptionId = useId();
-
-  function serializeExcludedOption(excludedOptions: string) {
-    return excludedOptions
-      .trim()
-      .split(/\s*,+\s*/)
-      .filter((s) => s !== "");
-  }
+  const excludedProtocolsDescriptionId = useId();
+  const excludedSitesDescriptionId = useId();
+  const excludedFileTypesDescriptionId = useId();
+  const notifyUrlIsAddedId = useId();
+  const notifyFileIsAddedId = useId();
+  const notifyErrorOccursId = useId();
+  const themeLightId = useId();
+  const themeDarkId = useId();
+  const themeAutoId = useId();
 
   useEffect(() => {
     setCaptureDownloads(extensionOptions.captureDownloads);
     setCaptureServer(extensionOptions.captureServer);
-    setMinFileSize(formatFileSize(extensionOptions.minFileSizeInBytes)[0]);
-    setMinFileSizeExponent(formatFileSize(extensionOptions.minFileSizeInBytes)[1]);
+    setMinFileSize(parseFileSize(extensionOptions.minFileSizeInBytes)[0]);
+    setMinFileSizeExponent(parseFileSize(extensionOptions.minFileSizeInBytes)[1]);
     setExcludedProtocols(deserializeExcludedOption(extensionOptions.excludedProtocols));
     setExcludedSites(deserializeExcludedOption(extensionOptions.excludedSites));
     setExcludedFileTypes(deserializeExcludedOption(extensionOptions.excludedFileTypes));
@@ -75,8 +81,6 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
     extensionOptions.notifyFileIsAdded,
     extensionOptions.notifyErrorOccurs,
     extensionOptions.theme,
-    formatFileSize,
-    deserializeExcludedOption,
   ]);
 
   const onChangeCaptureServer = (event: ChangeEvent<HTMLSelectElement>) => {
@@ -194,7 +198,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedProtocols}
             onChange={(e) => setExcludedProtocols(e.target.value)}
           />
-          <FormText id={useId()} muted>
+          <FormText id={excludedProtocolsDescriptionId} muted>
             {i18n("extensionOptionsExcludeProtocolsDescription")}
           </FormText>
         </Form.Group>
@@ -211,7 +215,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedSites}
             onChange={(e) => setExcludedSites(e.target.value)}
           />
-          <FormText id={useId()} muted>
+          <FormText id={excludedSitesDescriptionId} muted>
             {i18n("extensionOptionsExcludeSitesDescription")}
           </FormText>
         </Form.Group>
@@ -228,7 +232,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
             value={excludedFileTypes}
             onChange={(e) => setExcludedFileTypes(e.target.value)}
           />
-          <Form.Text id={useId()} muted>
+          <Form.Text id={excludedFileTypesDescriptionId} muted>
             {i18n("extensionOptionsExcludeFileTypesDescription")}
           </Form.Text>
         </Form.Group>
@@ -269,21 +273,21 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
       <Col xs={12} sm={12} className="mb-3">
         <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
         <Form.Check
-          id={useId()}
+          id={notifyUrlIsAddedId}
           checked={notifyUrlIsAdded}
           onChange={(e) => setNotifyUrlIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyUrlIsAdded")}
           aria-label={i18n("extensionOptionsNotifyUrlIsAdded")}
         />
         <Form.Check
-          id={useId()}
+          id={notifyFileIsAddedId}
           checked={notifyFileIsAdded}
           onChange={(e) => setNotifyFileIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyFileIsAdded")}
           aria-label={i18n("extensionOptionsNotifyFileIsAdded")}
         />
         <Form.Check
-          id={useId()}
+          id={notifyErrorOccursId}
           checked={notifyErrorOccurs}
           onChange={(e) => setNotifyErrorOccurs(e.target.checked)}
           label={i18n("extensionOptionsNotifyErrorOccurs")}
@@ -300,7 +304,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeLight")}
               name="group-theme"
               type="radio"
-              id={useId()}
+              id={themeLightId}
               value={Theme.Light}
               checked={theme === Theme.Light}
               onChange={(e) => setTheme(e.target.value as Theme)}
@@ -310,7 +314,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeDark")}
               name="group-theme"
               type="radio"
-              id={useId()}
+              id={themeDarkId}
               value={Theme.Dark}
               checked={theme === Theme.Dark}
               onChange={(e) => setTheme(e.target.value as Theme)}
@@ -320,7 +324,7 @@ function ExtensionOptionsTab({ extensionOptions, setExtensionOptions }: Props) {
               label={i18n("extensionOptionsThemeAuto")}
               name="group-theme"
               type="radio"
-              id={useId()}
+              id={themeAutoId}
               value={Theme.Auto}
               checked={theme === Theme.Auto}
               onChange={(e) => setTheme(e.target.value as Theme)}

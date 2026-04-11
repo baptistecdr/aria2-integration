@@ -1,30 +1,51 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { useExtensionOptions } from "@/extension-options-provider";
 import type ExtensionOptions from "@/models/extension-options";
 import Server from "@/models/server";
+import ServerIncognitoModeOptions from "@/models/server-incognito-mode-options";
 import ServerOptionsTab from "@/options/components/server-options-tab";
 
 vi.mock("@/i18n", () => ({
   default: (key: string) => key,
 }));
 
+vi.mock("@/extension-options-provider", () => ({
+  useExtensionOptions: vi.fn(),
+  setExtensionOptions: vi.fn(),
+}));
+
 describe("ServerOptionsTab", () => {
-  const server = new Server("test-uuid", "Test Server", true, "localhost", 6800, "/jsonrpc", "secret123", { split: "5" });
-
+  const addServer = vi.fn();
   const extensionOptions = {
-    addServer: vi.fn().mockResolvedValue({}),
+    addServer,
   } as unknown as ExtensionOptions;
-
   const setExtensionOptions = vi.fn();
+  const server = new Server(
+    "test-uuid",
+    "Test Server",
+    true,
+    "localhost",
+    6800,
+    "/jsonrpc",
+    "secret123",
+    { split: "5" },
+    new ServerIncognitoModeOptions(true, { split: "6" }),
+  );
   const deleteServer = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
     vi.clearAllMocks();
+
+    vi.mocked(useExtensionOptions).mockReturnValue({
+      extensionOptions,
+      setExtensionOptions,
+    } as any);
   });
 
-  it("renders with server data", () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+  it("renders with server data", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     expect(screen.getByLabelText("serverOptionsName")).toHaveValue("Test Server");
     expect(screen.getByLabelText("serverOptionsHost")).toHaveValue("localhost");
@@ -32,11 +53,15 @@ describe("ServerOptionsTab", () => {
     expect(screen.getByLabelText("serverOptionsSecureConnection")).toBeChecked();
     expect(screen.getByLabelText("serverOptionsUrl")).toHaveValue("https://localhost:6800/jsonrpc");
     expect(screen.getByLabelText("serverOptionsSecret")).toHaveValue("secret123");
-    expect(screen.getByLabelText("serverOptionsRpcParameters")).toHaveValue("split: 5");
+    const serverOptionsRpcParameters = await screen.findAllByLabelText("serverOptionsRpcParameters");
+    expect(screen.getByLabelText("serverOptionsAutomaticallyPurgeDownloads")).toBeChecked();
+    expect(serverOptionsRpcParameters).toHaveLength(2);
+    expect(serverOptionsRpcParameters[0]).toHaveValue("split: 5");
+    expect(serverOptionsRpcParameters[1]).toHaveValue("split: 6");
   });
 
   it("shows/hides password when toggle button is clicked", async () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     const passwordInput = screen.getByLabelText("serverOptionsSecret");
     const toggleButton = passwordInput.nextElementSibling as HTMLElement;
@@ -49,7 +74,7 @@ describe("ServerOptionsTab", () => {
   });
 
   it("calls addServer when form is submitted with valid data", async () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     await userEvent.clear(screen.getByLabelText("serverOptionsName"));
     await userEvent.type(screen.getByLabelText("serverOptionsName"), "Updated Server");
@@ -69,7 +94,7 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(extensionOptions.addServer).toHaveBeenCalledWith(
+    expect(addServer).toHaveBeenCalledWith(
       expect.objectContaining({
         name: "Updated Server",
         host: "127.0.0.1",
@@ -83,7 +108,7 @@ describe("ServerOptionsTab", () => {
   });
 
   it("calls deleteServer when delete button is clicked", async () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     const deleteButton = screen.getByText("serverOptionsDelete");
     await userEvent.click(deleteButton);
@@ -92,34 +117,41 @@ describe("ServerOptionsTab", () => {
   });
 
   it("serializes and deserializes RPC parameters correctly", async () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
-    expect(screen.getByLabelText("serverOptionsRpcParameters")).toHaveValue("split: 5");
+    const serverOptionsRpcParameters = await screen.findAllByLabelText("serverOptionsRpcParameters");
 
-    await userEvent.clear(screen.getByLabelText("serverOptionsRpcParameters"));
-    await userEvent.type(screen.getByLabelText("serverOptionsRpcParameters"), "split: 5\nproxy: http://localhost:8080");
+    expect(serverOptionsRpcParameters).toHaveLength(2);
+    expect(serverOptionsRpcParameters[0]).toHaveValue("split: 5");
+    expect(serverOptionsRpcParameters[1]).toHaveValue("split: 6");
+
+    await userEvent.clear(serverOptionsRpcParameters[0]);
+    await userEvent.type(serverOptionsRpcParameters[0], "split: 5\nproxy: http://localhost:8080");
+
+    await userEvent.clear(serverOptionsRpcParameters[1]);
+    await userEvent.type(serverOptionsRpcParameters[1], "split: 6\nproxy: http://localhost:8081");
 
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(extensionOptions.addServer).toHaveBeenCalledWith(
+    expect(addServer).toHaveBeenCalledWith(
       expect.objectContaining({
         rpcParameters: {
           split: "5",
           proxy: "http://localhost:8080",
         },
+        incognitoModeOptions: new ServerIncognitoModeOptions(true, {
+          split: "6",
+          proxy: "http://localhost:8081",
+        }),
       }),
     );
   });
 
   it("shows error alert when server save fails", async () => {
-    const failingExtensionOptions = {
-      addServer: vi.fn().mockRejectedValue(new Error("Save failed")),
-    } as unknown as ExtensionOptions;
+    addServer.mockRejectedValueOnce(new Error("Save failed"));
 
-    render(
-      <ServerOptionsTab extensionOptions={failingExtensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />,
-    );
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
@@ -129,7 +161,7 @@ describe("ServerOptionsTab", () => {
   });
 
   it("shows empty URL when server host is empty", async () => {
-    render(<ServerOptionsTab extensionOptions={extensionOptions} setExtensionOptions={setExtensionOptions} server={server} deleteServer={deleteServer} />);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     await userEvent.clear(screen.getByLabelText("serverOptionsHost"));
 

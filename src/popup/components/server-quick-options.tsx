@@ -1,60 +1,38 @@
-import type { ChangeEvent, Dispatch, SetStateAction } from "react";
+import type { ChangeEvent } from "react";
 import { Col, Form, Row } from "react-bootstrap";
+import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
 
 interface Props {
-  setExtensionOptions: Dispatch<SetStateAction<ExtensionOptions>>;
-  extensionOptions: ExtensionOptions;
   server: Server;
 }
 
-function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: Props) {
-  const onChangeCaptureDownloads = async (e: ChangeEvent<HTMLInputElement>) => {
-    const newExtensionsOptions = new ExtensionOptions(
-      extensionOptions.servers,
-      e.target.checked ? server.uuid : "",
-      e.target.checked,
-      extensionOptions.minFileSizeInBytes,
-      extensionOptions.excludedProtocols,
-      extensionOptions.excludedSites,
-      extensionOptions.excludedFileTypes,
-      extensionOptions.useCompleteFilePath,
-      extensionOptions.notifyUrlIsAdded,
-      extensionOptions.notifyFileIsAdded,
-      extensionOptions.notifyErrorOccurs,
-      extensionOptions.theme,
-    );
-    await newExtensionsOptions.toStorage();
-    setExtensionOptions(newExtensionsOptions);
+function ServerQuickOptions({ server }: Props) {
+  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+
+  const isCapturingOnThisServer = extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid;
+
+  const updateOptions = async (overrides: Parameters<typeof extensionOptions.withOverrides>[0]) => {
+    const updatedOptions = extensionOptions.withOverrides(overrides);
+    await updatedOptions.toStorage();
+    setExtensionOptions(updatedOptions);
   };
 
-  const onChangeUseCompleteFilePath = async (e: ChangeEvent<HTMLInputElement>) => {
-    const newExtensionsOptions = new ExtensionOptions(
-      extensionOptions.servers,
-      extensionOptions.captureServer,
-      extensionOptions.captureDownloads,
-      extensionOptions.minFileSizeInBytes,
-      extensionOptions.excludedProtocols,
-      extensionOptions.excludedSites,
-      extensionOptions.excludedFileTypes,
-      e.target.checked,
-      extensionOptions.notifyUrlIsAdded,
-      extensionOptions.notifyFileIsAdded,
-      extensionOptions.notifyErrorOccurs,
-      extensionOptions.theme,
-    );
-    await newExtensionsOptions.toStorage();
-    setExtensionOptions(newExtensionsOptions);
-  };
+  const onChangeCaptureDownloads = (e: ChangeEvent<HTMLInputElement>) =>
+    updateOptions({
+      captureServer: e.target.checked ? server.uuid : "",
+      captureDownloads: e.target.checked,
+    });
+
+  const onChangeUseCompleteFilePath = (e: ChangeEvent<HTMLInputElement>) => updateOptions({ useCompleteFilePath: e.target.checked });
 
   return (
     <Row className="mt-2 gx-0 ps-2 pe-2">
       <Col xs={12} sm={12}>
         <Form.Group controlId="form-capture-downloads">
           <Form.Check
-            checked={extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid}
+            checked={isCapturingOnThisServer}
             label={i18n("extensionOptionsCaptureDownloads")}
             aria-label={i18n("extensionOptionsCaptureDownloads")}
             onChange={onChangeCaptureDownloads}
@@ -64,7 +42,7 @@ function ServerQuickOptions({ setExtensionOptions, extensionOptions, server }: P
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-use-complete-path">
           <Form.Check
-            disabled={!extensionOptions.captureDownloads || extensionOptions.captureServer !== server.uuid}
+            disabled={!isCapturingOnThisServer}
             checked={extensionOptions.useCompleteFilePath}
             label={i18n("extensionOptionsUseCompleteFilePath")}
             aria-label={i18n("extensionOptionsUseCompleteFilePath")}

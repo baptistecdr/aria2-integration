@@ -1,4 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
+import ServerIncognitoModeOptions from "@/models/server-incognito-mode-options";
 
 export default class Server {
   constructor(
@@ -10,13 +11,6 @@ export default class Server {
     public readonly path: string = "/jsonrpc",
     public readonly secret: string = "",
     public readonly rpcParameters: Record<string, string> = {},
+    public readonly incognitoModeOptions: ServerIncognitoModeOptions = new ServerIncognitoModeOptions(),
   ) {}
-
-  serialize(): string {
-    return JSON.stringify(this);
-  }
-
-  static deserialize(server: string): Server {
-    return Object.assign(new Server(), JSON.parse(server));
-  }
 }

@@ -37,6 +37,10 @@ export default class ExtensionOptions {
     return this;
   }
 
+  withOverrides(overrides: Partial<ExtensionOptions>): ExtensionOptions {
+    return Object.assign(this.copy(), overrides);
+  }
+
   async addServer(server: Server): Promise<ExtensionOptions> {
     const newExtensionOptions = this.copy();
     newExtensionOptions.servers[server.uuid] = server;
