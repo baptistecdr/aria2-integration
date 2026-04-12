@@ -29,12 +29,10 @@ const TaskSchema = z.object({
   downloadSpeed: parseIntStr,
   files: z.array(FileSchema),
   gid: z.string(),
-  numSeeders: parseIntStr,
   status: z.enum(TaskStatus),
   totalLength: parseIntStr,
   uploadLength: parseIntStr,
   uploadSpeed: parseIntStr,
-  errorMessage: z.string(),
   dir: z.string(),
 });
 
@@ -48,12 +46,10 @@ export class Task implements TaskData {
   downloadSpeed: number;
   files: TaskData["files"];
   gid: string;
-  numSeeders: number;
   status: TaskStatus;
   totalLength: number;
   uploadLength: number;
   uploadSpeed: number;
-  errorMessage: string;
   dir: string;
 
   constructor(data: TaskData) {
@@ -63,12 +59,10 @@ export class Task implements TaskData {
     this.downloadSpeed = data.downloadSpeed;
     this.files = data.files;
     this.gid = data.gid;
-    this.numSeeders = data.numSeeders;
     this.status = data.status;
     this.totalLength = data.totalLength;
     this.uploadLength = data.uploadLength;
     this.uploadSpeed = data.uploadSpeed;
-    this.errorMessage = data.errorMessage;
     this.dir = data.dir;
   }
 

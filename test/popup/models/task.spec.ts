@@ -14,12 +14,10 @@ const baseTaskData = {
     },
   ],
   gid: "abc123",
-  numSeeders: "0",
   status: "active",
   totalLength: "1000",
   uploadLength: "0",
   uploadSpeed: "0",
-  errorMessage: "",
   dir: "/downloads",
 };
 
@@ -34,10 +32,8 @@ describe("Task.parse", () => {
     expect(task.totalLength).toBe(1000);
     expect(task.uploadLength).toBe(0);
     expect(task.uploadSpeed).toBe(0);
-    expect(task.numSeeders).toBe(0);
     expect(task.gid).toBe("abc123");
     expect(task.status).toBe(TaskStatus.Active);
-    expect(task.errorMessage).toBe("");
     expect(task.dir).toBe("/downloads");
   });
 
