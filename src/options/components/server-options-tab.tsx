@@ -46,12 +46,14 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
   const [serverSecret, setServerSecret] = useState(server.secret);
   const [serverRpcParameters, setServerRpcParameters] = useState(deserializeRpcParameters(server.rpcParameters));
   const [serverIncognitoModeAutomaticallyPurgeDownloads, setServerIncognitoModeAutomaticallyPurgeDownloads] = useState(
-    server.incognitoModeOptions.automaticallyPurgeDownloads,
+    server.incognitoModeOptions?.automaticallyPurgeDownloads ?? false,
   );
   const [serverIncognitoModeOverwriteRpcParameters, setServerIncognitoModeOverwriteRpcParameters] = useState(
-    server.incognitoModeOptions.overwriteRpcParameters,
+    server.incognitoModeOptions?.overwriteRpcParameters ?? false,
   );
-  const [serverIncognitoModeRpcParameters, setServerIncognitoModeRpcParameters] = useState(deserializeRpcParameters(server.incognitoModeOptions.rpcParameters));
+  const [serverIncognitoModeRpcParameters, setServerIncognitoModeRpcParameters] = useState(
+    deserializeRpcParameters(server.incognitoModeOptions?.rpcParameters || {}),
+  );
 
   const [validated, setValidated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
