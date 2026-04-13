@@ -31,7 +31,7 @@ describe("ServerOptionsTab", () => {
     "/jsonrpc",
     "secret123",
     { split: "5" },
-    new ServerIncognitoModeOptions(true, { split: "6" }),
+    new ServerIncognitoModeOptions(true, true, { split: "6" }),
   );
   const deleteServer = vi.fn().mockResolvedValue(undefined);
 
@@ -55,6 +55,7 @@ describe("ServerOptionsTab", () => {
     expect(screen.getByLabelText("serverOptionsSecret")).toHaveValue("secret123");
     const serverOptionsRpcParameters = await screen.findAllByLabelText("serverOptionsRpcParameters");
     expect(screen.getByLabelText("serverOptionsAutomaticallyPurgeDownloads")).toBeChecked();
+    expect(screen.getByLabelText("serverOptionsOverwriteRpcParameters")).toBeChecked();
     expect(serverOptionsRpcParameters).toHaveLength(2);
     expect(serverOptionsRpcParameters[0]).toHaveValue("split: 5");
     expect(serverOptionsRpcParameters[1]).toHaveValue("split: 6");
@@ -140,7 +141,7 @@ describe("ServerOptionsTab", () => {
           split: "5",
           proxy: "http://localhost:8080",
         },
-        incognitoModeOptions: new ServerIncognitoModeOptions(true, {
+        incognitoModeOptions: new ServerIncognitoModeOptions(true, true, {
           split: "6",
           proxy: "http://localhost:8081",
         }),
@@ -166,5 +167,137 @@ describe("ServerOptionsTab", () => {
     await userEvent.clear(screen.getByLabelText("serverOptionsHost"));
 
     expect(screen.getByLabelText("serverOptionsUrl")).toHaveValue("");
+  });
+
+  it("incognito RPC parameters textarea is enabled when overwriteRpcParameters is true", () => {
+    const serverWithOverwrite = new Server(
+      "test-uuid",
+      "Test Server",
+      true,
+      "localhost",
+      6800,
+      "/jsonrpc",
+      "secret123",
+      { split: "5" },
+      new ServerIncognitoModeOptions(false, true, { split: "6" }),
+    );
+
+    render(<ServerOptionsTab server={serverWithOverwrite} deleteServer={deleteServer} />);
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    expect(overwriteCheckbox).toBeChecked();
+
+    const allRpcTextareas = screen.getAllByLabelText("serverOptionsRpcParameters");
+    const incognitoRpcTextarea = allRpcTextareas[1];
+    expect(incognitoRpcTextarea).toBeEnabled();
+  });
+
+  it("incognito RPC parameters textarea is disabled when overwriteRpcParameters is false", () => {
+    const serverWithoutOverwrite = new Server(
+      "test-uuid",
+      "Test Server",
+      true,
+      "localhost",
+      6800,
+      "/jsonrpc",
+      "secret123",
+      { split: "5" },
+      new ServerIncognitoModeOptions(false, false, { split: "6" }),
+    );
+
+    render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    expect(overwriteCheckbox).not.toBeChecked();
+
+    const allRpcTextareas = screen.getAllByLabelText("serverOptionsRpcParameters");
+    const incognitoRpcTextarea = allRpcTextareas[1];
+    expect(incognitoRpcTextarea).toBeDisabled();
+  });
+
+  it("enables incognito RPC parameters textarea when overwriteRpcParameters checkbox is checked", async () => {
+    const serverWithoutOverwrite = new Server(
+      "test-uuid",
+      "Test Server",
+      true,
+      "localhost",
+      6800,
+      "/jsonrpc",
+      "secret123",
+      { split: "5" },
+      new ServerIncognitoModeOptions(false, false, {}),
+    );
+
+    render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
+
+    const allRpcTextareas = screen.getAllByLabelText("serverOptionsRpcParameters");
+    const incognitoRpcTextarea = allRpcTextareas[1];
+    expect(incognitoRpcTextarea).toBeDisabled();
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    await userEvent.click(overwriteCheckbox);
+
+    expect(incognitoRpcTextarea).toBeEnabled();
+  });
+
+  it("disables incognito RPC parameters textarea when overwriteRpcParameters checkbox is unchecked", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const allRpcTextareas = screen.getAllByLabelText("serverOptionsRpcParameters");
+    const incognitoRpcTextarea = allRpcTextareas[1];
+    expect(incognitoRpcTextarea).toBeEnabled();
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    await userEvent.click(overwriteCheckbox);
+
+    expect(incognitoRpcTextarea).toBeDisabled();
+  });
+
+  it("saves overwriteRpcParameters as false when checkbox is unchecked before submit", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    await userEvent.click(overwriteCheckbox);
+
+    const saveButton = screen.getByText("serverOptionsSave");
+    await userEvent.click(saveButton);
+
+    expect(addServer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        incognitoModeOptions: new ServerIncognitoModeOptions(true, false, { split: "6" }),
+      }),
+    );
+  });
+
+  it("saves overwriteRpcParameters as true when checkbox is checked before submit", async () => {
+    const serverWithoutOverwrite = new Server(
+      "test-uuid",
+      "Test Server",
+      true,
+      "localhost",
+      6800,
+      "/jsonrpc",
+      "secret123",
+      { split: "5" },
+      new ServerIncognitoModeOptions(false, false, {}),
+    );
+
+    render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
+
+    const overwriteCheckbox = screen.getByLabelText("serverOptionsOverwriteRpcParameters");
+    await userEvent.click(overwriteCheckbox);
+
+    const allRpcTextareas = screen.getAllByLabelText("serverOptionsRpcParameters");
+    const incognitoRpcTextarea = allRpcTextareas[1];
+    await userEvent.type(incognitoRpcTextarea, "split: 3");
+
+    const saveButton = screen.getByText("serverOptionsSave");
+    await userEvent.click(saveButton);
+
+    expect(addServer).toHaveBeenCalledWith(
+      expect.objectContaining({
+        incognitoModeOptions: new ServerIncognitoModeOptions(false, true, { split: "3" }),
+      }),
+    );
   });
 });

@@ -48,6 +48,9 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
   const [serverIncognitoModeAutomaticallyPurgeDownloads, setServerIncognitoModeAutomaticallyPurgeDownloads] = useState(
     server.incognitoModeOptions.automaticallyPurgeDownloads,
   );
+  const [serverIncognitoModeOverwriteRpcParameters, setServerIncognitoModeOverwriteRpcParameters] = useState(
+    server.incognitoModeOptions.overwriteRpcParameters,
+  );
   const [serverIncognitoModeRpcParameters, setServerIncognitoModeRpcParameters] = useState(deserializeRpcParameters(server.incognitoModeOptions.rpcParameters));
 
   const [validated, setValidated] = useState(false);
@@ -77,7 +80,11 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
             "/jsonrpc",
             serverSecret,
             serializeRpcParameters(serverRpcParameters),
-            new ServerIncognitoModeOptions(serverIncognitoModeAutomaticallyPurgeDownloads, serializeRpcParameters(serverIncognitoModeRpcParameters)),
+            new ServerIncognitoModeOptions(
+              serverIncognitoModeAutomaticallyPurgeDownloads,
+              serverIncognitoModeOverwriteRpcParameters,
+              serializeRpcParameters(serverIncognitoModeRpcParameters),
+            ),
           ),
         );
         setExtensionOptions(newExtensionOptions);
@@ -172,12 +179,24 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       </Row>
 
       <Row className="mb-3">
+        <Form.Group controlId="form-im-overwrite-rpc-parameters">
+          <Form.Check
+            label={i18n("serverOptionsOverwriteRpcParameters")}
+            aria-label={i18n("serverOptionsOverwriteRpcParameters")}
+            checked={serverIncognitoModeOverwriteRpcParameters}
+            onChange={(e) => setServerIncognitoModeOverwriteRpcParameters(e.target.checked)}
+          />
+        </Form.Group>
+      </Row>
+
+      <Row className="mb-3">
         <Form.Group as={Col} controlId="form-im-rpc-parameters">
           <Form.Label>{i18n("serverOptionsRpcParameters")}</Form.Label>
           <Form.Control
             as="textarea"
             rows={3}
             placeholder="split: 5"
+            disabled={!serverIncognitoModeOverwriteRpcParameters}
             value={serverIncognitoModeRpcParameters}
             onChange={(e) => setServerIncognitoModeRpcParameters(e.target.value)}
           />

@@ -85,7 +85,7 @@ export async function captureURL(
   }
   const aria2Parameters: any = {
     header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
-    ...(isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
   };
 
   if (directory) {

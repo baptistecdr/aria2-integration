@@ -210,7 +210,7 @@ describe("captureURL", () => {
   });
 
   it("calls aria2.addUri for normal url", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie", false, "/downloads", "output.mp4");
 
@@ -227,7 +227,7 @@ describe("captureURL", () => {
   });
 
   it("calls aria2.addUri without directory or filename if not provided", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureURL(aria2, server, "http://test", "referer", "cookie", false);
 
