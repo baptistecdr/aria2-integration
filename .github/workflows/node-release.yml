@@ -35,7 +35,7 @@ jobs:
         run: |
           RELEASE_VERSION=$(npm version --no-git-tag-version --no-commit-hooks ${{ inputs.version-type }})
           node scripts/update-manifest-version.js $RELEASE_VERSION
-          npm install --package-lock-only
+          npm install
           npm run lint:fix
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_OUTPUT
 
