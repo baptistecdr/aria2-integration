@@ -3,6 +3,7 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
+import { useCurrentTab } from "@/current-tab-provider";
 import { useExtensionOptions } from "@/extension-options-provider";
 import Server from "@/models/server";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
@@ -20,11 +21,14 @@ vi.mock("@/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
 }));
 
+vi.mock("@/current-tab-provider", () => ({
+  useCurrentTab: vi.fn(),
+}));
+
 vi.mock("@/i18n", () => ({
   default: vi.fn((key: string, ...args: any[]) => `${key}${args.length ? `:${args.join(",")}` : ""}`),
 }));
 
-// Helper to setup default extension options
 const setupDefaultExtensionOptions = (overrides = {}) => {
   vi.mocked(useExtensionOptions).mockReturnValue({
     extensionOptions: {
@@ -32,9 +36,17 @@ const setupDefaultExtensionOptions = (overrides = {}) => {
       notifyFileIsAdded: true,
       notifyErrorOccurs: true,
       ...overrides,
+      incognitoModeOptions: { overwriteRpcParameters: false },
     } as any,
     setExtensionOptions: vi.fn(),
   });
+};
+
+const setupDefaultCurrentTab = (overrides = {}) => {
+  vi.mocked(useCurrentTab).mockReturnValue({
+    incognito: false,
+    ...overrides,
+  } as any);
 };
 
 // Helper to create test files
@@ -51,6 +63,7 @@ describe("ServerAddTasks", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     setupDefaultExtensionOptions();
+    setupDefaultCurrentTab();
   });
 
   it("renders URL and File forms with correct labels", () => {
@@ -201,7 +214,7 @@ describe("ServerAddTasks", () => {
       await user.click(submitButton);
 
       await waitFor(() => {
-        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(1, aria2, server, file);
+        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(1, aria2, server, file, false);
       });
     });
 
@@ -220,8 +233,8 @@ describe("ServerAddTasks", () => {
 
       await waitFor(() => {
         expect(captureTorrentFromFile).toHaveBeenCalledTimes(2);
-        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(1, aria2, server, file1);
-        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(2, aria2, server, file2);
+        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(1, aria2, server, file1, false);
+        expect(captureTorrentFromFile).toHaveBeenNthCalledWith(2, aria2, server, file2, false);
       });
     });
 

@@ -43,7 +43,7 @@ function ServerAddTasks({ aria2, server }: Props) {
     formEvent.preventDefault();
     if (formFiles.files !== null) {
       for (let i = 0; i < formFiles.files.length; i += 1) {
-        captureTorrentFromFile(aria2, server, formFiles.files[i])
+        captureTorrentFromFile(aria2, server, formFiles.files[i], !!currentTab?.incognito)
           .then(() => {
             if (extensionOptions.notifyFileIsAdded) {
               showNotification(i18n("addFileSuccess", server.name));

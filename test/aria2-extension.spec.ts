@@ -137,13 +137,14 @@ describe("captureTorrentFromFile", () => {
 
   const server = {
     rpcParameters: { key: "value" },
+    incognitoModeOptions: { overwriteRpcParameters: false },
   } as unknown as Server;
 
   it("calls aria2.addTorrent for .torrent file", async () => {
     const file = new File(["data"], "file.torrent");
     Object.defineProperty(file, "name", { value: "file.torrent" });
 
-    await aria2Ext.captureTorrentFromFile(aria2, server, file);
+    await aria2Ext.captureTorrentFromFile(aria2, server, file, false);
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
@@ -152,7 +153,7 @@ describe("captureTorrentFromFile", () => {
     const file = new Blob(["data"]);
     Object.defineProperty(file, "name", { value: "file.meta4" });
 
-    await aria2Ext.captureTorrentFromFile(aria2, server, file as any);
+    await aria2Ext.captureTorrentFromFile(aria2, server, file as any, false);
 
     expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
   });
@@ -172,7 +173,7 @@ describe("captureTorrentFromURL", () => {
   });
 
   it("calls aria2.addTorrent for .torrent url", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.torrent", false);
 
@@ -180,7 +181,7 @@ describe("captureTorrentFromURL", () => {
   });
 
   it("calls aria2.addTorrent when filename ends with .torrent", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureTorrentFromURL(aria2, server, "http://test/download", false, undefined, "file.torrent");
 
@@ -188,7 +189,7 @@ describe("captureTorrentFromURL", () => {
   });
 
   it("calls aria2.addMetalink for .meta4 url", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4", false);
 
@@ -196,7 +197,7 @@ describe("captureTorrentFromURL", () => {
   });
 
   it("includes directory in parameters when provided", async () => {
-    const server = { rpcParameters: { key: "value" } } as unknown as Server;
+    const server = { rpcParameters: { key: "value" }, incognitoModeOptions: { overwriteRpcParameters: false } } as unknown as Server;
 
     await aria2Ext.captureTorrentFromURL(aria2, server, "http://test.meta4", false, "/downloads");
 

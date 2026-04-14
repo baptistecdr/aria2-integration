@@ -49,18 +49,23 @@ export async function download(url: string): Promise<Blob> {
   return res.blob();
 }
 
-export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File) {
+export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File, isInIncognitoMode: boolean) {
   const blobAsBase64 = await encodeFileToBase64(file);
+  const aria2Parameters: any = {
+    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+  };
   if (file.name.endsWith("torrent")) {
-    return aria2.call("aria2.addTorrent", blobAsBase64, [], server.rpcParameters);
+    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
   }
-  return aria2.call("aria2.addMetalink", blobAsBase64, [], server.rpcParameters);
+  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
 }
 
 export async function captureTorrentFromURL(aria2: Aria2, server: Server, url: string, isInIncognitoMode: boolean, directory?: string, filename?: string) {
   const blob = await download(url);
   const blobAsBase64 = await encodeFileToBase64(blob);
-  const aria2Parameters: any = { ...(isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters) };
+  const aria2Parameters: any = {
+    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+  };
   if (directory) {
     aria2Parameters.dir = directory;
   }
