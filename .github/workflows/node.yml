@@ -2,7 +2,6 @@ name: Node
 
 on:
   - push
-  - pull_request
 
 env:
   ARTIFACTS_DIR: ${{ vars.ARTIFACTS_DIR || 'artifacts' }}
@@ -18,7 +17,6 @@ jobs:
       id-token: write
       contents: read
       attestations: write
-      pull-requests: write
     outputs:
       firefox-artifact-id: ${{ steps.upload-firefox-artifact.outputs.artifact-id }}
       chromium-artifact-id: ${{ steps.upload-chromium-artifact.outputs.artifact-id }}
@@ -39,10 +37,7 @@ jobs:
         run: npm run lint
 
       - name: Test
-        run: npm run test:coverage
-
-      - name: Report coverage
-        uses: davelosert/vitest-coverage-report-action@v2
+        run: npm run test
 
       - name: Build Firefox extension
         run: npm run build:firefox
@@ -74,12 +69,6 @@ jobs:
 
       - name: Attest artifacts
         uses: actions/attest-build-provenance@v3
-        if: >
-          github.event_name == 'push' || 
-          (
-            github.event_name == 'pull_request' && 
-            github.event.pull_request.head.repo.full_name == github.repository
-          )
         with:
           subject-path: |
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
