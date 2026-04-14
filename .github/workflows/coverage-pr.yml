@@ -1,0 +1,33 @@
+name: Report Coverage
+
+on:
+  workflow_run:
+    workflows:
+      - Node PR
+    types:
+      - completed
+
+jobs:
+  report:
+    name: Report Coverage
+    runs-on: ubuntu-latest
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v6
+
+      - name: Download coverage artifact
+        uses: actions/download-artifact@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: coverage
+          path: coverage
+
+      - name: Report coverage
+        uses: davelosert/vitest-coverage-report-action@v2
