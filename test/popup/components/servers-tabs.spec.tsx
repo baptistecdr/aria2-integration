@@ -1,4 +1,5 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useExtensionOptions } from "@/extension-options-provider";
 import type ExtensionOptions from "@/models/extension-options";
@@ -73,7 +74,7 @@ describe("ServersTabs", () => {
       expect(screen.getByText("ServerTab Server1")).toBeInTheDocument();
     });
 
-    fireEvent.click(screen.getByRole("tab", { name: "Server2" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Server2" }));
 
     await waitFor(() => {
       expect(screen.getByText("ServerTab Server2")).toBeInTheDocument();
