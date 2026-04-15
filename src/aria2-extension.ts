@@ -52,7 +52,7 @@ export async function download(url: string): Promise<Blob> {
 export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File, isInIncognitoMode: boolean) {
   const blobAsBase64 = await encodeFileToBase64(file);
   const aria2Parameters: any = {
-    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
   };
   if (file.name.endsWith("torrent")) {
     return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
@@ -64,7 +64,7 @@ export async function captureTorrentFromURL(aria2: Aria2, server: Server, url: s
   const blob = await download(url);
   const blobAsBase64 = await encodeFileToBase64(blob);
   const aria2Parameters: any = {
-    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
   };
   if (directory) {
     aria2Parameters.dir = directory;
@@ -90,7 +90,7 @@ export async function captureURL(
   }
   const aria2Parameters: any = {
     header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
-    ...(server.incognitoModeOptions.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
   };
 
   if (directory) {
