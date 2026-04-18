@@ -247,9 +247,9 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
   const urls = getSelectedUrls(info);
   const referer = tab?.url ?? "";
   const cookies = await getCookies(referer, tab?.cookieStoreId);
-  const currentTab = await findCurrentTab();
+  const isIncognito = !!tab?.incognito;
   for (const url of urls) {
-    captureURL(connection, server, url, referer, cookies, !!currentTab?.incognito)
+    captureURL(connection, server, url, referer, cookies, isIncognito)
       .then(() => {
         if (extensionOptions.notifyUrlIsAdded) {
           showNotification(i18n("addUrlSuccess", server.name));
