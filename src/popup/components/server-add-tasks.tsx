@@ -55,6 +55,7 @@ function ServerAddTasks({ aria2, server }: Props) {
             }
           });
       }
+      formEvent.currentTarget.reset();
       setFormFiles(DEFAULT_FORM_FILES);
     }
   };
