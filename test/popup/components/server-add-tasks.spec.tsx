@@ -8,7 +8,7 @@ import { useExtensionOptions } from "@/extension-options-provider";
 import Server from "@/models/server";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 
-const aria2 = vi.mockObject(new Aria2());
+const aria2 = vi.mockObject(new Aria2({}));
 const server = vi.mockObject(new Server("uuid", "TestServer"));
 
 vi.mock("@/aria2-extension", () => ({

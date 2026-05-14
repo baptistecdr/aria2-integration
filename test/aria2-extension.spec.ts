@@ -13,7 +13,7 @@ vi.mock("@baptistecdr/aria2", () => ({
   }),
 }));
 
-const aria2 = new Aria2();
+const aria2 = new Aria2({});
 
 describe("isFirefox", () => {
   afterEach(() => {

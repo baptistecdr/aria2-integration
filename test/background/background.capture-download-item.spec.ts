@@ -228,7 +228,7 @@ describe("Capture Download Item", () => {
       filename: "file.metalink",
     },
   ])("should capture download item as torrent when $description", async ({ url, filename }) => {
-    const aria2 = vi.mockObject(new Aria2());
+    const aria2 = vi.mockObject(new Aria2({}));
     const server = vi.mockObject(new Server());
     const downloadItem = createDownloadItem(url, (di) => {
       di.filename = filename;
@@ -245,7 +245,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.zip", (di) => {
       di.filename = "file.zip";
     });
-    const aria2 = vi.mockObject(new Aria2());
+    const aria2 = vi.mockObject(new Aria2({}));
     const server = vi.mockObject(new Server());
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", false, false);
@@ -259,7 +259,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.torrent", (di) => {
       di.filename = "/path/to/file.torrent";
     });
-    const aria2 = vi.mockObject(new Aria2());
+    const aria2 = vi.mockObject(new Aria2({}));
     const server = vi.mockObject(new Server());
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);
@@ -273,7 +273,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.zip", (di) => {
       di.filename = "/path/to/file.zip";
     });
-    const aria2 = vi.mockObject(new Aria2());
+    const aria2 = vi.mockObject(new Aria2({}));
     const server = vi.mockObject(new Server());
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);

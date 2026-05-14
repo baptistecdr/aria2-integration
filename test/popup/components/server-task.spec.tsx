@@ -22,7 +22,7 @@ describe("ServerTask", () => {
     name: "Test Server",
     rpcParameters: {},
   } as Server;
-  const aria2 = new Aria2();
+  const aria2 = new Aria2({});
   let task: Task;
 
   beforeEach(() => {
