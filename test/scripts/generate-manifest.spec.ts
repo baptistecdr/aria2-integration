@@ -1,7 +1,7 @@
 import { vol } from "memfs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("fs", async () => {
+vi.mock("node:fs", async () => {
   const memfs = await vi.importActual("memfs");
   return { default: memfs.fs };
 });

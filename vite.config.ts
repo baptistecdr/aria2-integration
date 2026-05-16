@@ -3,7 +3,6 @@ import { execSync } from "node:child_process";
 import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig, loadEnv } from "vite";
-import { nodePolyfills } from "vite-plugin-node-polyfills";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 const r = (...args: string[]) => resolve(__dirname, ...args);
@@ -36,7 +35,6 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
-      nodePolyfills(),
       tsconfigPaths(),
       {
         name: "generate-manifest",

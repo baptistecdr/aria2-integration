@@ -1,7 +1,6 @@
 {
   "compilerOptions": {
     "allowImportingTsExtensions": false,
-    "experimentalDecorators": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
@@ -19,7 +18,7 @@
     "strict": true,
     "strictNullChecks": true,
     "target": "ES2023",
-    "types": ["bootstrap", "jest", "luxon", "node", "react", "react-dom", "webextension-polyfill", "zod"],
+    "types": ["bootstrap", "jest", "luxon", "node", "react", "react-dom", "webextension-polyfill"],
     "useDefineForClassFields": true
   },
   "include": ["src", "test"]
