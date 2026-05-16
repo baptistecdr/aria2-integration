@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => {
       target: "ES2023",
       cssMinify: minify,
       minify,
+      sourcemap: mode.endsWith("-debug"),
       rollupOptions: {
         input: {
           background: r("src", "background", "background.ts"),
