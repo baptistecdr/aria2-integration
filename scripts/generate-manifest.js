@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 import fs from "node:fs";
 
 const rawManifest = fs.readFileSync("./public/manifest.json").toString();
