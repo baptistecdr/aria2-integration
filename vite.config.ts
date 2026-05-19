@@ -9,22 +9,20 @@ const r = (...args: string[]) => resolve(__dirname, ...args);
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, r("."), "");
-  const minify = !mode.endsWith("-debug") && "esbuild";
+  const isDebug = mode.endsWith("-debug");
 
   return {
     root: r("src"),
     publicDir: r("public"),
     resolve: {
-      alias: {
-        "@": r("src"),
-      },
+      tsconfigPaths: true,
     },
     build: {
-      target: "ES2023",
-      cssMinify: minify,
-      minify,
+      target: "es2023",
+      cssMinify: isDebug ? false : "lightningcss",
+      minify: isDebug ? false : "oxc",
       sourcemap: mode.endsWith("-debug"),
-      rollupOptions: {
+      rolldownOptions: {
         input: {
           background: r("src", "background", "background.ts"),
           options: r("src", "options", "options.html"),
