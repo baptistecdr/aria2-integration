@@ -49,12 +49,12 @@
     "@types/react-dom": "19.2.3",
     "@types/webextension-polyfill": "0.12.5",
     "@vitejs/plugin-react": "6.0.2",
-    "@vitest/coverage-v8": "4.1.6",
+    "@vitest/coverage-v8": "4.1.7",
     "jsdom": "29.1.1",
     "memfs": "4.57.2",
     "typescript": "6.0.3",
     "vite": "8.0.13",
-    "vitest": "4.1.6",
+    "vitest": "4.1.7",
     "web-ext": "10.1.0"
   }
 }
