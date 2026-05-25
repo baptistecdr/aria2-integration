@@ -13,8 +13,11 @@ export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
-let connections: Record<string, Aria2> = {};
+let extensionOptions = await ExtensionOptions.fromStorage();
+let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
+
+await createContextMenus(extensionOptions);
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
@@ -66,11 +69,6 @@ export async function createContextMenus(extensionOptions: ExtensionOptions) {
   }
 }
 
-ExtensionOptions.fromStorage().then(async (extensionOptions) => {
-  connections = createConnections(extensionOptions);
-  await createContextMenus(extensionOptions);
-});
-
 browser.runtime.onInstalled.addListener(async (details) => {
   if (details.reason === "install") {
     await browser.runtime.openOptionsPage();
@@ -81,7 +79,7 @@ browser.storage.onChanged.addListener(listenerStorageOnChanged);
 
 export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
   if (changes.options) {
-    const extensionOptions = await ExtensionOptions.fromStorage();
+    extensionOptions = await ExtensionOptions.fromStorage();
     connections = createConnections(extensionOptions);
     await createContextMenus(extensionOptions);
   }
@@ -174,7 +172,6 @@ async function removeDownloadItemCompletely(downloadItem: Downloads.DownloadItem
 }
 
 async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (connection: Aria2, server: Server, referer: string, cookies: string) => void) {
-  const extensionOptions = await ExtensionOptions.fromStorage();
   if (extensionOptions.captureDownloads && connections[extensionOptions.captureServer] !== undefined) {
     const connection = connections[extensionOptions.captureServer];
     const server = extensionOptions.servers[extensionOptions.captureServer];
@@ -195,7 +192,6 @@ if (isChromium()) {
     const downloadItem = downloadItems[downloadDelta.id];
     const currentTab = await findCurrentTab();
     if (downloadItem.id in downloadItems && downloadDelta.filename?.previous === "" && downloadDelta.filename.current) {
-      const extensionOptions = await ExtensionOptions.fromStorage();
       downloadItem.filename = downloadDelta.filename.current;
       await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
         await removeDownloadItemCompletely(downloadItem);
@@ -216,7 +212,6 @@ if (isChromium()) {
 }
 
 browser.downloads.onCreated.addListener(async (downloadItem) => {
-  const extensionOptions = await ExtensionOptions.fromStorage();
   const currentTab = await findCurrentTab();
   await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
     if (isFirefox()) {
@@ -240,7 +235,6 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
 browser.contextMenus.onClicked.addListener(listenerOnClicked);
 
 export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
-  const extensionOptions = await ExtensionOptions.fromStorage();
   const connection = connections[info.menuItemId];
   const server = extensionOptions.servers[info.menuItemId];
 
@@ -272,7 +266,6 @@ export async function listenerOnCommand(command: string) {
   if (command === "open_popup") {
     await browser.action.openPopup();
   } else if (command === "toggle_capture_downloads") {
-    const extensionOptions = await ExtensionOptions.fromStorage();
     const newCaptureDownloads = !extensionOptions.captureDownloads;
     let newCaptureServer = extensionOptions.captureServer;
     if (newCaptureServer === "") {
@@ -310,18 +303,21 @@ async function getGlobalStat(aria2server: Aria2): Promise<GlobalStat> {
 
 browser.alarms.onAlarm.addListener(listenerOnAlarm);
 
-async function purgeDownloadsWhenInIncognitoMode(server: Aria2, globalStat: GlobalStat) {
+async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, globalStat: GlobalStat) {
+  if (!server.incognitoModeOptions?.automaticallyPurgeDownloads || globalStat.numStopped <= 0) return;
+
   const currentTab = await findCurrentTab();
-  if (currentTab?.incognito && globalStat.numStopped > 0) {
-    await server.call("aria2.purgeDownloadResult");
+  if (currentTab?.incognito) {
+    await aria2.call("aria2.purgeDownloadResult");
   }
 }
 
 export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === ALARM_NAME) {
-    const numActives = Object.values(connections).map(async (server) => {
-      const globalStat = await getGlobalStat(server);
-      await purgeDownloadsWhenInIncognitoMode(server, globalStat);
+    const numActives = Object.entries(connections).map(async ([serverId, aria2]) => {
+      const server = extensionOptions.servers[serverId];
+      const globalStat = await getGlobalStat(aria2);
+      await purgeDownloadsWhenInIncognitoMode(server, aria2, globalStat);
       return globalStat.numActive;
     });
     const totalActive = await Promise.all(numActives).then((n) => n.reduce((partialSum, a) => partialSum + a, 0));
