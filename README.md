@@ -1,6 +1,6 @@
 <h3 align="center">Aria2 Integration</h3>
 <p align="center">
-    Aria2 Integration allows you to redirect downloads to your Aria2 server.
+    Aria2 Integration allows you to redirect downloads to your Aria2 server or Motrix instance.
     <br>
     <a href="https://github.com/baptistecdr/aria2-integration/issues/new">Report bug</a>
     ·
