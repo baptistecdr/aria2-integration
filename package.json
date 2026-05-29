@@ -51,7 +51,7 @@
     "@vitejs/plugin-react": "6.0.2",
     "@vitest/coverage-v8": "4.1.7",
     "jsdom": "29.1.1",
-    "memfs": "4.57.2",
+    "memfs": "4.57.3",
     "typescript": "6.0.3",
     "vite": "8.0.14",
     "vitest": "4.1.7",
