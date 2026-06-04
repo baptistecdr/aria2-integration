@@ -13,11 +13,15 @@ export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
-let extensionOptions = await ExtensionOptions.fromStorage();
+let extensionOptions = new ExtensionOptions();
 let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
-await createContextMenus(extensionOptions);
+ExtensionOptions.fromStorage().then(async (extOptions) => {
+  extensionOptions = extOptions;
+  connections = createConnections(extensionOptions);
+  await createExtensionContextMenus();
+});
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};

@@ -43,7 +43,7 @@ describe("Task.parse", () => {
       bittorrent: { info: { name: "my-torrent" } },
     });
 
-    expect(task.bittorrent?.info.name).toBe("my-torrent");
+    expect(task.bittorrent?.info?.name).toBe("my-torrent");
   });
 
   test("parses task data without bittorrent info (optional)", () => {

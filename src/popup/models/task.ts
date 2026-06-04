@@ -12,9 +12,11 @@ export enum TaskStatus {
 }
 
 const BittorrentSchema = z.object({
-  info: z.object({
-    name: z.string(),
-  }),
+  info: z.optional(
+    z.object({
+      name: z.string(),
+    }),
+  ),
 });
 
 const parseIntStr = z.pipe(
