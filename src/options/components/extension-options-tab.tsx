@@ -1,7 +1,7 @@
 import { filesize } from "filesize";
 import { type ChangeEvent, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
-import { isChromium } from "@/aria2-extension";
+import { isChromium, isOsAndroid } from "@/aria2-extension";
 import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
@@ -29,6 +29,7 @@ function parseFileSize(fileSizeInBytes: number): [number, number] {
 function ExtensionOptionsTab() {
   const { extensionOptions, setExtensionOptions } = useExtensionOptions();
 
+  const [isAndroid, setIsAndroid] = useState(false);
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
   const [captureServer, setCaptureServer] = useState(extensionOptions.captureServer);
   const [minFileSize, setMinFileSize] = useState(parseFileSize(extensionOptions.minFileSizeInBytes)[0]);
@@ -57,6 +58,7 @@ function ExtensionOptionsTab() {
   const themeAutoId = useId();
 
   useEffect(() => {
+    isOsAndroid().then((isAndroid) => setIsAndroid(isAndroid));
     setCaptureDownloads(extensionOptions.captureDownloads);
     setCaptureServer(extensionOptions.captureServer);
     setMinFileSize(parseFileSize(extensionOptions.minFileSizeInBytes)[0]);
@@ -137,138 +139,134 @@ function ExtensionOptionsTab() {
         </Col>
       )}
 
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-capture-downloads">
-          <Form.Check
-            checked={captureDownloads}
-            label={i18n("extensionOptionsCaptureDownloads")}
-            aria-label={i18n("extensionOptionsCaptureDownloads")}
-            onChange={onChangeCaptureDownloads}
-          />
-        </Form.Group>
-      </Col>
-
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-capture-downloads-servers">
-          <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
-          <Form.Select disabled={!captureDownloads} value={captureServer} onChange={onChangeCaptureServer}>
-            <option value="" disabled>
-              {i18n("extensionOptionsNoServerSelected")}
-            </option>
-            {Object.entries(extensionOptions.servers).map(([id, server]) => (
-              <option key={id} value={id}>
-                {server.name}
-              </option>
-            ))}
-          </Form.Select>
-        </Form.Group>
-      </Col>
-
-      {isChromium() && (
-        <Form.Group as={Col} controlId="form-minimum-file-size" className="mb-3">
-          <Form.Label>{i18n("extensionOptionsMinimumFileSize")}</Form.Label>
-          <InputGroup>
-            <Form.Control type="number" disabled={!captureDownloads} min={0} value={minFileSize} onChange={onChangeMinFileSize} required />
-            <Form.Select
-              id={formMinimumFileSizeExponentId}
-              disabled={!captureDownloads}
-              value={minFileSizeExponent}
-              onChange={(e) => setMinFileSizeExponent(Number.parseInt(e.target.value, 10))}
-            >
-              <option value="0">{i18n("B")}</option>
-              <option value="1">{i18n("KiB")}</option>
-              <option value="2">{i18n("MiB")}</option>
-              <option value="3">{i18n("GiB")}</option>
-            </Form.Select>
-          </InputGroup>
-          <FormText id={minimumFileSizeDescriptionId} muted>
-            {i18n("extensionOptionsMinimumFileSizeDescription")}
-          </FormText>
-        </Form.Group>
+      {!isAndroid && (
+        <>
+          <Col xs={12} sm={12} className="mb-3">
+            <Form.Group controlId="form-capture-downloads">
+              <Form.Check
+                checked={captureDownloads}
+                label={i18n("extensionOptionsCaptureDownloads")}
+                aria-label={i18n("extensionOptionsCaptureDownloads")}
+                onChange={onChangeCaptureDownloads}
+              />
+            </Form.Group>
+          </Col>
+          <Col xs={12} sm={12} className="mb-3">
+            <Form.Group controlId="form-capture-downloads-servers">
+              <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
+              <Form.Select disabled={!captureDownloads} value={captureServer} onChange={onChangeCaptureServer}>
+                <option value="" disabled>
+                  {i18n("extensionOptionsNoServerSelected")}
+                </option>
+                {Object.entries(extensionOptions.servers).map(([id, server]) => (
+                  <option key={id} value={id}>
+                    {server.name}
+                  </option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+          </Col>
+          {isChromium() && (
+            <Form.Group as={Col} controlId="form-minimum-file-size" className="mb-3">
+              <Form.Label>{i18n("extensionOptionsMinimumFileSize")}</Form.Label>
+              <InputGroup>
+                <Form.Control type="number" disabled={!captureDownloads} min={0} value={minFileSize} onChange={onChangeMinFileSize} required />
+                <Form.Select
+                  id={formMinimumFileSizeExponentId}
+                  disabled={!captureDownloads}
+                  value={minFileSizeExponent}
+                  onChange={(e) => setMinFileSizeExponent(Number.parseInt(e.target.value, 10))}
+                >
+                  <option value="0">{i18n("B")}</option>
+                  <option value="1">{i18n("KiB")}</option>
+                  <option value="2">{i18n("MiB")}</option>
+                  <option value="3">{i18n("GiB")}</option>
+                </Form.Select>
+              </InputGroup>
+              <FormText id={minimumFileSizeDescriptionId} muted>
+                {i18n("extensionOptionsMinimumFileSizeDescription")}
+              </FormText>
+            </Form.Group>
+          )}
+          <Col xs={12} sm={12} className="mb-3">
+            <Form.Group controlId="form-exclude-protocols">
+              <Form.Label>{i18n("extensionOptionsExcludeProtocols")}</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
+                disabled={!captureDownloads}
+                value={excludedProtocols}
+                onChange={(e) => setExcludedProtocols(e.target.value)}
+              />
+              <FormText id={excludedProtocolsDescriptionId} muted>
+                {i18n("extensionOptionsExcludeProtocolsDescription")}
+              </FormText>
+            </Form.Group>
+          </Col>
+          <Col xs={12} sm={12} className="mb-3">
+            <Form.Group controlId="form-exclude-sites">
+              <Form.Label>{i18n("extensionOptionsExcludeSites")}</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={i18n("extensionOptionsExcludeSitesInformation")}
+                disabled={!captureDownloads}
+                value={excludedSites}
+                onChange={(e) => setExcludedSites(e.target.value)}
+              />
+              <FormText id={excludedSitesDescriptionId} muted>
+                {i18n("extensionOptionsExcludeSitesDescription")}
+              </FormText>
+            </Form.Group>
+          </Col>
+          <Col xs={12} sm={12} className="mb-3">
+            <Form.Group controlId="form-exclude-file-types">
+              <Form.Label>{i18n("extensionOptionsExcludeFileTypes")}</Form.Label>
+              <Form.Control
+                as="textarea"
+                rows={3}
+                placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
+                disabled={!captureDownloads}
+                value={excludedFileTypes}
+                onChange={(e) => setExcludedFileTypes(e.target.value)}
+              />
+              <Form.Text id={excludedFileTypesDescriptionId} muted>
+                {i18n("extensionOptionsExcludeFileTypesDescription")}
+              </Form.Text>
+            </Form.Group>
+          </Col>
+          <Col xs={11} sm={11} className="mb-3">
+            <Form.Group controlId="form-use-complete-path">
+              <Form.Check
+                disabled={!captureDownloads}
+                checked={useCompleteFilePath}
+                label={i18n("extensionOptionsUseCompleteFilePath")}
+                aria-label={i18n("extensionOptionsUseCompleteFilePath")}
+                onChange={(e) => setUseCompleteFilePath(e.target.checked)}
+              />
+            </Form.Group>
+          </Col>
+          <Col xs={1} sm={1} className="mb-3 align-self-center">
+            <Form.Group controlId="form-use-complete-path-help">
+              <Button variant="link" disabled={!captureDownloads} onClick={() => setShowModal(true)}>
+                <i className="bi bi-question-circle" />
+              </Button>
+            </Form.Group>
+          </Col>
+          <Modal show={showModal} onHide={() => setShowModal(false)}>
+            <Modal.Header closeButton>
+              <Modal.Title>{i18n("extensionOptionsUseCompleteFilePathHelpTitle")}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body style={{ whiteSpace: "pre-wrap" }}>{i18n("extensionOptionsUseCompleteFilePathHelpContent")}</Modal.Body>
+            <Modal.Footer>
+              <Button variant="secondary" onClick={() => setShowModal(false)}>
+                {i18n("extensionOptionsUseCompleteFilePathHelpButton")}
+              </Button>
+            </Modal.Footer>
+          </Modal>{" "}
+        </>
       )}
-
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-exclude-protocols">
-          <Form.Label>{i18n("extensionOptionsExcludeProtocols")}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
-            disabled={!captureDownloads}
-            value={excludedProtocols}
-            onChange={(e) => setExcludedProtocols(e.target.value)}
-          />
-          <FormText id={excludedProtocolsDescriptionId} muted>
-            {i18n("extensionOptionsExcludeProtocolsDescription")}
-          </FormText>
-        </Form.Group>
-      </Col>
-
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-exclude-sites">
-          <Form.Label>{i18n("extensionOptionsExcludeSites")}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder={i18n("extensionOptionsExcludeSitesInformation")}
-            disabled={!captureDownloads}
-            value={excludedSites}
-            onChange={(e) => setExcludedSites(e.target.value)}
-          />
-          <FormText id={excludedSitesDescriptionId} muted>
-            {i18n("extensionOptionsExcludeSitesDescription")}
-          </FormText>
-        </Form.Group>
-      </Col>
-
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-exclude-file-types">
-          <Form.Label>{i18n("extensionOptionsExcludeFileTypes")}</Form.Label>
-          <Form.Control
-            as="textarea"
-            rows={3}
-            placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
-            disabled={!captureDownloads}
-            value={excludedFileTypes}
-            onChange={(e) => setExcludedFileTypes(e.target.value)}
-          />
-          <Form.Text id={excludedFileTypesDescriptionId} muted>
-            {i18n("extensionOptionsExcludeFileTypesDescription")}
-          </Form.Text>
-        </Form.Group>
-      </Col>
-
-      <Col xs={11} sm={11} className="mb-3">
-        <Form.Group controlId="form-use-complete-path">
-          <Form.Check
-            disabled={!captureDownloads}
-            checked={useCompleteFilePath}
-            label={i18n("extensionOptionsUseCompleteFilePath")}
-            aria-label={i18n("extensionOptionsUseCompleteFilePath")}
-            onChange={(e) => setUseCompleteFilePath(e.target.checked)}
-          />
-        </Form.Group>
-      </Col>
-
-      <Col xs={1} sm={1} className="mb-3 align-self-center">
-        <Form.Group controlId="form-use-complete-path-help">
-          <Button variant="link" disabled={!captureDownloads} onClick={() => setShowModal(true)}>
-            <i className="bi bi-question-circle" />
-          </Button>
-        </Form.Group>
-      </Col>
-
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>{i18n("extensionOptionsUseCompleteFilePathHelpTitle")}</Modal.Title>
-        </Modal.Header>
-        <Modal.Body style={{ whiteSpace: "pre-wrap" }}>{i18n("extensionOptionsUseCompleteFilePathHelpContent")}</Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>
-            {i18n("extensionOptionsUseCompleteFilePathHelpButton")}
-          </Button>
-        </Modal.Footer>
-      </Modal>
 
       <Col xs={12} sm={12} className="mb-3">
         <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>

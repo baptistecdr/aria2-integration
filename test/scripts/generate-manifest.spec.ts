@@ -50,6 +50,13 @@ describe("generate-manifest", () => {
           required: ["none"],
         },
       },
+      gecko_android: {
+        id: "baptistecdr@users.noreply.github.com",
+        strict_min_version: "142.0",
+        data_collection_permissions: {
+          required: ["none"],
+        },
+      },
     });
   });
 

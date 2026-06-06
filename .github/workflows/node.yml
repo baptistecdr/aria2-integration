@@ -106,7 +106,7 @@ jobs:
         run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
       - name: Release Firefox extension
-        uses: baptistecdr/release-firefox-addon@v2.0.3
+        uses: baptistecdr/release-firefox-addon@main
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
           addon-id: ${{ secrets.MOZILLA_ADDONS_ADDON_ID }}
@@ -114,6 +114,7 @@ jobs:
           auth-api-secret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
           addon-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
           source-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_ARCHIVE_FILENAME }}
+          compatibility: 'firefox,firefox-android'
           release-note: 'Release ${{ github.ref_name }}'
 
       - name: Release Microsoft Edge extension

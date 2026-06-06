@@ -12,6 +12,7 @@
     "build:firefox:debug": "tsc && vite build --mode firefox-debug --emptyOutDir",
     "build:firefox:debug:watch": "tsc && vite build --mode firefox-debug --emptyOutDir --watch",
     "start:firefox": "web-ext run --source-dir ./dist/ --devtools",
+    "start:firefox:android": "web-ext run --source-dir ./dist/ -t firefox-android --adb-device $(adb devices | awk 'NR > 1 && $2 == \"device\" { print $1; exit }') --firefox-apk org.mozilla.firefox",
     "build:chromium": "tsc && vite build --emptyOutDir --mode chromium",
     "build:chromium:debug": "tsc && vite build --mode chromium-debug --emptyOutDir",
     "build:chromium:debug:watch": "tsc && vite build --mode chromium-debug --emptyOutDir --watch",

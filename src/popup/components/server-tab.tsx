@@ -11,6 +11,7 @@ import { Task } from "@/popup/models/task";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
+import { isOsAndroid } from "@/aria2-extension";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
 import { defaultGlobalStat, type GlobalStat, parseGlobalStat } from "@/popup/models/global-stat";
 
@@ -41,6 +42,7 @@ function ServerTab({ server }: Props) {
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
+  const [isAndroid, setIsAndroid] = useState(false);
 
   const onClickPurge = () => {
     aria2.call("aria2.purgeDownloadResult");
@@ -69,6 +71,7 @@ function ServerTab({ server }: Props) {
   }, [aria2]);
 
   useEffect(() => {
+    isOsAndroid().then(setIsAndroid);
     updateTasks();
     const intervalId = window.setInterval(updateTasks, POLL_INTERVAL_MS);
     return () => {
@@ -93,12 +96,14 @@ function ServerTab({ server }: Props) {
           <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
             {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
           </Button>
-          <Button variant="danger" size="sm" className="btn-middle" onClick={onClickPurge}>
+          <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
             {i18n("serverPurge")}
           </Button>
-          <Button variant="secondary" size="sm" className="btn-right" aria-label="quick-options" onClick={toggleQuickOptions}>
-            {showQuickOptions ? <i className="bi-caret-left" /> : <i className="bi-gear" />}
-          </Button>
+          {!isAndroid && (
+            <Button variant="secondary" size="sm" className="btn-right" aria-label="quick-options" onClick={toggleQuickOptions}>
+              {showQuickOptions ? <i className="bi-caret-left" /> : <i className="bi-gear" />}
+            </Button>
+          )}
         </Col>
         <Col xs={12}>
           <hr className="mt-2 mb-2" />

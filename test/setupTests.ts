@@ -17,6 +17,7 @@ const browser: { [k: string]: any } = {
     },
     id: "test-extension-id",
     getURL: vi.fn((path: string) => `https://example.com/${path}`),
+    getPlatformInfo: vi.fn().mockResolvedValue({ os: "linux" }),
   },
   storage: {
     local: {

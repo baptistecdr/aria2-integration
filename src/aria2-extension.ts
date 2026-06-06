@@ -11,6 +11,11 @@ export function isChromium() {
   return browser.downloads.onDeterminingFilename !== undefined;
 }
 
+export async function isOsAndroid(): Promise<boolean> {
+  const platform = await browser.runtime.getPlatformInfo();
+  return platform.os === "android";
+}
+
 export function encodeFileToBase64(file: File | Blob) {
   return new Promise((resolve, reject) => {
     const temporaryFileReader = new FileReader();

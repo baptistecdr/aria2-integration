@@ -20,7 +20,7 @@ const downloadItems: Record<string, Downloads.DownloadItem> = {};
 ExtensionOptions.fromStorage().then(async (extOptions) => {
   extensionOptions = extOptions;
   connections = createConnections(extensionOptions);
-  await createExtensionContextMenus();
+  await createContextMenus(extensionOptions);
 });
 
 export function createConnections(extensionOptions: ExtensionOptions) {
@@ -32,8 +32,8 @@ export function createConnections(extensionOptions: ExtensionOptions) {
 }
 
 async function createExtensionContextMenus() {
-  await browser.contextMenus.removeAll();
-  browser.contextMenus.create({
+  await browser.contextMenus?.removeAll();
+  browser.contextMenus?.create({
     title: i18n("contextMenusTitle"),
     id: CONTEXT_MENUS_PARENT_ID,
     contexts: ["link", "selection"],
@@ -42,7 +42,7 @@ async function createExtensionContextMenus() {
 
 async function createServersContextMenus(extensionOptions: ExtensionOptions) {
   for (const [id, server] of Object.entries(extensionOptions.servers)) {
-    browser.contextMenus.create({
+    browser.contextMenus?.create({
       title: `${server.name}`,
       parentId: CONTEXT_MENUS_PARENT_ID,
       id,
@@ -52,9 +52,9 @@ async function createServersContextMenus(extensionOptions: ExtensionOptions) {
 }
 
 async function createSingleServerContextMenus(extensionOptions: ExtensionOptions) {
-  await browser.contextMenus.removeAll();
+  await browser.contextMenus?.removeAll();
   for (const [id] of Object.entries(extensionOptions.servers)) {
-    browser.contextMenus.create({
+    browser.contextMenus?.create({
       title: i18n("contextMenusTitle"),
       id,
       contexts: ["link", "selection"],
@@ -69,7 +69,7 @@ export async function createContextMenus(extensionOptions: ExtensionOptions) {
     await createExtensionContextMenus();
     await createServersContextMenus(extensionOptions);
   } else {
-    await browser.contextMenus.removeAll();
+    await browser.contextMenus?.removeAll();
   }
 }
 
@@ -215,7 +215,7 @@ if (isChromium()) {
   });
 }
 
-browser.downloads.onCreated.addListener(async (downloadItem) => {
+browser.downloads?.onCreated.addListener(async (downloadItem) => {
   const currentTab = await findCurrentTab();
   await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
     if (isFirefox()) {
@@ -236,7 +236,7 @@ browser.downloads.onCreated.addListener(async (downloadItem) => {
   });
 });
 
-browser.contextMenus.onClicked.addListener(listenerOnClicked);
+browser.contextMenus?.onClicked.addListener(listenerOnClicked);
 
 export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
   const connection = connections[info.menuItemId];
@@ -261,7 +261,7 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
   }
 }
 
-browser.commands.onCommand.addListener(listenerOnCommand);
+browser.commands?.onCommand.addListener(listenerOnCommand);
 
 export async function listenerOnCommand(command: string) {
   // As documented in https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions
