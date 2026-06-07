@@ -114,7 +114,7 @@ jobs:
           auth-api-secret: ${{ secrets.MOZILLA_ADDONS_API_SECRET }}
           addon-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
           source-path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_ARCHIVE_FILENAME }}
-          compatibility: 'firefox,firefox-android'
+          compatibility: 'firefox,android'
           release-note: 'Release ${{ github.ref_name }}'
 
       - name: Release Microsoft Edge extension
