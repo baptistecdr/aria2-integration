@@ -30,4 +30,4 @@ jobs:
           path: coverage
 
       - name: Report coverage
-        uses: davelosert/vitest-coverage-report-action@v2.12.0
+        uses: davelosert/vitest-coverage-report-action@v2.12.1
