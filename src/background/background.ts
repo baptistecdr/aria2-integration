@@ -1,7 +1,7 @@
 import Aria2 from "@baptistecdr/aria2";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { captureTorrentFromURL, captureURL, isChromium, isFirefox, showNotification } from "@/aria2-extension";
+import { captureTorrentFromURL, captureURL, isChromium, isFirefox, showNotification, isTorrentOrMetalink } from "@/aria2-extension";
 import { findCurrentTab } from "@/current-tab-provider";
 import i18n from "@/i18n";
 import ExtensionOptions from "@/models/extension-options";
@@ -159,7 +159,7 @@ export async function captureDownloadItem(
   const url = item.finalUrl ?? item.url;
   const directory = useCompleteFilePath ? dirname(item.filename) : undefined;
   const filename = basename(item.filename);
-  if (url.match(/\.torrent$|\.meta4$|\.metalink$/) || filename.match(/\.torrent$|\.meta4$|\.metalink$/)) {
+  if (isTorrentOrMetalink(url, filename)) {
     return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);
   }
   return captureURL(aria2, server, url, referer, cookies, isInIncognitoMode, directory, filename);
@@ -168,7 +168,8 @@ export async function captureDownloadItem(
 async function removeDownloadItemCompletely(downloadItem: Downloads.DownloadItem) {
   try {
     await browser.downloads.cancel(downloadItem.id);
-  } catch {
+  } catch (e) {
+    console.error(e);
     await browser.downloads.removeFile(downloadItem.id);
   } finally {
     await browser.downloads.erase({ id: downloadItem.id });
@@ -204,7 +205,8 @@ if (isChromium()) {
           if (extensionOptions.notifyFileIsAdded) {
             await showNotification(i18n("addFileSuccess", server.name));
           }
-        } catch {
+        } catch (e) {
+          console.error(e);
           if (extensionOptions.notifyErrorOccurs) {
             await showNotification(i18n("addFileError", server.name));
           }
@@ -225,7 +227,8 @@ browser.downloads?.onCreated.addListener(async (downloadItem) => {
         if (extensionOptions.notifyFileIsAdded) {
           await showNotification(i18n("addFileSuccess", server.name));
         }
-      } catch {
+      } catch (e) {
+        console.error(e);
         if (extensionOptions.notifyErrorOccurs) {
           await showNotification(i18n("addFileError", server.name));
         }
@@ -253,7 +256,8 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
           showNotification(i18n("addUrlSuccess", server.name));
         }
       })
-      .catch(() => {
+      .catch((e) => {
+        console.error(e);
         if (extensionOptions.notifyErrorOccurs) {
           showNotification(i18n("addUrlError", server.name));
         }
