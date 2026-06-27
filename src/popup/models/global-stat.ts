@@ -1,17 +1,18 @@
 import * as z from "zod/mini";
 
-const parseIntStr = z.pipe(
-  z.string(),
-  z.transform((v) => Number.parseInt(v, 10)),
-);
+const numStr = z.string().transform((v) => {
+  const n = Number(v);
+  if (isNaN(n)) throw new Error("Invalid number");
+  return n;
+});
 
 const GlobalStatSchema = z.object({
-  downloadSpeed: parseIntStr,
-  uploadSpeed: parseIntStr,
-  numActive: parseIntStr,
-  numWaiting: parseIntStr,
-  numStopped: parseIntStr,
-  numStoppedTotal: parseIntStr,
+  downloadSpeed: z.union([z.number(), numStr]),
+  uploadSpeed: z.union([z.number(), numStr]),
+  numActive: z.union([z.number(), numStr]),
+  numWaiting: z.union([z.number(), numStr]),
+  numStopped: z.union([z.number(), numStr]),
+  numStoppedTotal: z.union([z.number(), numStr]),
 });
 
 export type GlobalStat = z.infer<typeof GlobalStatSchema>;
@@ -26,7 +27,27 @@ const DEFAULT_GLOBAL_STAT: GlobalStat = {
 };
 
 export function parseGlobalStat(data: unknown): GlobalStat {
-  return GlobalStatSchema.parse(data);
+  if (typeof data !== "object" || data === null) {
+    throw new Error("Input must be an object");
+  }
+  
+  const obj = data as Record<string, unknown>;
+  const coerced: any = {};
+  
+  for (const key in obj) {
+    const val = obj[key];
+    if (val === undefined || val === null) {
+      coerced[key] = 0;
+    } else {
+      const n = Number(val);
+      if (isNaN(n)) {
+        throw new Error(`Invalid number for ${key}`);
+      }
+      coerced[key] = n;
+    }
+  }
+  
+  return GlobalStatSchema.parse(coerced);
 }
 
 export function defaultGlobalStat(): GlobalStat {

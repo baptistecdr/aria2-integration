@@ -1,1 +1,155 @@
-{"tool": "replace_text_in_file", "args": {"path": "src/aria2-extension.ts", "new_text": "import type Aria2 from \"@baptistecdr/aria2\";\nimport browser, { type Notifications } from \"webextension-polyfill\";\nimport type Server from \"@/models/server\";\n\nexport interface Aria2Parameters {\n  header?: string[];\n  dir?: string;\n  out?: string;\n  [key: string]: string | string[] | undefined;\n}\n\nexport function isFirefox() {\n  return !isChromium();\n}\n\nexport function isChromium() {\n  // @ts-expect-error Only available on Chromium\n  return browser.downloads.onDeterminingFilename !== undefined;\n}\n\nexport async function isOsAndroid(): Promise<boolean> {\n  const platform = await browser.runtime.getPlatformInfo();\n  return platform.os === \"android\";\n}\n\nexport function encodeFileToBase64(file: File | Blob) {\n  return new Promise((resolve, reject) => {\n    const temporaryFileReader = new FileReader();\n    temporaryFileReader.onerror = () => {\n      temporaryFileReader.abort();\n      reject(new Error(`Cannot parse '${file}'.`));\n    };\n    temporaryFileReader.onloadend = () => {\n      if (temporaryFileReader.result) {\n        const splitResult = temporaryFileReader.result.toString().split(/[:;,]/);\n        if (splitResult.length >= 4) {\n          resolve(splitResult[3]);\n        } else {\n          reject(new Error(`Cannot get base64 encoded string for '${file}'.`));\n        }\n      } else {\n        reject(new Error(`Result is empty for '${file}'.`));\n      }\n    };\n    temporaryFileReader.readAsDataURL(file);\n  });\n}\n\nexport async function showNotification(message: string) {\n  const options: Notifications.CreateNotificationOptions = {\n    type: \"basic\",\n    title: \"Aria2\",\n    iconUrl: \"../icons/icon-browser-80.png\",\n    message,\n  };\n  await browser.notifications.create(undefined, options);\n}\n\nexport async function download(url: string): Promise<Blob> {\n  const res = await fetch(url);\n  return res.blob();\n}\n\nexport async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File, isInIncognitoMode: boolean) {\n  const blobAsBase64 = await encodeFileToBase64(file);\n  const aria2Parameters: Aria2Parameters = {\n    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),\n  };\n  if (file.name.endsWith(\"torrent\")) {\n    return aria2.call(\"aria2.addTorrent\", blobAsBase64, [], aria2Parameters);\n  }\n  return aria2.call(\"aria2.addMetalink\", blobAsBase64, [], aria2Parameters);\n}\n\nexport function isTorrentOrMetalink(url: string, filename?: string): boolean {\n  const regex = /\\.torrent$|\\.meta4$|\\.metalink$/;\n  return url.match(regex) !== null || (filename && filename.match(regex) !== null);\n}\n\nexport async function captureTorrentFromURL(aria2: Aria2, server: Server, url: string, isInIncognitoMode: boolean, directory?: string, filename?: string) {\n  if (!isTorrentOrMetalink(url, filename)) {\n    return;\n  }\n  const blob = await download(url);\n  const blobAsBase64 = await encodeFileToBase64(blob);\n  const aria2Parameters: Aria2Parameters = {\n    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),\n  };\n  if (directory) {\n    aria2Parameters.dir = directory;\n  }\n  if (url.endsWith(\".torrent\") || filename?.endsWith(\".torrent\")) {\n    return aria2.call(\"aria2.addTorrent\", blobAsBase64, [], aria2Parameters);\n  }\n  return aria2.call(\"aria2.addMetalink\", blobAsBase64, [], aria2Parameters);\n}\n\nexport async function captureURL(\n  aria2: Aria2,\n  server: Server,\n  url: string,\n  referer: string,\n  cookies: string,\n  isInIncognitoMode: boolean,\n  directory?: string,\n  filename?: string,\n) {\n  if (isTorrentOrMetalink(url, filename)) {\n    return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);\n  }\n  const aria2Parameters: Aria2Parameters = {\n    header: [`Referer: ${referer}`, `Cookie: ${cookies}`],\n    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),\n  };\n\n  if (directory) {\n    aria2Parameters.dir = directory;\n  }\n  if (filename) {\n    aria2Parameters.out = filename;\n  }\n  return aria2.call(\"aria2.addUri\", [url], aria2Parameters);\n}"}
+import type Aria2 from "@baptistecdr/aria2";
+import browser, { type Notifications } from "webextension-polyfill";
+import type Server from "@/models/server";
+import { EXCLUDED_PROTOCOLS, SUPPORTED_TORRENT_EXTENSIONS } from "@/constants";
+
+/**
+ * Represents the parameters for Aria2 RPC calls.
+ * Standardizes types for headers, paths, and additional RPC parameters.
+ */
+export interface Aria2Parameters {
+  header?: string[];
+  dir?: string;
+  out?: string;
+  [key: string]: string | string[] | undefined;
+}
+
+export function isFirefox(): boolean {
+  return !isChromium();
+}
+
+export function isChromium(): boolean {
+  // @ts-expect-error Only available on Chromium
+  return browser.downloads.onDeterminingFilename !== undefined;
+}
+
+export async function isOsAndroid(): Promise<boolean> {
+  const platform = await browser.runtime.getPlatformInfo();
+  return platform.os === "android";
+}
+
+export function encodeFileToBase64(file: File | Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const temporaryFileReader = new FileReader();
+    temporaryFileReader.onerror = () => {
+      temporaryFileReader.abort();
+      reject(new Error(`Cannot parse '${file}'.`));
+    };
+    temporaryFileReader.onloadend = () => {
+      if (temporaryFileReader.result) {
+        const splitResult = temporaryFileReader.result.toString().split(/[:;,]/);
+        if (splitResult.length >= 4) {
+          resolve(splitResult[3]);
+        } else {
+          reject(new Error(`Cannot get base64 encoded string for '${file}'.`));
+        }
+      } else {
+        reject(new Error(`Result is empty for '${file}'.`));
+      }
+    };
+    temporaryFileReader.readAsDataURL(file);
+  });
+}
+
+export async function showNotification(message: string): Promise<void> {
+  const options: Notifications.CreateNotificationOptions = {
+    type: "basic",
+    title: "Aria2",
+    iconUrl: "../icons/icon-browser-80.png",
+    message,
+  };
+  await browser.notifications.create(undefined, options);
+}
+
+export async function download(url: string): Promise<Blob> {
+  const res = await fetch(url);
+  return res.blob();
+}
+
+export async function captureTorrentFromFile(
+  aria2: Aria2,
+  server: Server,
+  file: File,
+  isInIncognitoMode: boolean
+): Promise<any> {
+  const blobAsBase64 = await encodeFileToBase64(file);
+  const aria2Parameters: Aria2Parameters = {
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode 
+      ? server.incognitoModeOptions.rpcParameters 
+      : server.rpcParameters),
+  };
+
+  if (file.name.endsWith("torrent")) {
+    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
+  }
+  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
+}
+
+/**
+ * Determines if a URL or filename belongs to a torrent, meta4, or metalink.
+ */
+export function isTorrentOrMetalink(url: string, filename?: string): boolean {
+  const regex = new RegExp(SUPPORTED_TORRENT_EXTENSIONS.map(ext => `\\.${ext}$`).join("|"));
+  return url.match(regex) !== null || (filename && filename.match(regex) !== null);
+}
+
+export async function captureTorrentFromURL(
+  aria2: Aria2,
+  server: Server,
+  url: string,
+  isInIncognitoMode: boolean,
+  directory?: string,
+  filename?: string
+): Promise<any> {
+  if (!isTorrentOrMetalink(url, filename)) {
+    return;
+  }
+
+  const blob = await download(url);
+  const blobAsBase64 = await encodeFileToBase64(blob);
+  const aria2Parameters: Aria2Parameters = {
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode 
+      ? server.incognitoModeOptions.rpcParameters 
+      : server.rpcParameters),
+  };
+
+  if (directory) {
+    aria2Parameters.dir = directory;
+  }
+
+  if (url.endsWith(".torrent") || filename?.endsWith(".torrent")) {
+    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
+  }
+  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
+}
+
+export async function captureURL(
+  aria2: Aria2,
+  server: Server,
+  url: string,
+  referer: string,
+  cookies: string,
+  isInIncognitoMode: boolean,
+  directory?: string,
+  filename?: string,
+): Promise<any> {
+  if (isTorrentOrMetalink(url, filename)) {
+    return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);
+  }
+
+  const aria2Parameters: Aria2Parameters = {
+    header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
+    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode 
+      ? server.incognitoModeOptions.rpcParameters 
+      : server.rpcParameters),
+  };
+
+  if (directory) {
+    aria2Parameters.dir = directory;
+  }
+  if (filename) {
+    aria2Parameters.out = filename;
+  }
+
+  return aria2.call("aria2.addUri", [url], aria2Parameters);
+}

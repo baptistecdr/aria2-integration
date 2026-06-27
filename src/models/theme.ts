@@ -5,12 +5,21 @@ enum Theme {
 }
 
 export function applyTheme(theme: Theme) {
-  if (theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
-    document.documentElement.setAttribute("data-bs-theme", Theme.Dark);
-  } else if (theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: light)").matches) {
-    document.documentElement.setAttribute("data-bs-theme", Theme.Light);
-  } else {
-    document.documentElement.setAttribute("data-bs-theme", theme);
+  const updateTheme = () => {
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    
+    if (theme === Theme.Auto) {
+      document.documentElement.setAttribute("data-bs-theme", isDark ? Theme.Dark : Theme.Light);
+    } else {
+      document.documentElement.setAttribute("data-bs-theme", theme);
+    }
+  };
+
+  updateTheme();
+
+  if (theme === Theme.Auto) {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
+    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", updateTheme);
   }
 }
 

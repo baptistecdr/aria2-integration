@@ -8,22 +8,24 @@ import ExtensionOptions from "@/models/extension-options";
 import type Server from "@/models/server";
 import { type GlobalStat, parseGlobalStat } from "@/popup/models/global-stat";
 import { basename, dirname } from "@/stdlib";
+import ConnectionManager from "@/background/connection-manager";
 
 export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
 let extensionOptions = new ExtensionOptions();
-let connections: Record<string, Aria2> = createConnections(extensionOptions);
+let connectionManager = new ConnectionManager();
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
 ExtensionOptions.fromStorage().then(async (extOptions) => {
   extensionOptions = extOptions;
-  connections = createConnections(extensionOptions);
+  connectionManager.reconcile(extensionOptions.servers);
   await createContextMenus(extensionOptions);
 });
 
 export function createConnections(extensionOptions: ExtensionOptions) {
+  // Deprecated: Use ConnectionManager instead
   const conns: Record<string, Aria2> = {};
   for (const [key, server] of Object.entries(extensionOptions.servers)) {
     conns[key] = new Aria2(server);
@@ -84,7 +86,7 @@ browser.storage.onChanged.addListener(listenerStorageOnChanged);
 export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
   if (changes.options) {
     extensionOptions = await ExtensionOptions.fromStorage();
-    connections = createConnections(extensionOptions);
+    connectionManager.reconcile(extensionOptions.servers);
     await createContextMenus(extensionOptions);
   }
 }
@@ -159,6 +161,7 @@ export async function captureDownloadItem(
   const url = item.finalUrl ?? item.url;
   const directory = useCompleteFilePath ? dirname(item.filename) : undefined;
   const filename = basename(item.filename);
+  
   if (isTorrentOrMetalink(url, filename)) {
     return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);
   }
@@ -169,16 +172,15 @@ async function removeDownloadItemCompletely(downloadItem: Downloads.DownloadItem
   try {
     await browser.downloads.cancel(downloadItem.id);
   } catch (e) {
-    console.error(e);
-    await browser.downloads.removeFile(downloadItem.id);
+    console.error("[Aria2 Integration Error] Failed to cancel download", e);
   } finally {
     await browser.downloads.erase({ id: downloadItem.id });
   }
 }
 
 async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (connection: Aria2, server: Server, referer: string, cookies: string) => void) {
-  if (extensionOptions.captureDownloads && connections[extensionOptions.captureServer] !== undefined) {
-    const connection = connections[extensionOptions.captureServer];
+  if (extensionOptions.captureDownloads && connectionManager.getConnection(extensionOptions.captureServer)) {
+    const connection = connectionManager.getConnection(extensionOptions.captureServer);
     const server = extensionOptions.servers[extensionOptions.captureServer];
     let referrer = downloadItem.referrer ?? "";
     const currentTab = await findCurrentTab();
@@ -206,8 +208,8 @@ if (isChromium()) {
             await showNotification(i18n("addFileSuccess", server.name));
           }
         } catch (e) {
-          console.error(e);
           if (extensionOptions.notifyErrorOccurs) {
+            console.error(`[Aria2 Integration Error] Failed to capture download for ${downloadItem.filename}:`, e);
             await showNotification(i18n("addFileError", server.name));
           }
         }
@@ -228,8 +230,8 @@ browser.downloads?.onCreated.addListener(async (downloadItem) => {
           await showNotification(i18n("addFileSuccess", server.name));
         }
       } catch (e) {
-        console.error(e);
         if (extensionOptions.notifyErrorOccurs) {
+          console.error(`[Aria2 Integration Error] Failed to capture download for ${downloadItem.filename}:`, e);
           await showNotification(i18n("addFileError", server.name));
         }
       }
@@ -242,7 +244,7 @@ browser.downloads?.onCreated.addListener(async (downloadItem) => {
 browser.contextMenus?.onClicked.addListener(listenerOnClicked);
 
 export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
-  const connection = connections[info.menuItemId];
+  const connection = connectionManager.getConnection(info.menuItemId);
   const server = extensionOptions.servers[info.menuItemId];
 
   const urls = getSelectedUrls(info);
@@ -257,8 +259,8 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
         }
       })
       .catch((e) => {
-        console.error(e);
         if (extensionOptions.notifyErrorOccurs) {
+          console.error(`[Aria2 Integration Error] Failed to capture URL ${url}:`, e);
           showNotification(i18n("addUrlError", server.name));
         }
       });
@@ -268,9 +270,6 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
 browser.commands?.onCommand.addListener(listenerOnCommand);
 
 export async function listenerOnCommand(command: string) {
-  // As documented in https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/User_actions
-  // It must always be first.
-  // << Also, if a user input handler waits on a promise, then its status as a user input handler is lost. >>
   if (command === "open_popup") {
     await browser.action.openPopup();
   } else if (command === "toggle_capture_downloads") {
@@ -309,8 +308,6 @@ async function getGlobalStat(aria2server: Aria2): Promise<GlobalStat> {
   return parseGlobalStat(globalStat);
 }
 
-browser.alarms.onAlarm.addListener(listenerOnAlarm);
-
 async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, globalStat: GlobalStat) {
   if (!server.incognitoModeOptions?.automaticallyPurgeDownloads || globalStat.numStopped <= 0) return;
 
@@ -322,7 +319,7 @@ async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, g
 
 export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === ALARM_NAME) {
-    const numActives = Object.entries(connections).map(async ([serverId, aria2]) => {
+    const numActives = Object.entries(connectionManager.getAllConnections()).map(async ([serverId, aria2]) => {
       const server = extensionOptions.servers[serverId];
       const globalStat = await getGlobalStat(aria2);
       await purgeDownloadsWhenInIncognitoMode(server, aria2, globalStat);

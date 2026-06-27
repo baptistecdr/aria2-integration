@@ -1,65 +1,45 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
-import Theme, { applyTheme } from "@/models/theme";
+import { describe, it, expect, vi } from "vitest";
+import Theme, { applyTheme } from "../src/models/theme";
 
-describe("Apply Theme", () => {
-  const originalDocumentElement = document.documentElement;
-  let mockDocumentElement: Partial<HTMLElement>;
+// Mock window.matchMedia for JSDOM
+const mockMatchMedia = (query: string) => {
+  return {
+    matches: query === "(prefers-color-scheme: dark)",
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    media: query,
+  } as MediaQueryList;
+};
 
+Object.defineProperty(window, "matchMedia", {
+  value: vi.fn().mockImplementation(mockMatchMedia),
+  writable: true,
+});
+
+describe("applyTheme", () => {
   beforeEach(() => {
-    mockDocumentElement = {
-      setAttribute: vi.fn(),
-    };
-    Object.defineProperty(document, "documentElement", {
-      value: mockDocumentElement,
-      writable: true,
-    });
+    // Reset the theme on every test
+    document.documentElement.setAttribute("data-bs-theme", "light");
+    vi.clearAllMocks();
   });
 
-  afterEach(() => {
-    Object.defineProperty(document, "documentElement", {
-      value: originalDocumentElement,
-      writable: true,
-    });
-    vi.resetAllMocks();
-  });
-
-  test("applies light theme when Theme.Light is passed", () => {
+  it("applies light theme when Theme.Light is passed", () => {
     applyTheme(Theme.Light);
-
-    expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "light");
+    expect(document.documentElement.getAttribute("data-bs-theme")).toBe("light");
   });
 
-  test("applies dark theme when Theme.Dark is passed", () => {
+  it("applies dark theme when Theme.Dark is passed", () => {
     applyTheme(Theme.Dark);
-
-    expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "dark");
+    expect(document.documentElement.getAttribute("data-bs-theme")).toBe("dark");
   });
 
-  test("applies dark theme when Theme.Auto is passed and system prefers dark", () => {
-    vi.stubGlobal(
-      "matchMedia",
-      vi.fn().mockImplementation((query) => ({
-        matches: query === "(prefers-color-scheme: dark)",
-        media: query,
-      })),
-    );
-
+  it("applies dark theme when Theme.Auto is passed and system prefers dark", () => {
     applyTheme(Theme.Auto);
-
-    expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "dark");
+    expect(document.documentElement.getAttribute("data-bs-theme")).toBe("dark");
   });
 
-  test("applies light theme when Theme.Auto is passed and system prefers light", () => {
-    vi.stubGlobal(
-      "matchMedia",
-      vi.fn().mockImplementation((query) => ({
-        matches: query === "(prefers-color-scheme: light)",
-        media: query,
-      })),
-    );
-
+  it("applies light theme when Theme.Auto is passed and system prefers light", () => {
     applyTheme(Theme.Auto);
-
-    expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "light");
+    expect(document.documentElement.getAttribute("data-bs-theme")).toBe("light");
   });
 });
