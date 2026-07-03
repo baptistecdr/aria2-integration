@@ -1,8 +1,15 @@
+/**
+ * Global test setup with matchMedia mock for jsdom compatibility
+ * 
+ * Theme model uses window.matchMedia('(prefers-color-scheme: dark)') which jsdom doesn't implement
+ * This polyfill ensures consistent theme switching behavior across all test environments
+ */
+
 import "@testing-library/jest-dom/vitest";
 import { vi } from "vitest";
 
 // Create a full mock for the browser API
-const browser: { [k: string]: any } = {
+const browser = {
   runtime: {
     sendMessage: vi.fn(),
     onMessage: {
@@ -16,7 +23,7 @@ const browser: { [k: string]: any } = {
       hasListener: vi.fn(),
     },
     id: "test-extension-id",
-    getURL: vi.fn((path: string) => `https://example.com/${path}`),
+    getURL: vi.fn((path) => `https://example.com/${path}`),
     getPlatformInfo: vi.fn().mockResolvedValue({ os: "linux" }),
   },
   storage: {
@@ -84,7 +91,7 @@ const browser: { [k: string]: any } = {
     clearAll: vi.fn(),
   },
   i18n: {
-    getMessage: vi.fn((key: string) => `Translated: ${key}`),
+    getMessage: vi.fn((key) => `Translated: ${key}`),
     getUILanguage: vi.fn(() => "en"),
   },
   action: {
@@ -103,7 +110,75 @@ const browser: { [k: string]: any } = {
 };
 
 vi.stubGlobal("browser", browser);
-
 vi.stubGlobal("chrome", browser);
+
+/**
+ * MatchMedia Mock Polyfill for JSDOM compatibility
+ * Theme model uses window.matchMedia('(prefers-color-scheme: dark)') which jsdom doesn't implement
+ */
+
+// Inject mock matchMedia if undefined in test environment (jsdom needs polyfill)
+if (typeof global.window === "undefined" || !global.window.matchMedia) {
+  const createMock = function(query, matches) {
+    return {
+      query: query,
+      matches: matches,
+      addEventListener: function() {},
+      removeEventListener: function() {},
+      toString: function() { return this.query; }
+    };
+  };
+
+  // Inject mock function that defaults to light mode unless overridden by test
+  global.window.matchMedia = function(query) {
+    var matches = false;
+    
+    // Check for test-specific theme mode flag set by setupMatchMediaMock()
+    if (global.testThemeMode === 'dark') {
+      matches = true;
+    }
+
+    return createMock(query, matches);
+  };
+}
+
+/**
+ * Export test utilities for per-test customization of theme mode
+ */
+export function setupMatchMediaMock(mode) {
+  if (mode === "dark") {
+    global.testThemeMode = "dark";
+  } else {
+    delete global.testThemeMode;
+  }
+}
+
+/**
+ * Mock matchMedia to handle both dark and light queries correctly
+ */
+const mockMatchMedia = function(query) {
+  // Check for test-specific theme mode flag set by setupMatchMediaMock()
+  var isDarkMode = false;
+  if (typeof global.testThemeMode !== 'undefined' && global.testThemeMode === 'dark') {
+    isDarkMode = true;
+  }
+  
+  // DEBUG: Log the actual value being returned
+  console.log('mockMatchMedia query:', query, 'isDarkMode:', isDarkMode);
+  
+  return {
+    query: query,
+    matches: isDarkMode,  // Dark mode when flag set, light mode (false) otherwise
+    addEventListener: function() {},
+    removeEventListener: function() {},
+    toString: function() { return this.query; }
+  };
+};
+
+// Inject mock matchMedia if undefined in test environment (jsdom needs polyfill)
+if (typeof global.window === "undefined" || !global.window.matchMedia) {
+  // Use the mockMatchMedia function defined above, not a different one
+  global.window.matchMedia = mockMatchMedia;
+}
 
 export default browser;

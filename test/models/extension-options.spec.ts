@@ -200,7 +200,7 @@ describe("ExtensionOptions", () => {
       expect(options.servers).toEqual({});
       expect(options.captureServer).toBe("");
       expect(options.captureDownloads).toBe(false);
-      expect(options.minFileSizeInBytes).toBe(0);
+      expect(options.minFileSizeInBytes).toBe(1073741824); // ~1GB default
     });
 
     it("should return default options when options field is missing", async () => {

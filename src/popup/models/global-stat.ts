@@ -1,6 +1,7 @@
-import * as z from "zod/mini";
+import * as z from "zod";
 
-const numStr = z.string().transform((v) => {
+// Simple string-to-number conversion (no need for transform with full zod)
+const numStr = z.string().transform((v: string) => {
   const n = Number(v);
   if (isNaN(n)) throw new Error("Invalid number");
   return n;

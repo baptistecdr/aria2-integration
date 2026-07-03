@@ -16,11 +16,6 @@ export function applyTheme(theme: Theme) {
   };
 
   updateTheme();
-
-  if (theme === Theme.Auto) {
-    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", updateTheme);
-    window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", updateTheme);
-  }
 }
 
 export default Theme;
