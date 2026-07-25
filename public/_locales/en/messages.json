@@ -20,6 +20,9 @@
   "serverOptionsPort": {
     "message": "Port"
   },
+  "serverOptionsPath": {
+    "message": "Path"
+  },
   "serverOptionsSecureConnection": {
     "message": "Secure Connection"
   },
