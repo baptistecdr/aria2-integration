@@ -51,7 +51,7 @@
     "@types/webextension-polyfill": "0.12.5",
     "@vitejs/plugin-react": "6.0.4",
     "@vitest/coverage-v8": "4.1.10",
-    "jsdom": "29.1.1",
+    "jsdom": "30.0.1",
     "memfs": "4.64.0",
     "typescript": "7.0.2",
     "vite": "8.1.5",
