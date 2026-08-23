@@ -1,4 +1,4 @@
-import { expect, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
 import { listenerOnDownloadChanged, listenerOnDownloadCreated } from "@/background/background";
 

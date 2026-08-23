@@ -1,10 +1,17 @@
-import Aria2 from "@baptistecdr/aria2";
-import { expect, vi } from "vitest";
+import type Aria2 from "@baptistecdr/aria2";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
 import { captureTorrentFromURL, captureURL } from "@/aria2-extension";
 import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background";
 import { ExtensionOptions } from "@/models/extension-options";
 import { Server } from "@/models/server";
+
+// A plain object is used instead of `vi.mockObject(new Aria2(...))`: auto-mocking a real Aria2 instance
+// (which extends EventTarget) makes vitest's deep-equal assertions on it (toHaveBeenCalledWith) pathologically
+// slow (seconds per assertion) once certain other modules are also loaded in the same test file.
+function createMockAria2(): Aria2 {
+  return { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
+}
 
 vi.mock("@/aria2-extension", () => ({
   captureTorrentFromURL: vi.fn(),
@@ -220,7 +227,7 @@ describe("Capture Download Item", () => {
       filename: "file.metalink",
     },
   ])("should capture download item as torrent when $description", async ({ url, filename }) => {
-    const aria2 = vi.mockObject(new Aria2({}));
+    const aria2 = createMockAria2();
     const server = Server.create();
     const downloadItem = createDownloadItem(url, (di) => {
       di.filename = filename;
@@ -237,7 +244,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.zip", (di) => {
       di.filename = "file.zip";
     });
-    const aria2 = vi.mockObject(new Aria2({}));
+    const aria2 = createMockAria2();
     const server = Server.create();
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", false, false);
@@ -251,7 +258,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.torrent", (di) => {
       di.filename = "/path/to/file.torrent";
     });
-    const aria2 = vi.mockObject(new Aria2({}));
+    const aria2 = createMockAria2();
     const server = Server.create();
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);
@@ -265,7 +272,7 @@ describe("Capture Download Item", () => {
     const downloadItem = createDownloadItem("https://example.com/file.zip", (di) => {
       di.filename = "/path/to/file.zip";
     });
-    const aria2 = vi.mockObject(new Aria2({}));
+    const aria2 = createMockAria2();
     const server = Server.create();
 
     await captureDownloadItem(aria2, server, downloadItem, "referer", "cookies", true, false);

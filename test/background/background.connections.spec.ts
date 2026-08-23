@@ -1,5 +1,5 @@
 import Aria2 from "@baptistecdr/aria2";
-import { expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import { createConnections } from "@/background/background";
 import { ExtensionOptions } from "@/models/extension-options";
 import { Server } from "@/models/server";

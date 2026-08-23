@@ -109,11 +109,11 @@ describe("download", () => {
 
   beforeEach(() => {
     global.fetch = vi.fn();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
   });
 
   it("fetches and returns a blob", async () => {
@@ -169,7 +169,6 @@ describe("captureTorrentFromURL", () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
   });
 
   it("calls aria2.addTorrent for .torrent url", async () => {

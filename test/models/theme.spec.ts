@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import Theme, { applyTheme } from "@/models/theme";
 
 describe("Apply Theme", () => {
@@ -6,6 +6,7 @@ describe("Apply Theme", () => {
   let mockDocumentElement: Partial<HTMLElement>;
 
   beforeEach(() => {
+    vi.clearAllMocks();
     mockDocumentElement = {
       setAttribute: vi.fn(),
     };
@@ -20,22 +21,21 @@ describe("Apply Theme", () => {
       value: originalDocumentElement,
       writable: true,
     });
-    vi.resetAllMocks();
   });
 
-  test("applies light theme when Theme.Light is passed", () => {
+  it("applies light theme when Theme.Light is passed", () => {
     applyTheme(Theme.Light);
 
     expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "light");
   });
 
-  test("applies dark theme when Theme.Dark is passed", () => {
+  it("applies dark theme when Theme.Dark is passed", () => {
     applyTheme(Theme.Dark);
 
     expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "dark");
   });
 
-  test("applies dark theme when Theme.Auto is passed and system prefers dark", () => {
+  it("applies dark theme when Theme.Auto is passed and system prefers dark", () => {
     vi.stubGlobal(
       "matchMedia",
       vi.fn().mockImplementation((query) => ({
@@ -49,7 +49,7 @@ describe("Apply Theme", () => {
     expect(mockDocumentElement.setAttribute).toHaveBeenCalledWith("data-bs-theme", "dark");
   });
 
-  test("applies light theme when Theme.Auto is passed and system prefers light", () => {
+  it("applies light theme when Theme.Auto is passed and system prefers light", () => {
     vi.stubGlobal(
       "matchMedia",
       vi.fn().mockImplementation((query) => ({

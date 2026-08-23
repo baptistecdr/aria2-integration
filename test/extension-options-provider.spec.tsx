@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { userEvent } from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptionsProvider, useExtensionOptions } from "@/extension-options-provider";
 import { ExtensionOptions } from "@/models/extension-options";
@@ -39,10 +39,6 @@ const TestSetter = () => {
 
 describe("extension-options-provider", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
   });
 

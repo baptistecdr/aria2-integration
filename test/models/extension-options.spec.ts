@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptions } from "@/models/extension-options";
 import { Server } from "@/models/server";
@@ -12,10 +12,6 @@ describe("ExtensionOptions", () => {
     });
 
   beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
   });
 

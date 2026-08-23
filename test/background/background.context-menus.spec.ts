@@ -1,4 +1,4 @@
-import { expect, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { CONTEXT_MENUS_PARENT_ID, createContextMenus } from "@/background/background";
 import { ExtensionOptions } from "@/models/extension-options";
