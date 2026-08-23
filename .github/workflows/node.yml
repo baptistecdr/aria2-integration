@@ -68,7 +68,7 @@ jobs:
           path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
 
       - name: Attest artifacts
-        uses: actions/attest-build-provenance@v4.2.2
+        uses: actions/attest@v4.2.2
         with:
           subject-path: |
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
