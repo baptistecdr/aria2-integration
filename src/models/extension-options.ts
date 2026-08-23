@@ -1,63 +1,77 @@
 import browser from "webextension-polyfill";
-import type Server from "@/models/server";
+import * as z from "zod/mini";
+import { type Server, ServerSchema } from "@/models/server";
 import Theme from "@/models/theme";
 
-export default class ExtensionOptions {
-  constructor(
-    public readonly servers: Record<string, Server> = {},
-    public readonly captureServer: string = "",
-    public readonly captureDownloads: boolean = false,
-    public readonly minFileSizeInBytes: number = 0,
-    public readonly excludedProtocols: string[] = [],
-    public readonly excludedSites: string[] = [],
-    public readonly excludedFileTypes: string[] = [],
-    public readonly useCompleteFilePath: boolean = false,
-    public readonly notifyUrlIsAdded: boolean = true,
-    public readonly notifyFileIsAdded: boolean = true,
-    public readonly notifyErrorOccurs: boolean = true,
-    public readonly theme: Theme = Theme.Auto,
-  ) {}
+// Do NOT export this schema: z.record(..., ServerSchema) here wraps a schema imported from another
+// module, and exporting that combination has been observed to cause a heap-exhausting crash when an
+// unrelated EventTarget-based mock (e.g. a mocked Aria2 instance) is deep-equal-compared elsewhere in
+// the same vitest worker, due to an interaction between Vite's live-binding transform and zod/mini.
+const ExtensionOptionsSchema = z.object({
+  servers: z._default(z.record(z.string(), ServerSchema), () => ({})),
+  captureServer: z._default(z.string(), ""),
+  captureDownloads: z._default(z.boolean(), false),
+  minFileSizeInBytes: z._default(z.number(), 0),
+  excludedProtocols: z._default(z.array(z.string()), () => []),
+  excludedSites: z._default(z.array(z.string()), () => []),
+  excludedFileTypes: z._default(z.array(z.string()), () => []),
+  useCompleteFilePath: z._default(z.boolean(), false),
+  notifyUrlIsAdded: z._default(z.boolean(), true),
+  notifyFileIsAdded: z._default(z.boolean(), true),
+  notifyErrorOccurs: z._default(z.boolean(), true),
+  theme: z._default(z.enum(Theme), Theme.Auto),
+});
 
-  public serialize(): string {
-    return JSON.stringify(this);
-  }
+export type ExtensionOptions = z.infer<typeof ExtensionOptionsSchema>;
 
-  private static deserialize(object: string): ExtensionOptions {
-    return Object.assign(new ExtensionOptions(), JSON.parse(object));
-  }
+export const ExtensionOptions = {
+  create(data: Partial<ExtensionOptions> = {}): ExtensionOptions {
+    return ExtensionOptionsSchema.parse(data);
+  },
 
-  private copy(): ExtensionOptions {
-    return ExtensionOptions.deserialize(this.serialize());
-  }
+  serialize(options: ExtensionOptions): string {
+    return JSON.stringify(options);
+  },
 
-  async toStorage(): Promise<ExtensionOptions> {
+  async toStorage(options: ExtensionOptions): Promise<ExtensionOptions> {
     await browser.storage.sync.set({
-      options: JSON.stringify(this),
+      options: ExtensionOptions.serialize(options),
     });
-    return this;
-  }
+    return options;
+  },
 
-  withOverrides(overrides: Partial<ExtensionOptions>): ExtensionOptions {
-    return Object.assign(this.copy(), overrides);
-  }
+  withOverrides(options: ExtensionOptions, overrides: Partial<ExtensionOptions>): ExtensionOptions {
+    return ExtensionOptions.create({ ...options, ...overrides });
+  },
 
-  async addServer(server: Server): Promise<ExtensionOptions> {
-    const newExtensionOptions = this.copy();
-    newExtensionOptions.servers[server.uuid] = server;
-    return newExtensionOptions.toStorage();
-  }
+  addServer(options: ExtensionOptions, server: Server): Promise<ExtensionOptions> {
+    return ExtensionOptions.toStorage(
+      ExtensionOptions.withOverrides(options, {
+        servers: { ...options.servers, [server.uuid]: server },
+      }),
+    );
+  },
 
-  async deleteServer(server: Server): Promise<ExtensionOptions> {
-    const newExtensionOptions = this.copy();
-    delete newExtensionOptions.servers[server.uuid];
-    return newExtensionOptions.toStorage();
-  }
+  deleteServer(options: ExtensionOptions, server: Server): Promise<ExtensionOptions> {
+    const remainingServers = { ...options.servers };
+    delete remainingServers[server.uuid];
+    const overrides: Partial<ExtensionOptions> = { servers: remainingServers };
+    if (options.captureServer === server.uuid) {
+      overrides.captureServer = "";
+      overrides.captureDownloads = false;
+    }
+    return ExtensionOptions.toStorage(ExtensionOptions.withOverrides(options, overrides));
+  },
 
-  static async fromStorage(): Promise<ExtensionOptions> {
+  async fromStorage(): Promise<ExtensionOptions> {
     const storage = await browser.storage.sync.get(null);
     if (storage.options) {
-      return ExtensionOptions.deserialize(storage.options as string);
+      try {
+        return ExtensionOptions.create(JSON.parse(storage.options as string));
+      } catch (error) {
+        console.error(error);
+      }
     }
-    return new ExtensionOptions();
-  }
-}
+    return ExtensionOptions.create();
+  },
+};

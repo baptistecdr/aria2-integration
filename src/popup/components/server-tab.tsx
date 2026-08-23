@@ -3,7 +3,7 @@ import { filesize } from "filesize";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import i18n from "@/i18n";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 import ServerTask from "@/popup/components/server-task";
@@ -13,7 +13,7 @@ import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
 import { isOsAndroid } from "@/aria2-extension";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
-import { defaultGlobalStat, type GlobalStat, parseGlobalStat } from "@/popup/models/global-stat";
+import { defaultGlobalStat, getGlobalStat } from "@/popup/models/global-stat";
 
 const FILESIZE_BASE = { base: 2 } as const;
 const POLL_INTERVAL_MS = 1000; // 1 second
@@ -23,11 +23,6 @@ interface Props {
 }
 
 type TaskGroups = [Task[][], Task[][], Task[][]];
-
-async function getGlobalStat(aria2server: Aria2): Promise<GlobalStat> {
-  const globalStat = await aria2server.call("getGlobalStat", [], {});
-  return parseGlobalStat(globalStat);
-}
 
 async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: number): Promise<Task[]> {
   const result = (await aria2server.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]])) as TaskGroups;
@@ -64,7 +59,8 @@ function ServerTab({ server }: Props) {
       const fetchedTasks = await getTasks(aria2, stat.numWaiting, stat.numStopped);
       setGlobalStat(stat);
       setTasks(fetchedTasks);
-    } catch (_e: unknown) {
+    } catch (error) {
+      console.error(error);
       setDefaultMessage(i18n("serverError"));
     }
     setLoading(false);

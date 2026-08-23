@@ -5,7 +5,7 @@ import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-ex
 import { useCurrentTab } from "@/current-tab-provider";
 import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 
 interface Props {
   aria2: Aria2;
@@ -29,7 +29,8 @@ function ServerAddTasks({ aria2, server }: Props) {
             showNotification(i18n("addUrlSuccess", server.name));
           }
         })
-        .catch(() => {
+        .catch((error) => {
+          console.error(error);
           if (extensionOptions.notifyErrorOccurs) {
             showNotification(i18n("addUrlError", server.name));
           }
@@ -49,7 +50,8 @@ function ServerAddTasks({ aria2, server }: Props) {
               showNotification(i18n("addFileSuccess", server.name));
             }
           })
-          .catch(() => {
+          .catch((error) => {
+            console.error(error);
             if (extensionOptions.notifyErrorOccurs) {
               showNotification(i18n("addFileError", server.name));
             }

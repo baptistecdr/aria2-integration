@@ -5,11 +5,11 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
 import { useCurrentTab } from "@/current-tab-provider";
 import { useExtensionOptions } from "@/extension-options-provider";
-import Server from "@/models/server";
+import { Server } from "@/models/server";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 
 const aria2 = vi.mockObject(new Aria2({}));
-const server = vi.mockObject(new Server("uuid", "TestServer"));
+const server = Server.create({ uuid: "uuid", name: "TestServer" });
 
 vi.mock("@/aria2-extension", () => ({
   captureURL: vi.fn(),

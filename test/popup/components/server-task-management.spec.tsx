@@ -2,7 +2,7 @@ import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { expect, vi } from "vitest";
 import { captureURL } from "@/aria2-extension";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 import ServerTaskManagement from "@/popup/components/server-task-management";
 import type { Task } from "@/popup/models/task";
 

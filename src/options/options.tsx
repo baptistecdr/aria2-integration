@@ -5,7 +5,8 @@ import { Container, Tab, Tabs } from "react-bootstrap";
 import { createRoot } from "react-dom/client";
 import { ExtensionOptionsProvider, useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import Server from "@/models/server";
+import { ExtensionOptions } from "@/models/extension-options";
+import { Server } from "@/models/server";
 import ExtensionOptionsTab from "@/options/components/extension-options-tab";
 import ServerOptionsTab from "@/options/components/server-options-tab";
 
@@ -19,21 +20,16 @@ function Options() {
   const { extensionOptions, setExtensionOptions } = useExtensionOptions();
 
   const addServer = async () => {
-    const server = new Server();
-    const newExtensionOptions = await extensionOptions.addServer(server);
+    const server = Server.create();
+    const newExtensionOptions = await ExtensionOptions.addServer(extensionOptions, server);
     setExtensionOptions(newExtensionOptions);
     setActiveTab(server.uuid);
   };
 
   const deleteServer = async (server: Server) => {
-    let newExtensionOptions = await extensionOptions.deleteServer(server);
+    const newExtensionOptions = await ExtensionOptions.deleteServer(extensionOptions, server);
     const serverKeys = Object.keys(newExtensionOptions.servers);
-    let newActiveTab = EXTENSION_OPTIONS_TAB;
-    if (serverKeys.length === 0) {
-      newExtensionOptions = await newExtensionOptions.withOverrides({ captureServer: "", captureDownloads: false }).toStorage();
-    } else {
-      [newActiveTab] = serverKeys;
-    }
+    const newActiveTab = serverKeys.length === 0 ? EXTENSION_OPTIONS_TAB : serverKeys[0];
     setExtensionOptions(newExtensionOptions);
     setActiveTab(newActiveTab);
   };

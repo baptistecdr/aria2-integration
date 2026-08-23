@@ -24,7 +24,7 @@ function ServersTabs() {
   }
 
   return (
-    <Tabs id={tabServersId} defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3">
+    <Tabs id={tabServersId} defaultActiveKey="" activeKey={activeTab} onSelect={(k) => setActiveTab(k ?? "")} className="mb-3" mountOnEnter unmountOnExit>
       {Object.entries(extensionOptions.servers).map(([id, server]) => (
         <Tab key={`tab-${id}`} eventKey={id} title={server.name}>
           <ServerTab key={`server-${id}`} server={server} />

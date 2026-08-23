@@ -4,7 +4,7 @@ import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-boo
 import { isChromium, isOsAndroid } from "@/aria2-extension";
 import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import ExtensionOptions from "@/models/extension-options";
+import { ExtensionOptions } from "@/models/extension-options";
 import Theme from "@/models/theme";
 import AlertProps from "@/options/models/alert-props";
 
@@ -108,23 +108,26 @@ function ExtensionOptionsTab() {
 
   const onClickSaveExtensionOptions = async () => {
     try {
-      const newExtensionOptions = await new ExtensionOptions(
-        extensionOptions.servers,
-        captureServer,
-        captureDownloads,
-        minFileSize * 1024 ** minFileSizeExponent,
-        serializeExcludedOption(excludedProtocols),
-        serializeExcludedOption(excludedSites),
-        serializeExcludedOption(excludedFileTypes),
-        useCompleteFilePath,
-        notifyUrlIsAdded,
-        notifyFileIsAdded,
-        notifyErrorOccurs,
-        theme,
-      ).toStorage();
+      const newExtensionOptions = await ExtensionOptions.toStorage(
+        ExtensionOptions.create({
+          servers: extensionOptions.servers,
+          captureServer,
+          captureDownloads,
+          minFileSizeInBytes: minFileSize * 1024 ** minFileSizeExponent,
+          excludedProtocols: serializeExcludedOption(excludedProtocols),
+          excludedSites: serializeExcludedOption(excludedSites),
+          excludedFileTypes: serializeExcludedOption(excludedFileTypes),
+          useCompleteFilePath,
+          notifyUrlIsAdded,
+          notifyFileIsAdded,
+          notifyErrorOccurs,
+          theme,
+        }),
+      );
       setExtensionOptions(newExtensionOptions);
       setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
-    } catch {
+    } catch (error) {
+      console.error(error);
       setAlertProps(AlertProps.error(i18n("serverOptionsError")));
     }
   };

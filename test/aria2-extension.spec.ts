@@ -1,7 +1,7 @@
 import Aria2 from "@baptistecdr/aria2";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as aria2Ext from "@/aria2-extension";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 import browser from "./setupTests";
 
 const aria2Call = vi.fn();

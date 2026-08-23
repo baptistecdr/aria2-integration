@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
+import { ExtensionOptions } from "@/models/extension-options";
+import { Server } from "@/models/server";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 
 const { mockSetExtensionOptions, mockUseExtensionOptions } = vi.hoisted(() => ({
@@ -14,10 +14,8 @@ vi.mock("@/extension-options-provider", () => ({
   useExtensionOptions: mockUseExtensionOptions,
 }));
 
-vi.spyOn(ExtensionOptions.prototype, "toStorage").mockResolvedValue(vi.mockObject(new ExtensionOptions()));
-vi.spyOn(ExtensionOptions.prototype, "withOverrides").mockImplementation(function (this: ExtensionOptions, overrides) {
-  return Object.assign(Object.create(Object.getPrototypeOf(this)), this, overrides);
-});
+const toStorageSpy = vi.spyOn(ExtensionOptions, "toStorage").mockResolvedValue(ExtensionOptions.create());
+const withOverridesSpy = vi.spyOn(ExtensionOptions, "withOverrides").mockImplementation((options, overrides) => ({ ...options, ...overrides }));
 
 const CAPTURE_DOWNLOADS_LABEL = /extensionOptionsCaptureDownloads/i;
 const USE_COMPLETE_FILE_PATH_LABEL = /extensionOptionsUseCompleteFilePath/i;
@@ -28,8 +26,8 @@ describe("ServerQuickOptions", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    server = new Server("server-1", "Test Server");
-    extensionOptions = new ExtensionOptions({ [server.uuid]: server });
+    server = Server.create({ uuid: "server-1", name: "Test Server" });
+    extensionOptions = ExtensionOptions.create({ servers: { [server.uuid]: server } });
 
     mockUseExtensionOptions.mockReturnValue({
       extensionOptions,
@@ -53,7 +51,7 @@ describe("ServerQuickOptions", () => {
     });
 
     it("is checked when capture is enabled on this server", () => {
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true);
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         setExtensionOptions: mockSetExtensionOptions,
@@ -73,16 +71,16 @@ describe("ServerQuickOptions", () => {
       await user.click(checkbox);
 
       await waitFor(() => {
-        expect(extensionOptions.withOverrides).toHaveBeenCalledWith({
+        expect(withOverridesSpy).toHaveBeenCalledWith(extensionOptions, {
           captureServer: server.uuid,
           captureDownloads: true,
         });
-        expect(extensionOptions.toStorage).toHaveBeenCalled();
+        expect(toStorageSpy).toHaveBeenCalled();
       });
     });
 
     it("disables capture downloads when unchecked", async () => {
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true);
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         setExtensionOptions: mockSetExtensionOptions,
@@ -95,11 +93,11 @@ describe("ServerQuickOptions", () => {
       await user.click(checkbox);
 
       await waitFor(() => {
-        expect(optionsWithCapture.withOverrides).toHaveBeenCalledWith({
+        expect(withOverridesSpy).toHaveBeenCalledWith(optionsWithCapture, {
           captureServer: "",
           captureDownloads: false,
         });
-        expect(extensionOptions.toStorage).toHaveBeenCalled();
+        expect(toStorageSpy).toHaveBeenCalled();
       });
     });
   });
@@ -113,7 +111,7 @@ describe("ServerQuickOptions", () => {
     });
 
     it("is enabled when capture downloads is enabled on this server", () => {
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true);
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         setExtensionOptions: mockSetExtensionOptions,
@@ -126,7 +124,12 @@ describe("ServerQuickOptions", () => {
     });
 
     it("is checked when useCompleteFilePath is enabled", () => {
-      const optionsWithCompletePath = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true, 0, [], [], [], true);
+      const optionsWithCompletePath = ExtensionOptions.create({
+        servers: { [server.uuid]: server },
+        captureServer: server.uuid,
+        captureDownloads: true,
+        useCompleteFilePath: true,
+      });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCompletePath,
         setExtensionOptions: mockSetExtensionOptions,
@@ -139,7 +142,12 @@ describe("ServerQuickOptions", () => {
     });
 
     it("is unchecked when useCompleteFilePath is disabled", () => {
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true, 0, [], [], [], false);
+      const optionsWithCapture = ExtensionOptions.create({
+        servers: { [server.uuid]: server },
+        captureServer: server.uuid,
+        captureDownloads: true,
+        useCompleteFilePath: false,
+      });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         setExtensionOptions: mockSetExtensionOptions,
@@ -152,7 +160,7 @@ describe("ServerQuickOptions", () => {
     });
 
     it("calls withOverrides with correct value when checked", async () => {
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true);
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         setExtensionOptions: mockSetExtensionOptions,
@@ -165,10 +173,10 @@ describe("ServerQuickOptions", () => {
       await user.click(checkbox);
 
       await waitFor(() => {
-        expect(optionsWithCapture.withOverrides).toHaveBeenCalledWith({
+        expect(withOverridesSpy).toHaveBeenCalledWith(optionsWithCapture, {
           useCompleteFilePath: true,
         });
-        expect(optionsWithCapture.toStorage).toHaveBeenCalled();
+        expect(toStorageSpy).toHaveBeenCalled();
         expect(mockSetExtensionOptions).toHaveBeenCalled();
       });
     });
@@ -177,7 +185,7 @@ describe("ServerQuickOptions", () => {
   describe("Integration", () => {
     it("enables use complete file path checkbox when capture downloads is checked", async () => {
       const user = userEvent.setup();
-      const optionsWithCapture = new ExtensionOptions({ [server.uuid]: server }, server.uuid, true);
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
 
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions,
@@ -205,8 +213,12 @@ describe("ServerQuickOptions", () => {
     });
 
     it("does not update use complete file path when capture downloads is different server", () => {
-      const server2 = new Server("server-2", "Another Server");
-      const optionsWithCaptureOnDifferentServer = new ExtensionOptions({ [server.uuid]: server, [server2.uuid]: server2 }, server2.uuid, true);
+      const server2 = Server.create({ uuid: "server-2", name: "Another Server" });
+      const optionsWithCaptureOnDifferentServer = ExtensionOptions.create({
+        servers: { [server.uuid]: server, [server2.uuid]: server2 },
+        captureServer: server2.uuid,
+        captureDownloads: true,
+      });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCaptureOnDifferentServer,
         setExtensionOptions: mockSetExtensionOptions,

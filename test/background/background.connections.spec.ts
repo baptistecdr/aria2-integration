@@ -1,14 +1,16 @@
 import Aria2 from "@baptistecdr/aria2";
 import { expect } from "vitest";
 import { createConnections } from "@/background/background";
-import ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
+import { ExtensionOptions } from "@/models/extension-options";
+import { Server } from "@/models/server";
 
 describe("Connections", () => {
   it("should create one connection per server", () => {
-    const extensionOptions = new ExtensionOptions({
-      server1: new Server(),
-      server2: new Server(),
+    const extensionOptions = ExtensionOptions.create({
+      servers: {
+        server1: Server.create(),
+        server2: Server.create(),
+      },
     });
 
     const result = createConnections(extensionOptions);

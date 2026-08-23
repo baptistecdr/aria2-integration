@@ -1,16 +1,23 @@
 import { v4 as uuidv4 } from "uuid";
-import ServerIncognitoModeOptions from "@/models/server-incognito-mode-options";
+import * as z from "zod/mini";
+import { ServerIncognitoModeOptions, ServerIncognitoModeOptionsSchema } from "@/models/server-incognito-mode-options";
 
-export default class Server {
-  constructor(
-    public readonly uuid: string = uuidv4(),
-    public readonly name: string = "Localhost",
-    public readonly secure: boolean = false,
-    public readonly host: string = "localhost",
-    public readonly port: number = 6800,
-    public readonly path: string = "/jsonrpc",
-    public readonly secret: string = "",
-    public readonly rpcParameters: Record<string, string> = {},
-    public readonly incognitoModeOptions: ServerIncognitoModeOptions = new ServerIncognitoModeOptions(),
-  ) {}
-}
+export const ServerSchema = z.object({
+  uuid: z._default(z.string(), () => uuidv4()),
+  name: z._default(z.string(), "Localhost"),
+  secure: z._default(z.boolean(), false),
+  host: z._default(z.string(), "localhost"),
+  port: z._default(z.number(), 6800),
+  path: z._default(z.string(), "/jsonrpc"),
+  secret: z._default(z.string(), ""),
+  rpcParameters: z._default(z.record(z.string(), z.string()), () => ({})),
+  incognitoModeOptions: z._default(ServerIncognitoModeOptionsSchema, () => ServerIncognitoModeOptions.create()),
+});
+
+export type Server = z.infer<typeof ServerSchema>;
+
+export const Server = {
+  create(data: Partial<Server> = {}): Server {
+    return ServerSchema.parse(data);
+  },
+};

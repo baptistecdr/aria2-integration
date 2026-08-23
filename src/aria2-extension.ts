@@ -1,6 +1,6 @@
 import type Aria2 from "@baptistecdr/aria2";
 import browser, { type Notifications } from "webextension-polyfill";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 
 export function isFirefox() {
   return !isChromium();

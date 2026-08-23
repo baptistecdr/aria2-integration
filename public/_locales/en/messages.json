@@ -265,6 +265,9 @@
       }
     }
   },
+  "taskActionError": {
+    "message": "An error occurred while performing the action."
+  },
   "toggleCaptureDownloadsEnabled": {
     "message": "Enabling capture downloads to $SERVER$.",
     "placeholders": {

@@ -2,9 +2,9 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useExtensionOptions } from "@/extension-options-provider";
-import type ExtensionOptions from "@/models/extension-options";
-import Server from "@/models/server";
-import ServerIncognitoModeOptions from "@/models/server-incognito-mode-options";
+import { ExtensionOptions } from "@/models/extension-options";
+import { Server } from "@/models/server";
+import { ServerIncognitoModeOptions } from "@/models/server-incognito-mode-options";
 import ServerOptionsTab from "@/options/components/server-options-tab";
 
 vi.mock("@/i18n", () => ({
@@ -16,27 +16,27 @@ vi.mock("@/extension-options-provider", () => ({
   setExtensionOptions: vi.fn(),
 }));
 
+const addServerSpy = vi.spyOn(ExtensionOptions, "addServer");
+
 describe("ServerOptionsTab", () => {
-  const addServer = vi.fn();
-  const extensionOptions = {
-    addServer,
-  } as unknown as ExtensionOptions;
+  const extensionOptions = ExtensionOptions.create();
   const setExtensionOptions = vi.fn();
-  const server = new Server(
-    "test-uuid",
-    "Test Server",
-    true,
-    "localhost",
-    6800,
-    "/jsonrpc",
-    "secret123",
-    { split: "5" },
-    new ServerIncognitoModeOptions(true, true, { split: "6" }),
-  );
+  const server = Server.create({
+    uuid: "test-uuid",
+    name: "Test Server",
+    secure: true,
+    host: "localhost",
+    port: 6800,
+    path: "/jsonrpc",
+    secret: "secret123",
+    rpcParameters: { split: "5" },
+    incognitoModeOptions: ServerIncognitoModeOptions.create({ automaticallyPurgeDownloads: true, overwriteRpcParameters: true, rpcParameters: { split: "6" } }),
+  });
   const deleteServer = vi.fn().mockResolvedValue(undefined);
 
   beforeEach(() => {
     vi.clearAllMocks();
+    addServerSpy.mockResolvedValue(extensionOptions);
 
     vi.mocked(useExtensionOptions).mockReturnValue({
       extensionOptions,
@@ -99,7 +99,8 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
         name: "Updated Server",
         host: "127.0.0.1",
@@ -125,7 +126,8 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
         path: "/jsonrpc",
       }),
@@ -143,7 +145,8 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
         path: "/rpc/v2",
       }),
@@ -177,22 +180,51 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
         rpcParameters: {
           split: "5",
           proxy: "http://localhost:8080",
         },
-        incognitoModeOptions: new ServerIncognitoModeOptions(true, true, {
-          split: "6",
-          proxy: "http://localhost:8081",
+        incognitoModeOptions: ServerIncognitoModeOptions.create({
+          automaticallyPurgeDownloads: true,
+          overwriteRpcParameters: true,
+          rpcParameters: {
+            split: "6",
+            proxy: "http://localhost:8081",
+          },
         }),
       }),
     );
   });
 
+  it("trims leading and trailing whitespace from RPC parameter names", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const serverOptionsRpcParameters = await screen.findAllByLabelText("serverOptionsRpcParameters");
+
+    await userEvent.clear(serverOptionsRpcParameters[0]);
+    // The leading spaces before "split" must not be on the first line: serializeRpcParameters trims
+    // the whole textarea value, which would otherwise strip them and hide the bug this test guards against.
+    await userEvent.type(serverOptionsRpcParameters[0], "proxy: http://localhost:8080\n  split : 5");
+
+    const saveButton = screen.getByText("serverOptionsSave");
+    await userEvent.click(saveButton);
+
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
+      expect.objectContaining({
+        rpcParameters: {
+          proxy: "http://localhost:8080",
+          split: "5",
+        },
+      }),
+    );
+  });
+
   it("shows error alert when server save fails", async () => {
-    addServer.mockRejectedValueOnce(new Error("Save failed"));
+    addServerSpy.mockRejectedValueOnce(new Error("Save failed"));
 
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
@@ -212,17 +244,21 @@ describe("ServerOptionsTab", () => {
   });
 
   it("incognito RPC parameters textarea is enabled when overwriteRpcParameters is true", () => {
-    const serverWithOverwrite = new Server(
-      "test-uuid",
-      "Test Server",
-      true,
-      "localhost",
-      6800,
-      "/jsonrpc",
-      "secret123",
-      { split: "5" },
-      new ServerIncognitoModeOptions(false, true, { split: "6" }),
-    );
+    const serverWithOverwrite = Server.create({
+      uuid: "test-uuid",
+      name: "Test Server",
+      secure: true,
+      host: "localhost",
+      port: 6800,
+      path: "/jsonrpc",
+      secret: "secret123",
+      rpcParameters: { split: "5" },
+      incognitoModeOptions: ServerIncognitoModeOptions.create({
+        automaticallyPurgeDownloads: false,
+        overwriteRpcParameters: true,
+        rpcParameters: { split: "6" },
+      }),
+    });
 
     render(<ServerOptionsTab server={serverWithOverwrite} deleteServer={deleteServer} />);
 
@@ -235,17 +271,21 @@ describe("ServerOptionsTab", () => {
   });
 
   it("incognito RPC parameters textarea is disabled when overwriteRpcParameters is false", () => {
-    const serverWithoutOverwrite = new Server(
-      "test-uuid",
-      "Test Server",
-      true,
-      "localhost",
-      6800,
-      "/jsonrpc",
-      "secret123",
-      { split: "5" },
-      new ServerIncognitoModeOptions(false, false, { split: "6" }),
-    );
+    const serverWithoutOverwrite = Server.create({
+      uuid: "test-uuid",
+      name: "Test Server",
+      secure: true,
+      host: "localhost",
+      port: 6800,
+      path: "/jsonrpc",
+      secret: "secret123",
+      rpcParameters: { split: "5" },
+      incognitoModeOptions: ServerIncognitoModeOptions.create({
+        automaticallyPurgeDownloads: false,
+        overwriteRpcParameters: false,
+        rpcParameters: { split: "6" },
+      }),
+    });
 
     render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
 
@@ -258,17 +298,17 @@ describe("ServerOptionsTab", () => {
   });
 
   it("enables incognito RPC parameters textarea when overwriteRpcParameters checkbox is checked", async () => {
-    const serverWithoutOverwrite = new Server(
-      "test-uuid",
-      "Test Server",
-      true,
-      "localhost",
-      6800,
-      "/jsonrpc",
-      "secret123",
-      { split: "5" },
-      new ServerIncognitoModeOptions(false, false, {}),
-    );
+    const serverWithoutOverwrite = Server.create({
+      uuid: "test-uuid",
+      name: "Test Server",
+      secure: true,
+      host: "localhost",
+      port: 6800,
+      path: "/jsonrpc",
+      secret: "secret123",
+      rpcParameters: { split: "5" },
+      incognitoModeOptions: ServerIncognitoModeOptions.create({ automaticallyPurgeDownloads: false, overwriteRpcParameters: false, rpcParameters: {} }),
+    });
 
     render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
 
@@ -304,25 +344,30 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
-        incognitoModeOptions: new ServerIncognitoModeOptions(true, false, { split: "6" }),
+        incognitoModeOptions: ServerIncognitoModeOptions.create({
+          automaticallyPurgeDownloads: true,
+          overwriteRpcParameters: false,
+          rpcParameters: { split: "6" },
+        }),
       }),
     );
   });
 
   it("saves overwriteRpcParameters as true when checkbox is checked before submit", async () => {
-    const serverWithoutOverwrite = new Server(
-      "test-uuid",
-      "Test Server",
-      true,
-      "localhost",
-      6800,
-      "/jsonrpc",
-      "secret123",
-      { split: "5" },
-      new ServerIncognitoModeOptions(false, false, {}),
-    );
+    const serverWithoutOverwrite = Server.create({
+      uuid: "test-uuid",
+      name: "Test Server",
+      secure: true,
+      host: "localhost",
+      port: 6800,
+      path: "/jsonrpc",
+      secret: "secret123",
+      rpcParameters: { split: "5" },
+      incognitoModeOptions: ServerIncognitoModeOptions.create({ automaticallyPurgeDownloads: false, overwriteRpcParameters: false, rpcParameters: {} }),
+    });
 
     render(<ServerOptionsTab server={serverWithoutOverwrite} deleteServer={deleteServer} />);
 
@@ -336,9 +381,14 @@ describe("ServerOptionsTab", () => {
     const saveButton = screen.getByText("serverOptionsSave");
     await userEvent.click(saveButton);
 
-    expect(addServer).toHaveBeenCalledWith(
+    expect(addServerSpy).toHaveBeenCalledWith(
+      extensionOptions,
       expect.objectContaining({
-        incognitoModeOptions: new ServerIncognitoModeOptions(false, true, { split: "3" }),
+        incognitoModeOptions: ServerIncognitoModeOptions.create({
+          automaticallyPurgeDownloads: false,
+          overwriteRpcParameters: true,
+          rpcParameters: { split: "3" },
+        }),
       }),
     );
   });
