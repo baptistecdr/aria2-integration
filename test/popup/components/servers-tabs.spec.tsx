@@ -2,8 +2,8 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useExtensionOptions } from "@/extension-options-provider";
-import type ExtensionOptions from "@/models/extension-options";
-import type Server from "@/models/server";
+import type { ExtensionOptions } from "@/models/extension-options";
+import type { Server } from "@/models/server";
 import ServersTabs from "@/popup/components/servers-tabs";
 
 vi.mock("@/extension-options-provider", () => ({

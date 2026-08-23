@@ -3,7 +3,8 @@ import { Button } from "react-bootstrap";
 import { captureURL, showNotification } from "@/aria2-extension";
 import { useCurrentTab } from "@/current-tab-provider";
 import { useExtensionOptions } from "@/extension-options-provider";
-import type Server from "@/models/server";
+import i18n from "@/i18n";
+import type { Server } from "@/models/server";
 import type { Task } from "@/popup/models/task";
 
 interface Props {
@@ -25,9 +26,10 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
       } else if (task.isError()) {
         await captureURL(aria2, server, task.files[0].uris[0].uri, "", "", !!currentTab?.incognito, task.dir, task.getFilename());
       }
-    } catch (_e) {
+    } catch (error) {
+      console.error(error);
       if (extensionOptions.notifyErrorOccurs) {
-        showNotification("Error occurred while performing action");
+        showNotification(i18n("taskActionError"));
       }
     }
   };

@@ -1,7 +1,7 @@
 import Aria2 from "@baptistecdr/aria2";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 import ServerTask from "@/popup/components/server-task";
 import { type Task, TaskStatus } from "@/popup/models/task";
 

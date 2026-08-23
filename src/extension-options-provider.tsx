@@ -1,5 +1,5 @@
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useContext, useEffect, useState } from "react";
-import ExtensionOptions from "@/models/extension-options";
+import { ExtensionOptions } from "@/models/extension-options";
 import { applyTheme } from "@/models/theme";
 
 interface ExtensionOptionsContextValue {
@@ -8,7 +8,7 @@ interface ExtensionOptionsContextValue {
 }
 
 const ExtensionOptionsContext = createContext<ExtensionOptionsContextValue>({
-  extensionOptions: new ExtensionOptions(),
+  extensionOptions: ExtensionOptions.create(),
   setExtensionOptions: () => {},
 });
 
@@ -17,7 +17,7 @@ interface ExtensionOptionsProviderProps {
 }
 
 function ExtensionOptionsProvider({ children }: ExtensionOptionsProviderProps) {
-  const [extensionOptions, setExtensionOptions] = useState(new ExtensionOptions());
+  const [extensionOptions, setExtensionOptions] = useState(ExtensionOptions.create());
 
   useEffect(() => {
     ExtensionOptions.fromStorage().then(setExtensionOptions);

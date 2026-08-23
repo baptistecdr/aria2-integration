@@ -2,7 +2,8 @@ import type { ChangeEvent } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import { useExtensionOptions } from "@/extension-options-provider";
 import i18n from "@/i18n";
-import type Server from "@/models/server";
+import { ExtensionOptions } from "@/models/extension-options";
+import type { Server } from "@/models/server";
 
 interface Props {
   server: Server;
@@ -13,9 +14,9 @@ function ServerQuickOptions({ server }: Props) {
 
   const isCapturingOnThisServer = extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid;
 
-  const updateOptions = async (overrides: Parameters<typeof extensionOptions.withOverrides>[0]) => {
-    const updatedOptions = extensionOptions.withOverrides(overrides);
-    await updatedOptions.toStorage();
+  const updateOptions = async (overrides: Partial<ExtensionOptions>) => {
+    const updatedOptions = ExtensionOptions.withOverrides(extensionOptions, overrides);
+    await ExtensionOptions.toStorage(updatedOptions);
     setExtensionOptions(updatedOptions);
   };
 

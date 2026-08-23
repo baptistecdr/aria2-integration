@@ -265,6 +265,9 @@
       }
     }
   },
+  "taskActionError": {
+    "message": "执行操作时发生错误。"
+  },
   "toggleCaptureDownloadsEnabled": {
     "message": "启用下载拦截到 $SERVER$.",
     "placeholders": {

@@ -1,7 +1,7 @@
 import Aria2 from "@baptistecdr/aria2";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import * as aria2Ext from "@/aria2-extension";
-import type Server from "@/models/server";
+import type { Server } from "@/models/server";
 import browser from "./setupTests";
 
 const aria2Call = vi.fn();
@@ -109,11 +109,11 @@ describe("download", () => {
 
   beforeEach(() => {
     global.fetch = vi.fn();
+    vi.clearAllMocks();
   });
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
   });
 
   it("fetches and returns a blob", async () => {
@@ -169,7 +169,6 @@ describe("captureTorrentFromURL", () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
-    vi.restoreAllMocks();
   });
 
   it("calls aria2.addTorrent for .torrent url", async () => {

@@ -1,29 +1,24 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
-import ExtensionOptions from "@/models/extension-options";
-import type Server from "@/models/server";
+import { ExtensionOptions } from "@/models/extension-options";
+import { Server } from "@/models/server";
 
 describe("ExtensionOptions", () => {
   const createMockServer = (overrides?: Partial<Server>): Server =>
-    ({
+    Server.create({
       uuid: "test-uuid",
       name: "Test Server",
-      rpcParameters: {},
       ...overrides,
-    }) as Server;
+    });
 
   beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
   });
 
   describe("serialize", () => {
     it("should serialize options to JSON string", () => {
-      const options = new ExtensionOptions();
-      const serialized = options.serialize();
+      const options = ExtensionOptions.create();
+      const serialized = ExtensionOptions.serialize(options);
 
       expect(typeof serialized).toBe("string");
       expect(() => JSON.parse(serialized)).not.toThrow();
@@ -32,9 +27,21 @@ describe("ExtensionOptions", () => {
 
     it("should preserve all properties when serializing", () => {
       const server = createMockServer();
-      const options = new ExtensionOptions({ [server.uuid]: server }, "server-1", true, 1024, ["http"], ["example.com"], ["exe"], true, false, false, true);
+      const options = ExtensionOptions.create({
+        servers: { [server.uuid]: server },
+        captureServer: "server-1",
+        captureDownloads: true,
+        minFileSizeInBytes: 1024,
+        excludedProtocols: ["http"],
+        excludedSites: ["example.com"],
+        excludedFileTypes: ["exe"],
+        useCompleteFilePath: true,
+        notifyUrlIsAdded: false,
+        notifyFileIsAdded: false,
+        notifyErrorOccurs: true,
+      });
 
-      const serialized = options.serialize();
+      const serialized = ExtensionOptions.serialize(options);
       const parsed = JSON.parse(serialized);
 
       expect(parsed.servers).toEqual(options.servers);
@@ -46,10 +53,10 @@ describe("ExtensionOptions", () => {
 
   describe("toStorage", () => {
     it("should save options to browser storage with correct format", async () => {
-      const options = new ExtensionOptions();
-      const serialized = options.serialize();
+      const options = ExtensionOptions.create();
+      const serialized = ExtensionOptions.serialize(options);
 
-      await options.toStorage();
+      await ExtensionOptions.toStorage(options);
 
       expect(browser.storage.sync.set).toHaveBeenCalledWith({
         options: serialized,
@@ -58,8 +65,8 @@ describe("ExtensionOptions", () => {
     });
 
     it("should return the same instance after saving", async () => {
-      const options = new ExtensionOptions();
-      const result = await options.toStorage();
+      const options = ExtensionOptions.create();
+      const result = await ExtensionOptions.toStorage(options);
 
       expect(result).toBe(options);
     });
@@ -68,9 +75,9 @@ describe("ExtensionOptions", () => {
   describe("addServer", () => {
     it("should add a server and save to storage", async () => {
       const server = createMockServer();
-      const options = new ExtensionOptions();
+      const options = ExtensionOptions.create();
 
-      const newOptions = await options.addServer(server);
+      const newOptions = await ExtensionOptions.addServer(options, server);
 
       expect(newOptions.servers[server.uuid]).toEqual(server);
       expect(browser.storage.sync.set).toHaveBeenCalled();
@@ -78,8 +85,8 @@ describe("ExtensionOptions", () => {
 
     it("should return a new instance", async () => {
       const server = createMockServer();
-      const options = new ExtensionOptions();
-      const newOptions = await options.addServer(server);
+      const options = ExtensionOptions.create();
+      const newOptions = await ExtensionOptions.addServer(options, server);
 
       expect(newOptions).not.toBe(options);
     });
@@ -87,9 +94,9 @@ describe("ExtensionOptions", () => {
     it("should preserve existing servers when adding a new one", async () => {
       const server1 = createMockServer({ uuid: "server-1" });
       const server2 = createMockServer({ uuid: "server-2" });
-      const options = new ExtensionOptions({ "server-1": server1 });
+      const options = ExtensionOptions.create({ servers: { "server-1": server1 } });
 
-      const newOptions = await options.addServer(server2);
+      const newOptions = await ExtensionOptions.addServer(options, server2);
 
       expect(newOptions.servers["server-1"]).toEqual(server1);
       expect(newOptions.servers["server-2"]).toEqual(server2);
@@ -101,9 +108,9 @@ describe("ExtensionOptions", () => {
         uuid: "server-1",
         name: "Updated Server 1",
       });
-      const options = new ExtensionOptions({ "server-1": server });
+      const options = ExtensionOptions.create({ servers: { "server-1": server } });
 
-      const newOptions = await options.addServer(updatedServer);
+      const newOptions = await ExtensionOptions.addServer(options, updatedServer);
 
       expect(newOptions.servers["server-1"].name).toBe("Updated Server 1");
     });
@@ -112,11 +119,11 @@ describe("ExtensionOptions", () => {
   describe("deleteServer", () => {
     it("should delete a server and save to storage", async () => {
       const server = createMockServer();
-      const options = new ExtensionOptions({
-        [server.uuid]: server,
+      const options = ExtensionOptions.create({
+        servers: { [server.uuid]: server },
       });
 
-      const newOptions = await options.deleteServer(server);
+      const newOptions = await ExtensionOptions.deleteServer(options, server);
 
       expect(newOptions.servers[server.uuid]).toBeUndefined();
       expect(browser.storage.sync.set).toHaveBeenCalled();
@@ -124,10 +131,10 @@ describe("ExtensionOptions", () => {
 
     it("should return a new instance", async () => {
       const server = createMockServer();
-      const options = new ExtensionOptions({
-        [server.uuid]: server,
+      const options = ExtensionOptions.create({
+        servers: { [server.uuid]: server },
       });
-      const newOptions = await options.deleteServer(server);
+      const newOptions = await ExtensionOptions.deleteServer(options, server);
 
       expect(newOptions).not.toBe(options);
     });
@@ -135,23 +142,62 @@ describe("ExtensionOptions", () => {
     it("should preserve other servers when deleting one", async () => {
       const server1 = createMockServer({ uuid: "server-1" });
       const server2 = createMockServer({ uuid: "server-2" });
-      const options = new ExtensionOptions({
-        "server-1": server1,
-        "server-2": server2,
+      const options = ExtensionOptions.create({
+        servers: {
+          "server-1": server1,
+          "server-2": server2,
+        },
       });
 
-      const newOptions = await options.deleteServer(server1);
+      const newOptions = await ExtensionOptions.deleteServer(options, server1);
 
       expect(newOptions.servers["server-1"]).toBeUndefined();
       expect(newOptions.servers["server-2"]).toEqual(server2);
+    });
+
+    it("should clear captureServer and captureDownloads when deleting the current capture target", async () => {
+      const server1 = createMockServer({ uuid: "server-1" });
+      const server2 = createMockServer({ uuid: "server-2" });
+      const options = ExtensionOptions.create({
+        servers: {
+          "server-1": server1,
+          "server-2": server2,
+        },
+        captureServer: "server-1",
+        captureDownloads: true,
+      });
+
+      const newOptions = await ExtensionOptions.deleteServer(options, server1);
+
+      expect(newOptions.servers["server-2"]).toEqual(server2);
+      expect(newOptions.captureServer).toBe("");
+      expect(newOptions.captureDownloads).toBe(false);
+    });
+
+    it("should not touch captureServer when deleting a different server", async () => {
+      const server1 = createMockServer({ uuid: "server-1" });
+      const server2 = createMockServer({ uuid: "server-2" });
+      const options = ExtensionOptions.create({
+        servers: {
+          "server-1": server1,
+          "server-2": server2,
+        },
+        captureServer: "server-1",
+        captureDownloads: true,
+      });
+
+      const newOptions = await ExtensionOptions.deleteServer(options, server2);
+
+      expect(newOptions.captureServer).toBe("server-1");
+      expect(newOptions.captureDownloads).toBe(true);
     });
   });
 
   describe("withOverrides", () => {
     it("should apply overrides to a copy of options", () => {
-      const originalOptions = new ExtensionOptions({}, "server-1", false, 512);
+      const originalOptions = ExtensionOptions.create({ captureServer: "server-1", captureDownloads: false, minFileSizeInBytes: 512 });
 
-      const overriddenOptions = originalOptions.withOverrides({
+      const overriddenOptions = ExtensionOptions.withOverrides(originalOptions, {
         captureDownloads: true,
         minFileSizeInBytes: 1024,
       });
@@ -163,9 +209,9 @@ describe("ExtensionOptions", () => {
     });
 
     it("should not modify original options", () => {
-      const originalOptions = new ExtensionOptions({}, "", false, 512);
+      const originalOptions = ExtensionOptions.create({ minFileSizeInBytes: 512 });
 
-      originalOptions.withOverrides({
+      ExtensionOptions.withOverrides(originalOptions, {
         minFileSizeInBytes: 1024,
       });
 
@@ -176,8 +222,8 @@ describe("ExtensionOptions", () => {
   describe("fromStorage", () => {
     it("should return options from storage", async () => {
       const server = createMockServer({ uuid: "server-id" });
-      const storedOptions = new ExtensionOptions({ "server-id": server }, "server-id", true);
-      const serialized = storedOptions.serialize();
+      const storedOptions = ExtensionOptions.create({ servers: { "server-id": server }, captureServer: "server-id", captureDownloads: true });
+      const serialized = ExtensionOptions.serialize(storedOptions);
 
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
         options: serialized,
@@ -185,7 +231,6 @@ describe("ExtensionOptions", () => {
 
       const options = await ExtensionOptions.fromStorage();
 
-      expect(options).toBeInstanceOf(ExtensionOptions);
       expect(options.servers).toEqual(storedOptions.servers);
       expect(options.captureServer).toBe(storedOptions.captureServer);
       expect(options.captureDownloads).toBe(storedOptions.captureDownloads);
@@ -196,7 +241,6 @@ describe("ExtensionOptions", () => {
 
       const options = await ExtensionOptions.fromStorage();
 
-      expect(options).toBeInstanceOf(ExtensionOptions);
       expect(options.servers).toEqual({});
       expect(options.captureServer).toBe("");
       expect(options.captureDownloads).toBe(false);
@@ -210,14 +254,38 @@ describe("ExtensionOptions", () => {
 
       const options = await ExtensionOptions.fromStorage();
 
-      expect(options).toBeInstanceOf(ExtensionOptions);
       expect(options.captureServer).toBe("");
+    });
+
+    it("should return default options and log the error when stored options are corrupted", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
+        options: "not valid json{",
+      });
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options.servers).toEqual({});
+      expect(options.captureServer).toBe("");
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
 
     it("should correctly deserialize all properties from storage", async () => {
       const server = createMockServer({ uuid: "server-1" });
-      const storedOptions = new ExtensionOptions({ "server-1": server }, "server-1", true, 2048, ["ftp"], ["blocked.com"], ["zip"], true, true, true, false);
-      const serialized = storedOptions.serialize();
+      const storedOptions = ExtensionOptions.create({
+        servers: { "server-1": server },
+        captureServer: "server-1",
+        captureDownloads: true,
+        minFileSizeInBytes: 2048,
+        excludedProtocols: ["ftp"],
+        excludedSites: ["blocked.com"],
+        excludedFileTypes: ["zip"],
+        useCompleteFilePath: true,
+        notifyUrlIsAdded: true,
+        notifyFileIsAdded: true,
+        notifyErrorOccurs: false,
+      });
+      const serialized = ExtensionOptions.serialize(storedOptions);
 
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
         options: serialized,

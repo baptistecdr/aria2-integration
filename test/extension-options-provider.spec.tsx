@@ -1,9 +1,9 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { userEvent } from "@testing-library/user-event";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptionsProvider, useExtensionOptions } from "@/extension-options-provider";
-import ExtensionOptions from "@/models/extension-options";
+import { ExtensionOptions } from "@/models/extension-options";
 import Theme, { applyTheme } from "@/models/theme";
 
 vi.mock("@/models/theme", async (importOriginal) => {
@@ -30,7 +30,7 @@ const TestSetter = () => {
   return (
     <div>
       <span data-testid="theme">{extensionOptions.theme}</span>
-      <button type="button" onClick={() => setExtensionOptions(extensionOptions.withOverrides({ theme: Theme.Dark }))}>
+      <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.withOverrides(extensionOptions, { theme: Theme.Dark }))}>
         Set Dark
       </button>
     </div>
@@ -39,10 +39,6 @@ const TestSetter = () => {
 
 describe("extension-options-provider", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
   });
 
@@ -60,9 +56,9 @@ describe("extension-options-provider", () => {
     });
 
     it("should load extension options from storage on mount", async () => {
-      const storedOptions = new ExtensionOptions({}, "https://my-server.com", true);
+      const storedOptions = ExtensionOptions.create({ captureServer: "https://my-server.com", captureDownloads: true });
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
-        options: storedOptions.serialize(),
+        options: ExtensionOptions.serialize(storedOptions),
       });
 
       render(
@@ -126,9 +122,9 @@ describe("extension-options-provider", () => {
     });
 
     it("should apply the stored theme from storage", async () => {
-      const storedOptions = new ExtensionOptions({}, "", false, 0, [], [], [], false, true, true, true, Theme.Light);
+      const storedOptions = ExtensionOptions.create({ theme: Theme.Light });
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
-        options: storedOptions.serialize(),
+        options: ExtensionOptions.serialize(storedOptions),
       });
 
       render(
@@ -166,9 +162,9 @@ describe("extension-options-provider", () => {
     });
 
     it("should share the same context value across multiple consumers", async () => {
-      const storedOptions = new ExtensionOptions({}, "shared-server", true);
+      const storedOptions = ExtensionOptions.create({ captureServer: "shared-server", captureDownloads: true });
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
-        options: storedOptions.serialize(),
+        options: ExtensionOptions.serialize(storedOptions),
       });
 
       const Consumer1 = () => {
@@ -210,7 +206,7 @@ describe("extension-options-provider", () => {
       const TestOutsideProvider = () => {
         const { setExtensionOptions } = useExtensionOptions();
         return (
-          <button type="button" onClick={() => setExtensionOptions(new ExtensionOptions())}>
+          <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.create())}>
             Set
           </button>
         );

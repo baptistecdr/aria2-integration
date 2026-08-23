@@ -1,14 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { CurrentTabProvider, findCurrentTab, useCurrentTab } from "@/current-tab-provider";
 
 describe("current-tab-provider", () => {
   beforeEach(() => {
-    vi.resetAllMocks();
-  });
-
-  afterEach(() => {
     vi.clearAllMocks();
   });
 

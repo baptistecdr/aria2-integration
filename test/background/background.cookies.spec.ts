@@ -1,4 +1,4 @@
-import { expect } from "vitest";
+import { describe, expect, it } from "vitest";
 import type { Cookies } from "webextension-polyfill";
 import { formatCookies } from "@/background/background";
 

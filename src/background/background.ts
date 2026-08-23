@@ -4,16 +4,16 @@ import browser from "webextension-polyfill";
 import { captureTorrentFromURL, captureURL, isChromium, isFirefox, showNotification } from "@/aria2-extension";
 import { findCurrentTab } from "@/current-tab-provider";
 import i18n from "@/i18n";
-import ExtensionOptions from "@/models/extension-options";
-import type Server from "@/models/server";
-import { type GlobalStat, parseGlobalStat } from "@/popup/models/global-stat";
+import { ExtensionOptions } from "@/models/extension-options";
+import type { Server } from "@/models/server";
+import { type GlobalStat, getGlobalStat } from "@/popup/models/global-stat";
 import { basename, dirname } from "@/stdlib";
 
 export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
-let extensionOptions = new ExtensionOptions();
+let extensionOptions = ExtensionOptions.create();
 let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
@@ -192,30 +192,38 @@ async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (co
 }
 
 if (isChromium()) {
-  browser.downloads.onChanged.addListener(async (downloadDelta: Downloads.OnChangedDownloadDeltaType) => {
-    const downloadItem = downloadItems[downloadDelta.id];
-    const currentTab = await findCurrentTab();
-    if (downloadItem.id in downloadItems && downloadDelta.filename?.previous === "" && downloadDelta.filename.current) {
-      downloadItem.filename = downloadDelta.filename.current;
-      await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
-        await removeDownloadItemCompletely(downloadItem);
-        try {
-          await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
-          if (extensionOptions.notifyFileIsAdded) {
-            await showNotification(i18n("addFileSuccess", server.name));
-          }
-        } catch {
-          if (extensionOptions.notifyErrorOccurs) {
-            await showNotification(i18n("addFileError", server.name));
-          }
-        }
-        delete downloadItems[downloadItem.id];
-      });
-    }
-  });
+  browser.downloads.onChanged.addListener(listenerOnDownloadChanged);
 }
 
-browser.downloads?.onCreated.addListener(async (downloadItem) => {
+export async function listenerOnDownloadChanged(downloadDelta: Downloads.OnChangedDownloadDeltaType) {
+  const downloadItem = downloadItems[downloadDelta.id];
+  if (downloadItem === undefined) {
+    return;
+  }
+  const currentTab = await findCurrentTab();
+  if (downloadDelta.filename?.previous === "" && downloadDelta.filename.current) {
+    downloadItem.filename = downloadDelta.filename.current;
+    await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
+      await removeDownloadItemCompletely(downloadItem);
+      try {
+        await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
+        if (extensionOptions.notifyFileIsAdded) {
+          await showNotification(i18n("addFileSuccess", server.name));
+        }
+      } catch (error) {
+        console.error(error);
+        if (extensionOptions.notifyErrorOccurs) {
+          await showNotification(i18n("addFileError", server.name));
+        }
+      }
+      delete downloadItems[downloadItem.id];
+    });
+  }
+}
+
+browser.downloads?.onCreated.addListener(listenerOnDownloadCreated);
+
+export async function listenerOnDownloadCreated(downloadItem: Downloads.DownloadItem) {
   const currentTab = await findCurrentTab();
   await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
     if (isFirefox()) {
@@ -225,7 +233,8 @@ browser.downloads?.onCreated.addListener(async (downloadItem) => {
         if (extensionOptions.notifyFileIsAdded) {
           await showNotification(i18n("addFileSuccess", server.name));
         }
-      } catch {
+      } catch (error) {
+        console.error(error);
         if (extensionOptions.notifyErrorOccurs) {
           await showNotification(i18n("addFileError", server.name));
         }
@@ -234,7 +243,7 @@ browser.downloads?.onCreated.addListener(async (downloadItem) => {
       downloadItems[downloadItem.id] = downloadItem;
     }
   });
-});
+}
 
 browser.contextMenus?.onClicked.addListener(listenerOnClicked);
 
@@ -253,7 +262,8 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
           showNotification(i18n("addUrlSuccess", server.name));
         }
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error(error);
         if (extensionOptions.notifyErrorOccurs) {
           showNotification(i18n("addUrlError", server.name));
         }
@@ -280,15 +290,12 @@ export async function listenerOnCommand(command: string) {
       }
       [newCaptureServer] = serverKeys;
     }
-    await new ExtensionOptions(
-      extensionOptions.servers,
-      newCaptureServer,
-      newCaptureDownloads,
-      extensionOptions.minFileSizeInBytes,
-      extensionOptions.excludedProtocols,
-      extensionOptions.excludedSites,
-      extensionOptions.excludedFileTypes,
-    ).toStorage();
+    await ExtensionOptions.toStorage(
+      ExtensionOptions.withOverrides(extensionOptions, {
+        captureServer: newCaptureServer,
+        captureDownloads: newCaptureDownloads,
+      }),
+    );
     const message = newCaptureDownloads
       ? i18n("toggleCaptureDownloadsEnabled", extensionOptions.servers[newCaptureServer].name)
       : i18n("toggleCaptureDownloadsDisabled");
@@ -299,11 +306,6 @@ export async function listenerOnCommand(command: string) {
 browser.alarms.create(ALARM_NAME, {
   periodInMinutes: ALARM_INTERVAL_SECONDS / 60,
 });
-
-async function getGlobalStat(aria2server: Aria2): Promise<GlobalStat> {
-  const globalStat = await aria2server.call("getGlobalStat", [], {});
-  return parseGlobalStat(globalStat);
-}
 
 browser.alarms.onAlarm.addListener(listenerOnAlarm);
 
