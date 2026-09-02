@@ -48,7 +48,7 @@
     "@types/node": "24.13.3",
     "@types/react": "19.2.18",
     "@types/react-dom": "19.2.5",
-    "@types/webextension-polyfill": "0.12.5",
+    "@types/webextension-polyfill": "0.12.6",
     "@vitejs/plugin-react": "6.1.1",
     "@vitest/coverage-v8": "4.1.11",
     "jsdom": "30.0.1",
