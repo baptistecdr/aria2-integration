@@ -1,11 +1,7 @@
 name: Node
 
 on:
-  push:
-    branches:
-      - main
-    tags:
-      - 'v*'
+  - push
 
 env:
   ARTIFACTS_DIR: ${{ vars.ARTIFACTS_DIR || 'artifacts' }}
@@ -21,6 +17,9 @@ jobs:
       id-token: write
       contents: read
       attestations: write
+    outputs:
+      firefox-artifact-id: ${{ steps.upload-firefox-artifact.outputs.artifact-id }}
+      chromium-artifact-id: ${{ steps.upload-chromium-artifact.outputs.artifact-id }}
     steps:
       - name: Clone repository
         uses: actions/checkout@v7.0.1
@@ -40,32 +39,33 @@ jobs:
       - name: Test
         run: npm run test
 
-      - name: Create artifacts directory
-        run: mkdir "$ARTIFACTS_DIR"
-
       - name: Build Firefox extension
         run: npm run build:firefox
 
-      - name: Package Firefox extension
-        run: cd dist && zip -r "../$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME" .
-
-      - name: Upload Firefox artifact
-        uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.1
+        id: upload-firefox-artifact
+        name: Upload Firefox artifact
         with:
           name: aria2-integration-firefox
-          path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
+          path: dist
 
       - name: Build Chromium extension
         run: npm run build:chromium
 
-      - name: Package Chromium extension
-        run: cd dist && zip -r "../$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME" .
-
-      - name: Upload Chromium artifact
-        uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.1
+        id: upload-chromium-artifact
+        name: Upload Chromium artifact
         with:
           name: aria2-integration-chromium
-          path: ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
+          path: dist
+
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$ARTIFACTS_DIR"
+          gh api /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-firefox-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          gh api /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-chromium-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
       - name: Attest artifacts
         uses: actions/attest@v4.2.2
@@ -87,17 +87,13 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      - name: Download Firefox artifact
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: aria2-integration-firefox
-          path: ${{ env.ARTIFACTS_DIR }}
-
-      - name: Download Chromium artifact
-        uses: actions/download-artifact@v8.0.1
-        with:
-          name: aria2-integration-chromium
-          path: ${{ env.ARTIFACTS_DIR }}
+      - name: Download artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir "$ARTIFACTS_DIR"
+          gh api /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.firefox-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          gh api /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.chromium-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
       - name: Verify artifacts
         env:
