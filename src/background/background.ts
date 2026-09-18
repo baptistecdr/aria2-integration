@@ -184,7 +184,9 @@ async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (co
     if (referrer === "" || referrer === "about:blank") {
       referrer = currentTab?.url ?? "";
     }
-    const cookies = await getCookies(referrer, currentTab?.cookieStoreId);
+    // @ts-expect-error finalUrl exists only on Chromium
+    const downloadUrl = downloadItem.finalUrl ?? downloadItem.url;
+    const cookies = await getCookies(downloadUrl, currentTab?.cookieStoreId);
     if (downloadItemMustBeCaptured(extensionOptions, downloadItem, referrer)) {
       handler(connection, server, referrer, cookies);
     }
@@ -253,9 +255,9 @@ export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab)
 
   const urls = getSelectedUrls(info);
   const referer = tab?.url ?? "";
-  const cookies = await getCookies(referer, tab?.cookieStoreId);
   const isIncognito = !!tab?.incognito;
   for (const url of urls) {
+    const cookies = await getCookies(url, tab?.cookieStoreId);
     captureURL(connection, server, url, referer, cookies, isIncognito)
       .then(() => {
         if (extensionOptions.notifyUrlIsAdded) {
