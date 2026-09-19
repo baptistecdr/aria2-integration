@@ -42,13 +42,13 @@
     "message": "RPC 参数将应用到每个发送到本服务器的下载."
   },
   "serverOptionsIncognitoMode": {
-    "message": "Incognito Mode"
+    "message": "无痕模式"
   },
   "serverOptionsAutomaticallyPurgeDownloads": {
-    "message": "Automatically Purge Downloads"
+    "message": "自动清除下载项"
   },
   "serverOptionsOverwriteRpcParameters": {
-    "message": "Overwrite RPC Parameters"
+    "message": "覆写 RPC 参数"
   },
   "serverOptionsSave": {
     "message": "保存"
