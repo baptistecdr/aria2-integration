@@ -26,7 +26,18 @@ type TaskGroups = [Task[][], Task[][], Task[][]];
 
 async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: number): Promise<Task[]> {
   const result = (await aria2server.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]])) as TaskGroups;
-  return Task.parseMany(result.flatMap(([tasks]) => (Array.isArray(tasks) ? tasks : [])));
+  // Each element returned by multicall is already the array of tasks of that group.
+  // Merge them, and parse item by item so a single unexpected item cannot empty the whole list.
+  const groups = Array.isArray(result) ? result : [];
+  const tasks: Task[] = [];
+  for (const item of groups.flatMap((group) => (Array.isArray(group) ? group : []))) {
+    try {
+      tasks.push(...Task.parseMany([item]));
+    } catch (error) {
+      console.debug("Skipping task that failed to parse", error);
+    }
+  }
+  return tasks;
 }
 
 function ServerTab({ server }: Props) {

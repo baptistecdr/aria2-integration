@@ -101,3 +101,61 @@ describe("ServerTab", () => {
     expect(screen.queryByText(/Translated: serverNoTasks/)).not.toBeInTheDocument();
   });
 });
+
+describe("ServerTab task list", () => {
+  const makeTask = (gid: string, status: string) => ({
+    gid,
+    status,
+    totalLength: "1000",
+    completedLength: "500",
+    uploadLength: "0",
+    downloadSpeed: "100",
+    uploadSpeed: "0",
+    connections: "1",
+    dir: "/tmp",
+    files: [
+      {
+        index: "1",
+        path: "/tmp/a.bin",
+        length: "1000",
+        completedLength: "500",
+        selected: "true",
+        uris: [{ uri: "http://example.com/a.bin", status: "used" }],
+      },
+    ],
+  });
+
+  const mockAria2 = (multicallResult: unknown) => {
+    const mockCall = vi.fn().mockResolvedValue({
+      downloadSpeed: "1048576",
+      uploadSpeed: "1048576",
+      numActive: "1",
+      numWaiting: "0",
+      numStopped: "1",
+      numStoppedTotal: "1",
+    });
+    const mockMulticall = vi.fn().mockResolvedValue(multicallResult);
+    vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
+      this.call = mockCall;
+      this.multicall = mockMulticall;
+    });
+  };
+
+  it("renders the tasks of every multicall group (regression)", async () => {
+    mockAria2([[makeTask("gid-active", "active")], [], [makeTask("gid-stopped", "complete")]]);
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByText(/ServerTask gid-active$/)).toBeInTheDocument());
+    expect(screen.getByText(/ServerTask gid-stopped$/)).toBeInTheDocument();
+  });
+
+  it("keeps the other tasks when one item fails to parse", async () => {
+    mockAria2([[makeTask("gid-good", "active"), "not-a-task"], [], [makeTask("gid-good2", "complete")]]);
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByText(/ServerTask gid-good$/)).toBeInTheDocument());
+    expect(screen.getByText(/ServerTask gid-good2$/)).toBeInTheDocument();
+  });
+});
