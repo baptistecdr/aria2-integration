@@ -1,7 +1,7 @@
 import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import ServerTab from "@/popup/components/server-tab";
+import ServerTab, { getTasks } from "@/popup/components/server-tab";
 
 vi.mock("@/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
@@ -99,5 +99,38 @@ describe("ServerTab", () => {
     await waitFor(() => expect(screen.getByText(/Translated: serverError/)).toBeInTheDocument());
 
     expect(screen.queryByText(/Translated: serverNoTasks/)).not.toBeInTheDocument();
+  });
+});
+
+describe("getTasks", () => {
+  const makeTask = (gid: string, status: string) => ({
+    gid,
+    status,
+    totalLength: "1000",
+    completedLength: "500",
+    uploadLength: "0",
+    downloadSpeed: "100",
+    uploadSpeed: "0",
+    connections: "1",
+    dir: "/tmp",
+    files: [
+      {
+        index: "1",
+        path: "/tmp/a.bin",
+        length: "1000",
+        completedLength: "500",
+        selected: "true",
+        uris: [{ uri: "http://example.com/a.bin", status: "used" }],
+      },
+    ],
+  });
+
+  it("keeps the tasks of every multicall group (regression)", async () => {
+    const multicall = vi.fn().mockResolvedValue([[makeTask("gid-active", "active")], [], [makeTask("gid-stopped", "complete")]]);
+    const aria2 = { multicall } as unknown as Aria2;
+
+    const tasks = await getTasks(aria2, 0, 10);
+
+    expect(tasks.map((task) => task.gid)).toEqual(["gid-active", "gid-stopped"]);
   });
 });
