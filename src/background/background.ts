@@ -95,7 +95,7 @@ export function formatCookies(cookies: Cookies.Cookie[]) {
   }, "");
 }
 
-async function getCookies(url: string, cookieStoreID?: string): Promise<string> {
+export async function getCookies(url: string, cookieStoreID?: string): Promise<string> {
   const details: Cookies.GetAllDetailsType = { url, storeId: cookieStoreID };
   if (isFirefox()) {
     details.firstPartyDomain = null;
