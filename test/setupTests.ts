@@ -71,6 +71,9 @@ const browser: { [k: string]: any } = {
     update: vi.fn(),
     remove: vi.fn(),
   },
+  cookies: {
+    getAll: vi.fn().mockResolvedValue([]),
+  },
   alarms: {
     onAlarm: {
       addListener: vi.fn(),
