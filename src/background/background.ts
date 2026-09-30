@@ -96,7 +96,11 @@ export function formatCookies(cookies: Cookies.Cookie[]) {
 }
 
 async function getCookies(url: string, cookieStoreID?: string): Promise<string> {
-  return formatCookies(await browser.cookies.getAll({ url, storeId: cookieStoreID }));
+  const details: Cookies.GetAllDetailsType = { url, storeId: cookieStoreID };
+  if (isFirefox()) {
+    details.firstPartyDomain = null;
+  }
+  return formatCookies(await browser.cookies.getAll(details));
 }
 
 export function getSelectedUrls(onClickData: Menus.OnClickData): string[] {
