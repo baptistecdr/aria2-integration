@@ -26,7 +26,7 @@ type TaskGroups = [Task[][], Task[][], Task[][]];
 
 async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: number): Promise<Task[]> {
   const result = (await aria2server.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]])) as TaskGroups;
-  return Task.parseMany(result.flatMap(([tasks]) => (Array.isArray(tasks) ? tasks : [])));
+  return Task.parseMany(result.flatMap((tasks) => (Array.isArray(tasks) ? tasks : [])));
 }
 
 function ServerTab({ server }: Props) {
