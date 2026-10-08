@@ -42,7 +42,7 @@ jobs:
       - name: Build Firefox extension
         run: npm run build:firefox
 
-      - uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.2
         id: upload-firefox-artifact
         name: Upload Firefox artifact
         with:
@@ -52,7 +52,7 @@ jobs:
       - name: Build Chromium extension
         run: npm run build:chromium
 
-      - uses: actions/upload-artifact@v7.0.1
+      - uses: actions/upload-artifact@v7.0.2
         id: upload-chromium-artifact
         name: Upload Chromium artifact
         with:
