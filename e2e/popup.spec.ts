@@ -39,7 +39,7 @@ test("adds URLs to aria2", async ({ extension, aria2, fileServer }) => {
 
 test("pauses, resumes and deletes a task", async ({ extension, aria2, fileServer }) => {
   await extension.setOptions({ servers: { [SERVER_UUID]: aria2.server } });
-  const gid = await aria2.call<string>("aria2.addUri", [fileServer.url("/slow/movie.mkv")]);
+  const gid = await aria2.call("aria2.addUri", [fileServer.url("/slow/movie.mkv")]);
   const popup = await extension.openPopup();
 
   await expect(popup.getByText("movie.mkv")).toBeVisible();

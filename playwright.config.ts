@@ -9,7 +9,8 @@ export default defineConfig({
   workers: 1,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "list",
+  // On CI, the JSON report feeds the pull request comment (see .github/workflows/e2e-report-pr.yml).
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }], ["json", { outputFile: "playwright-report/results.json" }]] : "list",
   timeout: 30_000,
   expect: {
     timeout: 10_000,

@@ -1,6 +1,7 @@
 import { createServer, type Server as HttpServer, type IncomingHttpHeaders } from "node:http";
 import type { AddressInfo } from "node:net";
 import { resolve } from "node:path";
+import Aria2 from "@baptistecdr/aria2";
 import { type BrowserContext, test as base, chromium, type Page, type Worker } from "@playwright/test";
 import type { ExtensionOptions } from "@/models/extension-options";
 import type { Server } from "@/models/server";
@@ -83,34 +84,29 @@ export class FileServer {
 // Must match the aria2 service in compose.yaml.
 const ARIA2_PORT = 16800;
 
-export class Aria2Daemon {
-  readonly port = ARIA2_PORT;
-  private rpcId = 0;
+const ARIA2_SERVER: Partial<Server> = {
+  uuid: SERVER_UUID,
+  name: "E2E aria2",
+  host: "127.0.0.1",
+  port: ARIA2_PORT,
+  path: "/jsonrpc",
+  secret: ARIA2_SECRET,
+};
 
-  get server(): Partial<Server> {
-    return { uuid: SERVER_UUID, name: "E2E aria2", host: "127.0.0.1", port: this.port, path: "/jsonrpc", secret: ARIA2_SECRET };
+// The client used by the extension, pointed at the daemon from compose.yaml.
+export class Aria2Daemon extends Aria2 {
+  constructor() {
+    super(ARIA2_SERVER);
   }
 
-  async call<T = any>(method: string, ...params: unknown[]): Promise<T> {
-    const res = await fetch(`http://127.0.0.1:${this.port}/jsonrpc`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: `${++this.rpcId}`, method, params: [`token:${ARIA2_SECRET}`, ...params] }),
-    });
-    const json = await res.json();
-    if (json.error) {
-      throw new Error(`${method}: ${json.error.message}`);
-    }
-    return json.result as T;
+  // The server to put in the extension options.
+  get server(): Partial<Server> {
+    return ARIA2_SERVER;
   }
 
   async tasks(): Promise<any[]> {
-    const [active, waiting, stopped] = await Promise.all([
-      this.call("aria2.tellActive"),
-      this.call("aria2.tellWaiting", 0, 100),
-      this.call("aria2.tellStopped", 0, 100),
-    ]);
-    return [...active, ...waiting, ...stopped];
+    const groups: unknown[] = await this.multicall([["tellActive"], ["tellWaiting", 0, 100], ["tellStopped", 0, 100]]);
+    return groups.flatMap((tasks) => (Array.isArray(tasks) ? tasks : []));
   }
 
   async uris(): Promise<string[]> {
@@ -125,7 +121,7 @@ export class Aria2Daemon {
     const deadline = Date.now() + 10_000;
     while ((await this.call("aria2.tellActive")).length > 0 || (await this.call("aria2.tellWaiting", 0, 1)).length > 0) {
       if (Date.now() > deadline) {
-        throw new Error(`aria2 on port ${this.port} did not remove its downloads`);
+        throw new Error("aria2 did not remove its downloads");
       }
       await new Promise((r) => setTimeout(r, 50));
     }
