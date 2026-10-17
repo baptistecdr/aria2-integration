@@ -26,7 +26,7 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/.idea", "!**/dist", "!**/node_modules", "!**/coverage"]
+    "includes": ["**", "!**/.idea", "!**/dist", "!**/node_modules", "!**/coverage", "!**/test-results", "!**/playwright-report"]
   },
   "javascript": {
     "formatter": {

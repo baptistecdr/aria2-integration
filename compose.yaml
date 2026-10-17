@@ -1,0 +1,30 @@
+# aria2 daemon used by the end-to-end tests (see e2e/global-setup.ts).
+services:
+  aria2:
+    build:
+      dockerfile_inline: |
+        FROM alpine:3.22
+        RUN apk add --no-cache aria2
+    command:
+      - aria2c
+      - --enable-rpc
+      - --rpc-listen-all
+      - --rpc-listen-port=16800
+      - --rpc-secret=e2e-secret
+      - --dir=/downloads
+      - --no-conf
+      - --quiet
+      # Always start downloads from scratch, even when a previous test left a partial file behind.
+      - --allow-overwrite=true
+      - --remove-control-file=true
+      - --auto-file-renaming=false
+    ports:
+      - "127.0.0.1:16800:16800"
+    extra_hosts:
+      # Lets aria2 download from the test file server running on the host.
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "16800"]
+      interval: 1s
+      timeout: 1s
+      retries: 30

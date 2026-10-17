@@ -42,6 +42,9 @@
 - Run `npm run lint:fix` to lint and fix files
 - Run `npm run test` to run tests
   - Run `npm run test:coverage` to run tests with coverage
+- Run `npm run test:e2e` to run end-to-end tests on Chromium with Playwright
+  - Requires Docker: aria2 is started from `compose.yaml` (port 16800) and stopped after the tests
+  - Run `npx playwright install chromium` once to install the browser
 - Firefox
   - Run `npm run build:firefox:debug:watch` to auto-build for Firefox
   - Run `npm run start:firefox` to install on Firefox with auto-reload

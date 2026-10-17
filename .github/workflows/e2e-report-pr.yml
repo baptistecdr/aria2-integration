@@ -1,0 +1,58 @@
+name: Report End-to-end Tests
+
+on:
+  workflow_run:
+    workflows:
+      - Node PR
+    types:
+      - completed
+
+jobs:
+  report:
+    name: Report End-to-end Tests
+    runs-on: ubuntu-latest
+    # Unlike coverage, also report when the tests fail: that is when the report matters.
+    if: >
+      github.event.workflow_run.conclusion != 'cancelled' &&
+      github.event.workflow_run.event == 'pull_request'
+    permissions:
+      pull-requests: write
+      actions: read
+    steps:
+      - name: Find pull request and report
+        id: find
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+          HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          # workflow_run.pull_requests is empty for pull requests from forks: look the pull request up by its head commit instead.
+          pr_number=$(gh pr list --repo "$REPOSITORY" --state open --search "$HEAD_SHA" --json number --jq '.[0].number // empty')
+          artifact_id=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts" --jq '.artifacts[] | select(.name == "playwright-report") | .id')
+          if [ -z "$pr_number" ] || [ -z "$artifact_id" ]; then
+            echo "No pull request or Playwright report found, nothing to report."
+            exit 0
+          fi
+          echo "pr-number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "report-url=$RUN_URL/artifacts/$artifact_id" >> "$GITHUB_OUTPUT"
+
+      - name: Download Playwright report
+        if: steps.find.outputs.pr-number
+        uses: actions/download-artifact@v8.0.1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          name: playwright-report
+          path: playwright-report
+
+      - name: Report end-to-end tests
+        if: steps.find.outputs.pr-number
+        uses: daun/playwright-report-summary@v4.1.1
+        with:
+          report-file: playwright-report/results.json
+          report-url: ${{ steps.find.outputs.report-url }}
+          pr-number: ${{ steps.find.outputs.pr-number }}
+          comment-title: End-to-end test results
+          test-command: npm run test:e2e
