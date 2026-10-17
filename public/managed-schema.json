@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "properties": {
+    "servers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "uuid": { "type": "string" },
+          "name": { "type": "string" },
+          "secure": { "type": "boolean" },
+          "host": { "type": "string" },
+          "port": { "type": "integer" },
+          "path": { "type": "string" },
+          "secret": { "type": "string" },
+          "rpcParameters": { "type": "object", "additionalProperties": { "type": "string" } }
+        }
+      }
+    },
+    "captureServer": { "type": "string" },
+    "captureDownloads": { "type": "boolean" },
+    "minFileSizeInBytes": { "type": "integer" },
+    "excludedProtocols": { "type": "array", "items": { "type": "string" } },
+    "excludedSites": { "type": "array", "items": { "type": "string" } },
+    "excludedFileTypes": { "type": "array", "items": { "type": "string" } },
+    "useCompleteFilePath": { "type": "boolean" },
+    "notifyUrlIsAdded": { "type": "boolean" },
+    "notifyFileIsAdded": { "type": "boolean" },
+    "notifyErrorOccurs": { "type": "boolean" },
+    "theme": { "type": "string", "enum": ["auto", "light", "dark"] }
+  }
+}

@@ -1,6 +1,6 @@
 import browser from "webextension-polyfill";
 import * as z from "zod/mini";
-import { type Server, ServerSchema } from "@/models/server";
+import { Server, ServerSchema } from "@/models/server";
 import Theme from "@/models/theme";
 
 const ExtensionOptionsSchema = z.object({
@@ -59,15 +59,43 @@ export const ExtensionOptions = {
     return ExtensionOptions.toStorage(ExtensionOptions.withOverrides(options, overrides));
   },
 
+  async fromManagedStorage(): Promise<Partial<ExtensionOptions>> {
+    try {
+      const managed = (await browser.storage.managed?.get(null)) as Record<string, unknown> | undefined;
+      if (!managed || Object.keys(managed).length === 0) {
+        return {};
+      }
+      const { servers, ...rest } = managed;
+      const overrides: Record<string, unknown> = { ...rest };
+      if (Array.isArray(servers)) {
+        // Policies can't use uuids as keys, so servers are given as a list; fall back to the name as identifier.
+        overrides.servers = Object.fromEntries(
+          servers.map((server: Partial<Server>) => {
+            const created = Server.create({ ...server, uuid: server.uuid ?? server.name ?? "Localhost" });
+            return [created.uuid, created];
+          }),
+        );
+      } else if (servers && typeof servers === "object") {
+        overrides.servers = servers;
+      }
+      return z.partial(ExtensionOptionsSchema).parse(overrides);
+    } catch (error) {
+      // Managed storage is unavailable or invalid: ignore it.
+      console.error(error);
+      return {};
+    }
+  },
+
   async fromStorage(): Promise<ExtensionOptions> {
     const storage = await browser.storage.sync.get(null);
+    let options = ExtensionOptions.create();
     if (storage.options) {
       try {
-        return ExtensionOptions.create(JSON.parse(storage.options as string));
+        options = ExtensionOptions.create(JSON.parse(storage.options as string));
       } catch (error) {
         console.error(error);
       }
     }
-    return ExtensionOptions.create();
+    return ExtensionOptions.withOverrides(options, await ExtensionOptions.fromManagedStorage());
   },
 };
