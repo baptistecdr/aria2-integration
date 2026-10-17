@@ -8,6 +8,7 @@
     "lint:fix": "biome check --fix --unsafe",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
+    "test:e2e": "npm run build:chromium && playwright test",
     "build:firefox": "tsc && vite build --emptyOutDir --mode firefox",
     "build:firefox:debug": "tsc && vite build --mode firefox-debug --emptyOutDir",
     "build:firefox:debug:watch": "tsc && vite build --mode firefox-debug --emptyOutDir --watch",
@@ -37,6 +38,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.15",
+    "@playwright/test": "1.64.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

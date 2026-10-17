@@ -21,5 +21,5 @@
     "types": ["bootstrap", "luxon", "node", "react", "react-dom", "vitest/globals", "webextension-polyfill"],
     "useDefineForClassFields": true
   },
-  "include": ["src", "test"]
+  "include": ["src", "test", "e2e", "playwright.config.ts"]
 }

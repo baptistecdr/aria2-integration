@@ -333,3 +333,7 @@ build
 artifacts
 
 # End of https://www.toptal.com/developers/gitignore/api/webstorm,macos,linux,windows,node
+
+# Playwright
+test-results
+playwright-report

@@ -51,6 +51,7 @@ export default defineConfig(({ mode }) => {
       environment: "jsdom",
       globals: true,
       setupFiles: [r("test", "setupTests.ts")],
+      include: ["test/**/*.spec.{ts,tsx}"],
       coverage: {
         reporter: ["text", "json", "json-summary", "html"],
         reportsDirectory: r("coverage"),

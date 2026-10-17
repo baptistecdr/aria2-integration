@@ -222,31 +222,35 @@ export async function listenerOnDownloadChanged(downloadDelta: Downloads.OnChang
           await showNotification(i18n("addFileError", server.name));
         }
       }
-      delete downloadItems[downloadItem.id];
     });
+    delete downloadItems[downloadItem.id];
   }
 }
 
 browser.downloads?.onCreated.addListener(listenerOnDownloadCreated);
 
 export async function listenerOnDownloadCreated(downloadItem: Downloads.DownloadItem) {
+  if (isChromium()) {
+    // Chromium only knows the filename once onChanged fires, which can happen before any awaited call here resolves:
+    // track the item right away and let listenerOnDownloadChanged decide whether to capture it.
+    if (extensionOptions.captureDownloads) {
+      downloadItems[downloadItem.id] = downloadItem;
+    }
+    return;
+  }
   const currentTab = await findCurrentTab();
   await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
-    if (isFirefox()) {
-      await removeDownloadItemCompletely(downloadItem);
-      try {
-        await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
-        if (extensionOptions.notifyFileIsAdded) {
-          await showNotification(i18n("addFileSuccess", server.name));
-        }
-      } catch (error) {
-        console.error(error);
-        if (extensionOptions.notifyErrorOccurs) {
-          await showNotification(i18n("addFileError", server.name));
-        }
+    await removeDownloadItemCompletely(downloadItem);
+    try {
+      await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
+      if (extensionOptions.notifyFileIsAdded) {
+        await showNotification(i18n("addFileSuccess", server.name));
       }
-    } else {
-      downloadItems[downloadItem.id] = downloadItem;
+    } catch (error) {
+      console.error(error);
+      if (extensionOptions.notifyErrorOccurs) {
+        await showNotification(i18n("addFileError", server.name));
+      }
     }
   });
 }
