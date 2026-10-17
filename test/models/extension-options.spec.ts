@@ -222,7 +222,10 @@ describe("ExtensionOptions", () => {
   describe("fromStorage with managed storage", () => {
     afterEach(() => {
       delete (browser.storage as any).managed;
+      vi.restoreAllMocks();
     });
+
+    const managedUuid = "0b6a1f9e-3c2d-4e5f-8a9b-1c2d3e4f5a6b";
 
     it("should override stored options with managed ones and convert servers list", async () => {
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
@@ -230,8 +233,8 @@ describe("ExtensionOptions", () => {
       });
       (browser.storage as any).managed = {
         get: vi.fn().mockResolvedValue({
-          servers: [{ name: "aria2", host: "aria2.lan", port: 6801 }],
-          captureServer: "aria2",
+          servers: [{ uuid: managedUuid, name: "aria2", host: "aria2.lan", port: 6801 }],
+          captureServer: managedUuid,
           captureDownloads: true,
         }),
       };
@@ -240,19 +243,52 @@ describe("ExtensionOptions", () => {
 
       expect(options.captureDownloads).toBe(true);
       expect(options.notifyErrorOccurs).toBe(true);
-      expect(options.servers.aria2.host).toBe("aria2.lan");
-      expect(options.servers.aria2.port).toBe(6801);
-      expect(options.captureServer).toBe("aria2");
+      expect(options.servers[managedUuid].name).toBe("aria2");
+      expect(options.servers[managedUuid].host).toBe("aria2.lan");
+      expect(options.servers[managedUuid].port).toBe(6801);
+      expect(options.captureServer).toBe(managedUuid);
     });
 
-    it("should ignore empty or failing managed storage", async () => {
-      vi.spyOn(console, "error").mockImplementation(() => {});
-      vi.mocked(browser.storage.sync.get).mockResolvedValue({});
-      (browser.storage as any).managed = { get: vi.fn().mockRejectedValue(new Error("no policy")) };
+    it("should silently ignore managed storage when no policy is configured", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
+      (browser.storage as any).managed = { get: vi.fn().mockRejectedValue(new Error("Managed storage manifest not found")) };
 
       const options = await ExtensionOptions.fromStorage();
 
       expect(options).toEqual(ExtensionOptions.create());
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it("should silently ignore managed storage when the API is unavailable", async () => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options).toEqual(ExtensionOptions.create());
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["a server has no uuid", [{ name: "aria2", host: "aria2.lan" }]],
+      ["a server uuid is not a uuid", [{ uuid: "aria2", host: "aria2.lan" }]],
+      [
+        "server uuids are duplicated",
+        [
+          { uuid: managedUuid, host: "a.lan" },
+          { uuid: managedUuid, host: "b.lan" },
+        ],
+      ],
+    ])("should ignore managed storage and log an error when %s", async (_, servers) => {
+      const consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
+      (browser.storage as any).managed = { get: vi.fn().mockResolvedValue({ servers }) };
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options.servers).toEqual({});
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
   });
 

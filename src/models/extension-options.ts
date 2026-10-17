@@ -60,28 +60,30 @@ export const ExtensionOptions = {
   },
 
   async fromManagedStorage(): Promise<Partial<ExtensionOptions>> {
+    let managed: Record<string, unknown> | undefined;
     try {
-      const managed = (await browser.storage.managed?.get(null)) as Record<string, unknown> | undefined;
-      if (!managed || Object.keys(managed).length === 0) {
-        return {};
-      }
+      managed = await browser.storage.managed?.get(null);
+    } catch {
+      // Firefox rejects when no policy is configured: nothing to override.
+      return {};
+    }
+    if (!managed || Object.keys(managed).length === 0) {
+      return {};
+    }
+    try {
       const { servers, ...rest } = managed;
       const overrides: Record<string, unknown> = { ...rest };
-      if (Array.isArray(servers)) {
-        // Policies can't use uuids as keys, so servers are given as a list; fall back to the name as identifier.
-        overrides.servers = Object.fromEntries(
-          servers.map((server: Partial<Server>) => {
-            const created = Server.create({ ...server, uuid: server.uuid ?? server.name ?? "Localhost" });
-            return [created.uuid, created];
-          }),
-        );
-      } else if (servers && typeof servers === "object") {
-        overrides.servers = servers;
+      if (servers !== undefined) {
+        // Policies can't use uuids as keys, so servers are given as a list and each one must carry its own uuid.
+        const managedServers = z.array(z.looseObject({ uuid: z.uuid() })).parse(servers) as Partial<Server>[];
+        if (new Set(managedServers.map((server) => server.uuid)).size !== managedServers.length) {
+          throw new Error("Managed servers must have unique uuids");
+        }
+        overrides.servers = Object.fromEntries(managedServers.map((server) => [server.uuid, Server.create(server)]));
       }
       return z.partial(ExtensionOptionsSchema).parse(overrides);
     } catch (error) {
-      // Managed storage is unavailable or invalid: ignore it.
-      console.error(error);
+      console.error("Invalid managed storage configuration", error);
       return {};
     }
   },

@@ -5,6 +5,7 @@
       "type": "array",
       "items": {
         "type": "object",
+        "required": ["uuid"],
         "properties": {
           "uuid": { "type": "string" },
           "name": { "type": "string" },
