@@ -1,9 +1,6 @@
-import { type ChildProcess, spawn } from "node:child_process";
-import { mkdtemp, rm } from "node:fs/promises";
 import { createServer, type Server as HttpServer, type IncomingHttpHeaders } from "node:http";
 import type { AddressInfo } from "node:net";
-import { tmpdir } from "node:os";
-import { join, resolve } from "node:path";
+import { resolve } from "node:path";
 import { type BrowserContext, test as base, chromium, type Page, type Worker } from "@playwright/test";
 import type { ExtensionOptions } from "@/models/extension-options";
 import type { Server } from "@/models/server";
@@ -14,6 +11,8 @@ declare const chrome: any;
 const EXTENSION_PATH = resolve(import.meta.dirname, "..", "dist");
 const ARIA2_SECRET = "e2e-secret";
 export const SERVER_UUID = "6f1c7a3e-2b4d-4e8f-9a1b-3c5d7e9f1a2b";
+
+const FILE_SERVER_HOST = "host.docker.internal";
 
 export const FILE_SIZE = 64 * 1024;
 const SLOW_FILE_SIZE = 100 * 1024 * 1024;
@@ -29,7 +28,8 @@ export class FileServer {
   constructor(private readonly server: HttpServer) {}
 
   get origin() {
-    return `http://127.0.0.1:${(this.server.address() as AddressInfo).port}`;
+    // aria2 runs in Docker: the browser maps this host to 127.0.0.1 (see the context fixture) so both reach the server with the same URLs.
+    return `http://${FILE_SERVER_HOST}:${(this.server.address() as AddressInfo).port}`;
   }
 
   url(path: string) {
@@ -69,7 +69,8 @@ export class FileServer {
         res.writeHead(404).end();
       }
     });
-    await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
+    // Listen on every interface: the aria2 container connects through the Docker host gateway.
+    await new Promise<void>((r) => server.listen(0, "0.0.0.0", r));
     return fileServer;
   }
 
@@ -79,14 +80,12 @@ export class FileServer {
   }
 }
 
-export class Aria2Daemon {
-  private rpcId = 0;
+// Must match the aria2 service in compose.yaml.
+const ARIA2_PORT = 16800;
 
-  private constructor(
-    private readonly process: ChildProcess,
-    readonly port: number,
-    readonly directory: string,
-  ) {}
+export class Aria2Daemon {
+  readonly port = ARIA2_PORT;
+  private rpcId = 0;
 
   get server(): Partial<Server> {
     return { uuid: SERVER_UUID, name: "E2E aria2", host: "127.0.0.1", port: this.port, path: "/jsonrpc", secret: ARIA2_SECRET };
@@ -119,53 +118,19 @@ export class Aria2Daemon {
     return [...new Set((await this.tasks()).flatMap((task) => task.files.flatMap((file: any) => file.uris.map((uri: any) => uri.uri))))];
   }
 
-  static async start(): Promise<Aria2Daemon> {
-    const port = await freePort();
-    const directory = await mkdtemp(join(tmpdir(), "aria2-e2e-"));
-    const process = spawn(
-      globalThis.process.env.ARIA2C ?? "aria2c",
-      [
-        "--enable-rpc",
-        `--rpc-listen-port=${port}`,
-        `--rpc-secret=${ARIA2_SECRET}`,
-        `--dir=${directory}`,
-        "--no-conf",
-        "--quiet",
-        "--allow-overwrite=true",
-        "--auto-file-renaming=false",
-      ],
-      { stdio: "ignore" },
-    );
-    const daemon = new Aria2Daemon(process, port, directory);
+  // The daemon is shared by every test: empty its queue so that each test starts from scratch.
+  async reset() {
+    const pending = [...(await this.call("aria2.tellActive")), ...(await this.call("aria2.tellWaiting", 0, 1000))];
+    await Promise.all(pending.map((task) => this.call("aria2.forceRemove", task.gid)));
     const deadline = Date.now() + 10_000;
-    while (true) {
-      try {
-        await daemon.call("aria2.getVersion");
-        return daemon;
-      } catch (error) {
-        if (Date.now() > deadline || process.exitCode !== null) {
-          process.kill();
-          throw new Error(`aria2c did not start: ${error}`);
-        }
-        await new Promise((r) => setTimeout(r, 50));
+    while ((await this.call("aria2.tellActive")).length > 0 || (await this.call("aria2.tellWaiting", 0, 1)).length > 0) {
+      if (Date.now() > deadline) {
+        throw new Error(`aria2 on port ${this.port} did not remove its downloads`);
       }
+      await new Promise((r) => setTimeout(r, 50));
     }
+    await this.call("aria2.purgeDownloadResult");
   }
-
-  async stop() {
-    const exited = new Promise((r) => this.process.once("exit", r));
-    this.process.kill();
-    await exited;
-    await rm(this.directory, { recursive: true, force: true });
-  }
-}
-
-export async function freePort(): Promise<number> {
-  const server = createServer();
-  await new Promise<void>((r) => server.listen(0, "127.0.0.1", r));
-  const { port } = server.address() as AddressInfo;
-  await new Promise((r) => server.close(r));
-  return port;
 }
 
 // Missing fields are filled with their defaults when the extension reads the options.
@@ -220,7 +185,12 @@ export const test = base.extend<Fixtures>({
     const context = await chromium.launchPersistentContext("", {
       channel: "chromium",
       locale: "en-US",
-      args: [`--disable-extensions-except=${EXTENSION_PATH}`, `--load-extension=${EXTENSION_PATH}`, "--lang=en-US"],
+      args: [
+        `--disable-extensions-except=${EXTENSION_PATH}`,
+        `--load-extension=${EXTENSION_PATH}`,
+        "--lang=en-US",
+        `--host-resolver-rules=MAP ${FILE_SERVER_HOST} 127.0.0.1`,
+      ],
     });
     await use(context);
     await context.close();
@@ -233,9 +203,10 @@ export const test = base.extend<Fixtures>({
   },
   // biome-ignore lint/correctness/noEmptyPattern: Playwright requires an object pattern
   aria2: async ({}, use) => {
-    const aria2 = await Aria2Daemon.start();
+    const aria2 = new Aria2Daemon();
+    await aria2.reset();
     await use(aria2);
-    await aria2.stop();
+    await aria2.reset();
   },
   // biome-ignore lint/correctness/noEmptyPattern: Playwright requires an object pattern
   fileServer: async ({}, use) => {

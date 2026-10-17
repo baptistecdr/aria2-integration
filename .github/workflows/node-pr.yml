@@ -57,11 +57,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install aria2 and Chromium
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y aria2
-          npx playwright install --with-deps chromium
+      # aria2 runs in Docker (compose.yaml), started by the Playwright global setup.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
       - name: End-to-end tests
         run: npm run test:e2e
