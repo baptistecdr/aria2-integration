@@ -81,7 +81,9 @@ export const ExtensionOptions = {
         }
         overrides.servers = Object.fromEntries(managedServers.map((server) => [server.uuid, Server.create(server)]));
       }
-      return z.partial(ExtensionOptionsSchema).parse(overrides);
+      const parsed = z.partial(ExtensionOptionsSchema).parse(overrides);
+      // Partial schemas still fill in defaults for missing fields: keep only the fields the policy actually sets.
+      return Object.fromEntries(Object.entries(parsed).filter(([key]) => key in overrides));
     } catch (error) {
       console.error("Invalid managed storage configuration", error);
       return {};
