@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptions } from "@/models/extension-options";
 import { Server } from "@/models/server";
+import Theme from "@/models/theme";
 
 describe("ExtensionOptions", () => {
   const createMockServer = (overrides?: Partial<Server>): Server =>
@@ -247,6 +248,29 @@ describe("ExtensionOptions", () => {
       expect(options.servers[managedUuid].host).toBe("aria2.lan");
       expect(options.servers[managedUuid].port).toBe(6801);
       expect(options.captureServer).toBe(managedUuid);
+    });
+
+    it("should keep stored options that the policy does not set", async () => {
+      const storedServer = createMockServer({ uuid: "stored-server", host: "stored.lan" });
+      const storedOptions = ExtensionOptions.create({
+        servers: { "stored-server": storedServer },
+        captureServer: "stored-server",
+        minFileSizeInBytes: 4096,
+        excludedProtocols: ["ftp"],
+        excludedSites: ["blocked.com"],
+        excludedFileTypes: ["zip"],
+        useCompleteFilePath: true,
+        notifyUrlIsAdded: false,
+        notifyFileIsAdded: false,
+        notifyErrorOccurs: false,
+        theme: Theme.Dark,
+      });
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({ options: ExtensionOptions.serialize(storedOptions) });
+      (browser.storage as any).managed = { get: vi.fn().mockResolvedValue({ captureDownloads: true }) };
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options).toEqual({ ...storedOptions, captureDownloads: true });
     });
 
     it("should silently ignore managed storage when no policy is configured", async () => {
