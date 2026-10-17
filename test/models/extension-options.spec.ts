@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptions } from "@/models/extension-options";
 import { Server } from "@/models/server";
@@ -216,6 +216,43 @@ describe("ExtensionOptions", () => {
       });
 
       expect(originalOptions.minFileSizeInBytes).toBe(512);
+    });
+  });
+
+  describe("fromStorage with managed storage", () => {
+    afterEach(() => {
+      delete (browser.storage as any).managed;
+    });
+
+    it("should override stored options with managed ones and convert servers list", async () => {
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
+        options: ExtensionOptions.serialize(ExtensionOptions.create({ captureDownloads: false, notifyErrorOccurs: true })),
+      });
+      (browser.storage as any).managed = {
+        get: vi.fn().mockResolvedValue({
+          servers: [{ name: "aria2", host: "aria2.lan", port: 6801 }],
+          captureServer: "aria2",
+          captureDownloads: true,
+        }),
+      };
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options.captureDownloads).toBe(true);
+      expect(options.notifyErrorOccurs).toBe(true);
+      expect(options.servers.aria2.host).toBe("aria2.lan");
+      expect(options.servers.aria2.port).toBe(6801);
+      expect(options.captureServer).toBe("aria2");
+    });
+
+    it("should ignore empty or failing managed storage", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(browser.storage.sync.get).mockResolvedValue({});
+      (browser.storage as any).managed = { get: vi.fn().mockRejectedValue(new Error("no policy")) };
+
+      const options = await ExtensionOptions.fromStorage();
+
+      expect(options).toEqual(ExtensionOptions.create());
     });
   });
 

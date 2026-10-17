@@ -31,6 +31,7 @@ if (process.env.BROWSER === "firefox") {
     service_worker: "js/background.js",
   };
   manifest.host_permissions = ["*://*/*"];
+  manifest.storage = { managed_schema: "managed-schema.json" };
 }
 
 fs.writeFileSync("./dist/manifest.json", JSON.stringify(manifest, null, 2));
