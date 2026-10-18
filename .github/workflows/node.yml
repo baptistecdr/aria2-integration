@@ -73,9 +73,41 @@ jobs:
           subject-path: |
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_FIREFOX_FILENAME }}
             ${{ env.ARTIFACTS_DIR }}/${{ env.ARTIFACT_CHROMIUM_FILENAME }}
+  e2e:
+    name: End-to-end tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v7.0.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      # aria2 runs in Docker (compose.yaml), started by the Playwright global setup.
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7.0.2
+        with:
+          name: playwright-report
+          path: playwright-report
+
   release:
     name: Release
-    needs: build
+    needs:
+      - build
+      - e2e
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
