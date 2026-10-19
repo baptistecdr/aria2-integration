@@ -35,6 +35,15 @@
   "serverOptionsSecretDescription": {
     "message": "Leave it blank if is not specified."
   },
+  "serverOptionsUuid": {
+    "message": "UUID"
+  },
+  "serverOptionsCopyUuid": {
+    "message": "Copy UUID"
+  },
+  "serverOptionsUuidDescription": {
+    "message": "Use this identifier to configure this server through an enterprise policy."
+  },
   "serverOptionsRpcParameters": {
     "message": "RPC Parameters"
   },

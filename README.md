@@ -29,6 +29,84 @@
 - [Chrome Web Store](https://chrome.google.com/webstore/detail/aria2-integration/hnenidncmoeebipinjdfniagjnfjbapi)
 - [Microsoft Edge Store](https://microsoftedge.microsoft.com/addons/detail/aria2-integration/hmmpdilndjfmceolhbgjejogjaglbiel)
 
+## Managed configuration (enterprise policies)
+
+The extension can be configured through enterprise policies, for example for ephemeral profiles, Docker containers or
+kiosks. Options set by a policy take precedence over the ones configured in the options page. Options the policy doesn't
+set keep their current value.
+
+Each server **must** have a `uuid`, a valid UUID that is unique among the servers. `captureServer` references a server
+by this `uuid`. To generate one:
+
+- Linux/macOS: `uuidgen`
+- Linux: `cat /proc/sys/kernel/random/uuid`
+- Windows (PowerShell): `[guid]::NewGuid()`
+
+To move an existing setup to a policy, copy the UUID shown for each server in the options page.
+
+### Firefox
+
+In [`policies.json`](https://mozilla.github.io/policy-templates/#3rdparty):
+
+```json
+{
+  "policies": {
+    "3rdparty": {
+      "Extensions": {
+        "baptistecdr@users.noreply.github.com": {
+          "servers": [
+            {
+              "uuid": "0b6a1f9e-3c2d-4e5f-8a9b-1c2d3e4f5a6b",
+              "name": "aria2",
+              "host": "aria2.example.lan",
+              "port": 6800,
+              "path": "/jsonrpc",
+              "secure": false,
+              "secret": "example-secret",
+              "rpcParameters": { "split": "5" }
+            }
+          ],
+          "captureServer": "0b6a1f9e-3c2d-4e5f-8a9b-1c2d3e4f5a6b",
+          "captureDownloads": true,
+          "excludedProtocols": ["blob", "data", "about", "file", "moz-extension"],
+          "notifyErrorOccurs": true
+        }
+      }
+    }
+  }
+}
+```
+
+### Chrome / Edge
+
+Set the same keys as an [extension policy](https://www.chromium.org/administrators/configuring-policy-for-extensions/)
+for the extension ID `hnenidncmoeebipinjdfniagjnfjbapi` (Chrome) or `hmmpdilndjfmceolhbgjejogjaglbiel` (Edge). On Linux,
+for example in `/etc/opt/chrome/policies/managed/aria2-integration.json`:
+
+```json
+{
+  "3rdparty": {
+    "extensions": {
+      "hnenidncmoeebipinjdfniagjnfjbapi": {
+        "servers": [{ "uuid": "0b6a1f9e-3c2d-4e5f-8a9b-1c2d3e4f5a6b", "name": "aria2", "host": "aria2.example.lan" }],
+        "captureServer": "0b6a1f9e-3c2d-4e5f-8a9b-1c2d3e4f5a6b",
+        "captureDownloads": true
+      }
+    }
+  }
+}
+```
+
+The accepted keys are listed in [`managed-schema.json`](public/managed-schema.json).
+
+### Good to know
+
+- If any value is invalid (wrong type, missing or duplicated server `uuid`…), the **whole policy is ignored**. The error
+  is only logged in the extension console (`about:debugging` in Firefox, the service worker of `chrome://extensions` in
+  Chrome). `about:policies` (Firefox) and `chrome://policy` (Chrome/Edge) show whether the browser loaded the policy.
+- Options set by a policy can still be edited in the options page, but the policy value is restored on the next load.
+- Changes to the policy are applied after the browser restarts.
+
 ## How to build
 
 - Install [Node.JS LTS](https://nodejs.org/)
