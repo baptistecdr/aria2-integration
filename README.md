@@ -126,6 +126,8 @@ The accepted keys are listed in [`managed-schema.json`](public/managed-schema.js
 - Run `npm run test:e2e` to run end-to-end tests on Chromium with Playwright
   - Requires Docker: aria2 is started from `compose.yaml` (port 16800) and stopped after the tests
   - Run `npx playwright install chromium` once to install the browser
+  - Enterprise policy tests (`e2e/managed.spec.ts`) only run on Linux, when `/etc/opt/chrome_for_testing/policies/managed`
+    is writable (as on CI); they are skipped otherwise
 - Firefox
   - Run `npm run build:firefox:debug:watch` to auto-build for Firefox
   - Run `npm run start:firefox` to install on Firefox with auto-reload

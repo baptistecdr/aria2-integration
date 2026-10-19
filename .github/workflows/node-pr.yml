@@ -61,6 +61,12 @@ jobs:
       - name: Install Chromium
         run: npx playwright install --with-deps chromium
 
+      # Lets the end-to-end tests install enterprise policies for the extension (see e2e/fixtures.ts).
+      - name: Allow writing Chromium policies
+        run: |
+          sudo mkdir -p /etc/opt/chrome_for_testing/policies/managed
+          sudo chown "$USER" /etc/opt/chrome_for_testing/policies/managed
+
       - name: End-to-end tests
         run: npm run test:e2e
 

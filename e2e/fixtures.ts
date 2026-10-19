@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { accessSync, constants, rmSync, writeFileSync } from "node:fs";
 import { createServer, type Server as HttpServer, type IncomingHttpHeaders } from "node:http";
 import type { AddressInfo } from "node:net";
 import { resolve } from "node:path";
@@ -10,6 +12,9 @@ import type { Server } from "@/models/server";
 declare const chrome: any;
 
 const EXTENSION_PATH = resolve(import.meta.dirname, "..", "dist");
+// Where Chrome for Testing reads enterprise policies on Linux. CI makes it writable; elsewhere, policy tests are skipped.
+const POLICY_DIR = "/etc/opt/chrome_for_testing/policies/managed";
+const POLICY_FILE = `${POLICY_DIR}/aria2-integration-e2e.json`;
 const ARIA2_SECRET = "e2e-secret";
 export const SERVER_UUID = "6f1c7a3e-2b4d-4e8f-9a1b-3c5d7e9f1a2b";
 
@@ -168,7 +173,26 @@ export class Extension {
   }
 }
 
+// Chromium derives the id of an unpacked extension from its path: the first 32 hex digits of its SHA-256, mapped to a-p.
+function unpackedExtensionId(path: string): string {
+  const hash = createHash("sha256").update(path).digest("hex").slice(0, 32);
+  return [...hash].map((digit) => String.fromCharCode("a".charCodeAt(0) + Number.parseInt(digit, 16))).join("");
+}
+
+export function canInstallPolicies(): boolean {
+  try {
+    accessSync(POLICY_DIR, constants.W_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// The same keys as in policies.json, servers given as a list (see public/managed-schema.json).
+type PolicyInput = Omit<OptionsInput, "servers"> & { servers?: Partial<Server>[] };
+
 interface Fixtures {
+  policy: PolicyInput | undefined;
   context: BrowserContext;
   extension: Extension;
   aria2: Aria2Daemon;
@@ -176,8 +200,12 @@ interface Fixtures {
 }
 
 export const test = base.extend<Fixtures>({
-  // biome-ignore lint/correctness/noEmptyPattern: Playwright requires an object pattern
-  context: async ({}, use) => {
+  // Set with test.use() to start the browser with this enterprise policy for the extension.
+  policy: [undefined, { option: true }],
+  context: async ({ policy }, use) => {
+    if (policy) {
+      writeFileSync(POLICY_FILE, JSON.stringify({ "3rdparty": { extensions: { [unpackedExtensionId(EXTENSION_PATH)]: policy } } }));
+    }
     const context = await chromium.launchPersistentContext("", {
       channel: "chromium",
       locale: "en-US",
@@ -188,8 +216,14 @@ export const test = base.extend<Fixtures>({
         `--host-resolver-rules=MAP ${FILE_SERVER_HOST} 127.0.0.1`,
       ],
     });
-    await use(context);
-    await context.close();
+    try {
+      await use(context);
+    } finally {
+      await context.close();
+      if (policy) {
+        rmSync(POLICY_FILE, { force: true });
+      }
+    }
   },
   extension: async ({ context }, use) => {
     const serviceWorker = context.serviceWorkers()[0] ?? (await context.waitForEvent("serviceworker"));
