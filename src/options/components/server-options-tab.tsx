@@ -167,6 +167,24 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       </Row>
 
       <Row className="mb-3">
+        <Form.Group as={Col} controlId="form-server-uuid">
+          <Form.Label>{i18n("serverOptionsUuid")}</Form.Label>
+          <InputGroup>
+            <Form.Control type="text" value={server.uuid} readOnly />
+            <Button
+              variant="outline-secondary"
+              aria-label={i18n("serverOptionsCopyUuid")}
+              title={i18n("serverOptionsCopyUuid")}
+              onClick={() => navigator.clipboard.writeText(server.uuid)}
+            >
+              <i className="bi-clipboard" />
+            </Button>
+          </InputGroup>
+          <Form.Text muted>{i18n("serverOptionsUuidDescription")}</Form.Text>
+        </Form.Group>
+      </Row>
+
+      <Row className="mb-3">
         <Form.Group as={Col} controlId="form-rpc-parameters">
           <Form.Label>{i18n("serverOptionsRpcParameters")}</Form.Label>
           <Form.Control as="textarea" rows={3} placeholder="split: 5" value={serverRpcParameters} onChange={(e) => setServerRpcParameters(e.target.value)} />

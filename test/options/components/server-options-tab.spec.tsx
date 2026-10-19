@@ -62,6 +62,20 @@ describe("ServerOptionsTab", () => {
     expect(serverOptionsRpcParameters[1]).toHaveValue("split: 6");
   });
 
+  it("shows the server uuid as read-only and copies it to the clipboard", async () => {
+    const user = userEvent.setup();
+    const writeTextSpy = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const uuidInput = screen.getByLabelText("serverOptionsUuid");
+    expect(uuidInput).toHaveValue("test-uuid");
+    expect(uuidInput).toHaveAttribute("readonly");
+
+    await user.click(screen.getByRole("button", { name: "serverOptionsCopyUuid" }));
+
+    expect(writeTextSpy).toHaveBeenCalledWith("test-uuid");
+  });
+
   it("shows/hides password when toggle button is clicked", async () => {
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 

@@ -35,6 +35,15 @@
   "serverOptionsSecretDescription": {
     "message": "Laissez le champ vide si ce n'est pas précisé."
   },
+  "serverOptionsUuid": {
+    "message": "UUID"
+  },
+  "serverOptionsCopyUuid": {
+    "message": "Copier l'UUID"
+  },
+  "serverOptionsUuidDescription": {
+    "message": "Utilisez cet identifiant pour configurer ce serveur via une stratégie d'entreprise."
+  },
   "serverOptionsRpcParameters": {
     "message": "Paramètres RPC"
   },

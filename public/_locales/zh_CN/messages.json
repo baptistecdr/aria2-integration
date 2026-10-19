@@ -35,6 +35,15 @@
   "serverOptionsSecretDescription": {
     "message": "如未指定则留空."
   },
+  "serverOptionsUuid": {
+    "message": "UUID"
+  },
+  "serverOptionsCopyUuid": {
+    "message": "复制 UUID"
+  },
+  "serverOptionsUuidDescription": {
+    "message": "使用此标识符通过企业策略配置此服务器。"
+  },
   "serverOptionsRpcParameters": {
     "message": "RPC 参数"
   },
