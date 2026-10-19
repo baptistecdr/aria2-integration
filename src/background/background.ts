@@ -81,8 +81,8 @@ browser.runtime.onInstalled.addListener(async (details) => {
 
 browser.storage.onChanged.addListener(listenerStorageOnChanged);
 
-export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
-  if (changes.options) {
+export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>, areaName?: string) {
+  if (changes.options || areaName === "managed") {
     extensionOptions = await ExtensionOptions.fromStorage();
     connections = createConnections(extensionOptions);
     await createContextMenus(extensionOptions);
@@ -290,6 +290,10 @@ export async function listenerOnCommand(command: string) {
   if (command === "open_popup") {
     await browser.action.openPopup();
   } else if (command === "toggle_capture_downloads") {
+    if (ExtensionOptions.isCaptureManaged(await ExtensionOptions.fromManagedStorage())) {
+      await showNotification(i18n("toggleCaptureDownloadsManaged"));
+      return;
+    }
     const newCaptureDownloads = !extensionOptions.captureDownloads;
     let newCaptureServer = extensionOptions.captureServer;
     if (newCaptureServer === "") {

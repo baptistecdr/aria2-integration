@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "没有可用的服务器来拦截下载."
+  },
+  "managedOptionsInformation": {
+    "message": "部分选项由您的组织管理，无法更改。"
+  },
+  "managedServersInformation": {
+    "message": "服务器由您的组织管理，无法更改。"
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "捕获下载由您的组织管理，无法更改。"
   }
 }

@@ -55,6 +55,27 @@ describe("extension-options-provider", () => {
       await waitFor(() => expect(screen.getByTestId("child")).toBeInTheDocument());
     });
 
+    it("should expose the options set by a policy", async () => {
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
+      (browser.storage as any).managed = { get: vi.fn().mockResolvedValue({ captureDownloads: true }) };
+      const ManagedConsumer = () => {
+        const { managedOptions } = useExtensionOptions();
+        return <span data-testid="managed">{JSON.stringify(managedOptions)}</span>;
+      };
+
+      try {
+        render(
+          <ExtensionOptionsProvider>
+            <ManagedConsumer />
+          </ExtensionOptionsProvider>,
+        );
+
+        await waitFor(() => expect(screen.getByTestId("managed")).toHaveTextContent('{"captureDownloads":true}'));
+      } finally {
+        delete (browser.storage as any).managed;
+      }
+    });
+
     it("should load extension options from storage on mount", async () => {
       const storedOptions = ExtensionOptions.create({ captureServer: "https://my-server.com", captureDownloads: true });
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({

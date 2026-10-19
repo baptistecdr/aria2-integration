@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "No server available to capture downloads."
+  },
+  "managedOptionsInformation": {
+    "message": "Some options are managed by your organization and can't be changed."
+  },
+  "managedServersInformation": {
+    "message": "Servers are managed by your organization and can't be changed."
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "Capture downloads is managed by your organization and can't be changed."
   }
 }

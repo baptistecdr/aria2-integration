@@ -104,8 +104,11 @@ The accepted keys are listed in [`managed-schema.json`](public/managed-schema.js
 - If any value is invalid (wrong type, missing or duplicated server `uuid`…), the **whole policy is ignored**. The error
   is only logged in the extension console (`about:debugging` in Firefox, the service worker of `chrome://extensions` in
   Chrome). `about:policies` (Firefox) and `chrome://policy` (Chrome/Edge) show whether the browser loaded the policy.
-- Options set by a policy can still be edited in the options page, but the policy value is restored on the next load.
-- Changes to the policy are applied after the browser restarts.
+- Options set by a policy are disabled in the options page and the popup, and are never saved in the browser profile:
+  removing the policy restores the user's own values.
+- When `servers` is set, servers can't be added, edited or deleted. When `captureDownloads` or `captureServer` is set,
+  capturing downloads can't be toggled, including with the keyboard shortcut.
+- Firefox reads policies when it starts, so policy changes need a browser restart there.
 
 ## How to build
 

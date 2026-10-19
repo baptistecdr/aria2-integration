@@ -71,6 +71,38 @@ describe("ExtensionOptions", () => {
 
       expect(result).toBe(options);
     });
+
+    describe("with managed storage", () => {
+      afterEach(() => {
+        delete (browser.storage as any).managed;
+      });
+
+      it("should keep the user's stored values for managed options and return the managed ones", async () => {
+        vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({
+          options: ExtensionOptions.serialize(ExtensionOptions.create({ captureDownloads: false, theme: Theme.Light })),
+        });
+        (browser.storage as any).managed = { get: vi.fn().mockResolvedValue({ captureDownloads: true }) };
+
+        const result = await ExtensionOptions.toStorage(ExtensionOptions.create({ captureDownloads: true, theme: Theme.Dark }));
+
+        expect(browser.storage.sync.set).toHaveBeenCalledWith({
+          options: ExtensionOptions.serialize(ExtensionOptions.create({ captureDownloads: false, theme: Theme.Dark })),
+        });
+        expect(result.captureDownloads).toBe(true);
+        expect(result.theme).toBe(Theme.Dark);
+      });
+    });
+  });
+
+  describe("isCaptureManaged", () => {
+    it.each([
+      [{}, false],
+      [{ theme: Theme.Dark }, false],
+      [{ captureDownloads: true }, true],
+      [{ captureServer: "server-id" }, true],
+    ])("should return %s for %o", (managedOptions, expected) => {
+      expect(ExtensionOptions.isCaptureManaged(managedOptions)).toBe(expected);
+    });
   });
 
   describe("addServer", () => {

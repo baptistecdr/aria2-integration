@@ -10,14 +10,15 @@ interface Props {
 }
 
 function ServerQuickOptions({ server }: Props) {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, setExtensionOptions, managedOptions } = useExtensionOptions();
 
   const isCapturingOnThisServer = extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid;
+  const isCaptureManaged = ExtensionOptions.isCaptureManaged(managedOptions);
+  const isUseCompleteFilePathManaged = "useCompleteFilePath" in managedOptions;
 
   const updateOptions = async (overrides: Partial<ExtensionOptions>) => {
     const updatedOptions = ExtensionOptions.withOverrides(extensionOptions, overrides);
-    await ExtensionOptions.toStorage(updatedOptions);
-    setExtensionOptions(updatedOptions);
+    setExtensionOptions(await ExtensionOptions.toStorage(updatedOptions));
   };
 
   const onChangeCaptureDownloads = (e: ChangeEvent<HTMLInputElement>) =>
@@ -33,6 +34,7 @@ function ServerQuickOptions({ server }: Props) {
       <Col xs={12} sm={12}>
         <Form.Group controlId="form-capture-downloads">
           <Form.Check
+            disabled={isCaptureManaged}
             checked={isCapturingOnThisServer}
             label={i18n("extensionOptionsCaptureDownloads")}
             aria-label={i18n("extensionOptionsCaptureDownloads")}
@@ -43,7 +45,7 @@ function ServerQuickOptions({ server }: Props) {
       <Col xs={12} sm={12} className="mb-3">
         <Form.Group controlId="form-use-complete-path">
           <Form.Check
-            disabled={!isCapturingOnThisServer}
+            disabled={!isCapturingOnThisServer || isUseCompleteFilePathManaged}
             checked={extensionOptions.useCompleteFilePath}
             label={i18n("extensionOptionsUseCompleteFilePath")}
             aria-label={i18n("extensionOptionsUseCompleteFilePath")}

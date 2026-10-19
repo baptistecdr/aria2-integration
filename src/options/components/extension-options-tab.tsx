@@ -27,7 +27,9 @@ function parseFileSize(fileSizeInBytes: number): [number, number] {
 }
 
 function ExtensionOptionsTab() {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, setExtensionOptions, managedOptions } = useExtensionOptions();
+  const isManaged = (key: keyof ExtensionOptions) => key in managedOptions;
+  const isCaptureManaged = ExtensionOptions.isCaptureManaged(managedOptions);
 
   const [isAndroid, setIsAndroid] = useState(false);
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
@@ -142,11 +144,20 @@ function ExtensionOptionsTab() {
         </Col>
       )}
 
+      {Object.keys(managedOptions).length > 0 && (
+        <Col xs={12} sm={12}>
+          <Alert variant="info" className="mb-3">
+            {i18n("managedOptionsInformation")}
+          </Alert>
+        </Col>
+      )}
+
       {!isAndroid && (
         <>
           <Col xs={12} sm={12} className="mb-3">
             <Form.Group controlId="form-capture-downloads">
               <Form.Check
+                disabled={isCaptureManaged}
                 checked={captureDownloads}
                 label={i18n("extensionOptionsCaptureDownloads")}
                 aria-label={i18n("extensionOptionsCaptureDownloads")}
@@ -157,7 +168,7 @@ function ExtensionOptionsTab() {
           <Col xs={12} sm={12} className="mb-3">
             <Form.Group controlId="form-capture-downloads-servers">
               <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
-              <Form.Select disabled={!captureDownloads} value={captureServer} onChange={onChangeCaptureServer}>
+              <Form.Select disabled={!captureDownloads || isCaptureManaged} value={captureServer} onChange={onChangeCaptureServer}>
                 <option value="" disabled>
                   {i18n("extensionOptionsNoServerSelected")}
                 </option>
@@ -173,10 +184,17 @@ function ExtensionOptionsTab() {
             <Form.Group as={Col} controlId="form-minimum-file-size" className="mb-3">
               <Form.Label>{i18n("extensionOptionsMinimumFileSize")}</Form.Label>
               <InputGroup>
-                <Form.Control type="number" disabled={!captureDownloads} min={0} value={minFileSize} onChange={onChangeMinFileSize} required />
+                <Form.Control
+                  type="number"
+                  disabled={!captureDownloads || isManaged("minFileSizeInBytes")}
+                  min={0}
+                  value={minFileSize}
+                  onChange={onChangeMinFileSize}
+                  required
+                />
                 <Form.Select
                   id={formMinimumFileSizeExponentId}
-                  disabled={!captureDownloads}
+                  disabled={!captureDownloads || isManaged("minFileSizeInBytes")}
                   value={minFileSizeExponent}
                   onChange={(e) => setMinFileSizeExponent(Number.parseInt(e.target.value, 10))}
                 >
@@ -198,7 +216,7 @@ function ExtensionOptionsTab() {
                 as="textarea"
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
-                disabled={!captureDownloads}
+                disabled={!captureDownloads || isManaged("excludedProtocols")}
                 value={excludedProtocols}
                 onChange={(e) => setExcludedProtocols(e.target.value)}
               />
@@ -214,7 +232,7 @@ function ExtensionOptionsTab() {
                 as="textarea"
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeSitesInformation")}
-                disabled={!captureDownloads}
+                disabled={!captureDownloads || isManaged("excludedSites")}
                 value={excludedSites}
                 onChange={(e) => setExcludedSites(e.target.value)}
               />
@@ -230,7 +248,7 @@ function ExtensionOptionsTab() {
                 as="textarea"
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
-                disabled={!captureDownloads}
+                disabled={!captureDownloads || isManaged("excludedFileTypes")}
                 value={excludedFileTypes}
                 onChange={(e) => setExcludedFileTypes(e.target.value)}
               />
@@ -242,7 +260,7 @@ function ExtensionOptionsTab() {
           <Col xs={11} sm={11} className="mb-3">
             <Form.Group controlId="form-use-complete-path">
               <Form.Check
-                disabled={!captureDownloads}
+                disabled={!captureDownloads || isManaged("useCompleteFilePath")}
                 checked={useCompleteFilePath}
                 label={i18n("extensionOptionsUseCompleteFilePath")}
                 aria-label={i18n("extensionOptionsUseCompleteFilePath")}
@@ -275,6 +293,7 @@ function ExtensionOptionsTab() {
         <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
         <Form.Check
           id={notifyUrlIsAddedId}
+          disabled={isManaged("notifyUrlIsAdded")}
           checked={notifyUrlIsAdded}
           onChange={(e) => setNotifyUrlIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyUrlIsAdded")}
@@ -282,6 +301,7 @@ function ExtensionOptionsTab() {
         />
         <Form.Check
           id={notifyFileIsAddedId}
+          disabled={isManaged("notifyFileIsAdded")}
           checked={notifyFileIsAdded}
           onChange={(e) => setNotifyFileIsAdded(e.target.checked)}
           label={i18n("extensionOptionsNotifyFileIsAdded")}
@@ -289,6 +309,7 @@ function ExtensionOptionsTab() {
         />
         <Form.Check
           id={notifyErrorOccursId}
+          disabled={isManaged("notifyErrorOccurs")}
           checked={notifyErrorOccurs}
           onChange={(e) => setNotifyErrorOccurs(e.target.checked)}
           label={i18n("extensionOptionsNotifyErrorOccurs")}
@@ -305,6 +326,7 @@ function ExtensionOptionsTab() {
               label={i18n("extensionOptionsThemeLight")}
               name="group-theme"
               type="radio"
+              disabled={isManaged("theme")}
               id={themeLightId}
               value={Theme.Light}
               checked={theme === Theme.Light}
@@ -315,6 +337,7 @@ function ExtensionOptionsTab() {
               label={i18n("extensionOptionsThemeDark")}
               name="group-theme"
               type="radio"
+              disabled={isManaged("theme")}
               id={themeDarkId}
               value={Theme.Dark}
               checked={theme === Theme.Dark}
@@ -325,6 +348,7 @@ function ExtensionOptionsTab() {
               label={i18n("extensionOptionsThemeAuto")}
               name="group-theme"
               type="radio"
+              disabled={isManaged("theme")}
               id={themeAutoId}
               value={Theme.Auto}
               checked={theme === Theme.Auto}

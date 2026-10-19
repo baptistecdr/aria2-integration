@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "Aucun serveur disponible pour capturer les téléchargements."
+  },
+  "managedOptionsInformation": {
+    "message": "Certaines options sont gérées par votre organisation et ne peuvent pas être modifiées."
+  },
+  "managedServersInformation": {
+    "message": "Les serveurs sont gérés par votre organisation et ne peuvent pas être modifiés."
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "La capture des téléchargements est gérée par votre organisation et ne peut pas être modifiée."
   }
 }

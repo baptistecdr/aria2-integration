@@ -41,6 +41,7 @@ describe("ServerOptionsTab", () => {
     vi.mocked(useExtensionOptions).mockReturnValue({
       extensionOptions,
       setExtensionOptions,
+      managedOptions: {},
     } as any);
   });
 
@@ -74,6 +75,30 @@ describe("ServerOptionsTab", () => {
     await user.click(screen.getByRole("button", { name: "serverOptionsCopyUuid" }));
 
     expect(writeTextSpy).toHaveBeenCalledWith("test-uuid");
+  });
+
+  it("locks the form except the uuid copy button when servers are managed", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({
+      extensionOptions,
+      setExtensionOptions,
+      managedOptions: { servers: { [server.uuid]: server } },
+    } as any);
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByText("managedServersInformation")).toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeDisabled();
+    expect(screen.getByLabelText("serverOptionsSecret")).toBeDisabled();
+    expect(screen.getByText("serverOptionsSave")).toBeDisabled();
+    expect(screen.getByText("serverOptionsDelete")).toBeDisabled();
+    expect(screen.getByRole("button", { name: "serverOptionsCopyUuid" })).toBeEnabled();
+  });
+
+  it("does not show the managed information when servers are not managed", () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.queryByText("managedServersInformation")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeEnabled();
   });
 
   it("shows/hides password when toggle button is clicked", async () => {

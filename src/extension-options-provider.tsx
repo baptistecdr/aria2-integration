@@ -5,11 +5,13 @@ import { applyTheme } from "@/models/theme";
 interface ExtensionOptionsContextValue {
   extensionOptions: ExtensionOptions;
   setExtensionOptions: Dispatch<SetStateAction<ExtensionOptions>>;
+  managedOptions: Partial<ExtensionOptions>;
 }
 
 const ExtensionOptionsContext = createContext<ExtensionOptionsContextValue>({
   extensionOptions: ExtensionOptions.create(),
   setExtensionOptions: () => {},
+  managedOptions: {},
 });
 
 interface ExtensionOptionsProviderProps {
@@ -18,16 +20,18 @@ interface ExtensionOptionsProviderProps {
 
 function ExtensionOptionsProvider({ children }: ExtensionOptionsProviderProps) {
   const [extensionOptions, setExtensionOptions] = useState(ExtensionOptions.create());
+  const [managedOptions, setManagedOptions] = useState<Partial<ExtensionOptions>>({});
 
   useEffect(() => {
     ExtensionOptions.fromStorage().then(setExtensionOptions);
+    ExtensionOptions.fromManagedStorage().then(setManagedOptions);
   }, []);
 
   useEffect(() => {
     applyTheme(extensionOptions.theme);
   }, [extensionOptions.theme]);
 
-  return <ExtensionOptionsContext.Provider value={{ extensionOptions, setExtensionOptions }}>{children}</ExtensionOptionsContext.Provider>;
+  return <ExtensionOptionsContext.Provider value={{ extensionOptions, setExtensionOptions, managedOptions }}>{children}</ExtensionOptionsContext.Provider>;
 }
 
 function useExtensionOptions(): ExtensionOptionsContextValue {

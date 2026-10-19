@@ -30,10 +30,17 @@ export const ExtensionOptions = {
   },
 
   async toStorage(options: ExtensionOptions): Promise<ExtensionOptions> {
-    await browser.storage.sync.set({
-      options: ExtensionOptions.serialize(options),
-    });
-    return options;
+    const managedOptions = await ExtensionOptions.fromManagedStorage();
+    const managedKeys = Object.keys(managedOptions) as (keyof ExtensionOptions)[];
+    if (managedKeys.length === 0) {
+      await browser.storage.sync.set({ options: ExtensionOptions.serialize(options) });
+      return options;
+    }
+    // Keep the user's own values for managed options, so nothing from the policy remains once it is removed.
+    const storedOptions = await ExtensionOptions.fromSyncStorage();
+    const userOptions = ExtensionOptions.withOverrides(options, Object.fromEntries(managedKeys.map((key) => [key, storedOptions[key]])));
+    await browser.storage.sync.set({ options: ExtensionOptions.serialize(userOptions) });
+    return ExtensionOptions.withOverrides(options, managedOptions);
   },
 
   withOverrides(options: ExtensionOptions, overrides: Partial<ExtensionOptions>): ExtensionOptions {
@@ -90,16 +97,24 @@ export const ExtensionOptions = {
     }
   },
 
-  async fromStorage(): Promise<ExtensionOptions> {
+  async fromSyncStorage(): Promise<ExtensionOptions> {
     const storage = await browser.storage.sync.get(null);
-    let options = ExtensionOptions.create();
     if (storage.options) {
       try {
-        options = ExtensionOptions.create(JSON.parse(storage.options as string));
+        return ExtensionOptions.create(JSON.parse(storage.options as string));
       } catch (error) {
         console.error(error);
       }
     }
-    return ExtensionOptions.withOverrides(options, await ExtensionOptions.fromManagedStorage());
+    return ExtensionOptions.create();
+  },
+
+  async fromStorage(): Promise<ExtensionOptions> {
+    return ExtensionOptions.withOverrides(await ExtensionOptions.fromSyncStorage(), await ExtensionOptions.fromManagedStorage());
+  },
+
+  // Options set by a policy can't be changed by the user: capture downloads and its server are toggled together.
+  isCaptureManaged(managedOptions: Partial<ExtensionOptions>): boolean {
+    return "captureDownloads" in managedOptions || "captureServer" in managedOptions;
   },
 };

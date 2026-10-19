@@ -17,7 +17,7 @@ function Options() {
   const tabsId = useId();
 
   const [activeTab, setActiveTab] = useState(EXTENSION_OPTIONS_TAB);
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, setExtensionOptions, managedOptions } = useExtensionOptions();
 
   const addServer = async () => {
     const server = Server.create();
@@ -52,7 +52,7 @@ function Options() {
   return (
     <Tabs id={tabsId} defaultActiveKey={EXTENSION_OPTIONS_TAB} activeKey={activeTab} onSelect={handleTabSelect}>
       {renderServerTabs()}
-      <Tab eventKey={ADD_SERVER_TAB} title="+" />
+      <Tab eventKey={ADD_SERVER_TAB} title="+" disabled={"servers" in managedOptions} />
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
         <ExtensionOptionsTab />
       </Tab>
