@@ -14,6 +14,30 @@ vi.mock("@/models/theme", async (importOriginal) => {
   };
 });
 
+const ThemeConsumer = () => {
+  const { extensionOptions } = useExtensionOptions();
+  return <span data-testid="theme">{extensionOptions.theme}</span>;
+};
+
+const NoopSetter = () => {
+  const { setExtensionOptions } = useExtensionOptions();
+  return (
+    <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.create())}>
+      Set
+    </button>
+  );
+};
+
+const CaptureServerConsumer1 = () => {
+  const { extensionOptions } = useExtensionOptions();
+  return <span data-testid="consumer-1">{extensionOptions.captureServer}</span>;
+};
+
+const CaptureServerConsumer2 = () => {
+  const { extensionOptions } = useExtensionOptions();
+  return <span data-testid="consumer-2">{extensionOptions.captureServer}</span>;
+};
+
 const TestConsumer = () => {
   const { extensionOptions } = useExtensionOptions();
   return (
@@ -167,19 +191,10 @@ describe("extension-options-provider", () => {
         options: ExtensionOptions.serialize(storedOptions),
       });
 
-      const Consumer1 = () => {
-        const { extensionOptions } = useExtensionOptions();
-        return <span data-testid="consumer-1">{extensionOptions.captureServer}</span>;
-      };
-      const Consumer2 = () => {
-        const { extensionOptions } = useExtensionOptions();
-        return <span data-testid="consumer-2">{extensionOptions.captureServer}</span>;
-      };
-
       render(
         <ExtensionOptionsProvider>
-          <Consumer1 />
-          <Consumer2 />
+          <CaptureServerConsumer1 />
+          <CaptureServerConsumer2 />
         </ExtensionOptionsProvider>,
       );
 
@@ -192,27 +207,13 @@ describe("extension-options-provider", () => {
 
   describe("useExtensionOptions", () => {
     it("should return default ExtensionOptions when used outside provider", () => {
-      const TestOutsideProvider = () => {
-        const { extensionOptions } = useExtensionOptions();
-        return <span data-testid="theme">{extensionOptions.theme}</span>;
-      };
-
-      render(<TestOutsideProvider />);
+      render(<ThemeConsumer />);
 
       expect(screen.getByTestId("theme")).toHaveTextContent(Theme.Auto);
     });
 
     it("should return a no-op setExtensionOptions when used outside provider", () => {
-      const TestOutsideProvider = () => {
-        const { setExtensionOptions } = useExtensionOptions();
-        return (
-          <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.create())}>
-            Set
-          </button>
-        );
-      };
-
-      render(<TestOutsideProvider />);
+      render(<NoopSetter />);
 
       // Should not throw
       expect(() => screen.getByRole("button", { name: "Set" }).click()).not.toThrow();
