@@ -17,11 +17,20 @@ let extensionOptions = ExtensionOptions.create();
 let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
-ExtensionOptions.fromStorage().then(async (extOptions) => {
-  extensionOptions = extOptions;
+async function loadExtensionOptions() {
+  extensionOptions = await ExtensionOptions.fromStorage();
   connections = createConnections(extensionOptions);
   await createContextMenus(extensionOptions);
-});
+}
+
+// The background script is non-persistent (event page on Firefox, service worker on Chromium): it is (re)started
+// by the very event it has to handle, e.g. a download right after the browser starts. Listeners must wait for the
+// stored options to be loaded, otherwise they see the defaults (captureDownloads disabled) and silently do nothing.
+let extensionOptionsLoaded: Promise<void> = loadExtensionOptions();
+
+export function waitForExtensionOptions(): Promise<void> {
+  return extensionOptionsLoaded;
+}
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
@@ -83,9 +92,8 @@ browser.storage.onChanged.addListener(listenerStorageOnChanged);
 
 export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
   if (changes.options) {
-    extensionOptions = await ExtensionOptions.fromStorage();
-    connections = createConnections(extensionOptions);
-    await createContextMenus(extensionOptions);
+    extensionOptionsLoaded = loadExtensionOptions();
+    await extensionOptionsLoaded;
   }
 }
 
@@ -206,25 +214,32 @@ export async function listenerOnDownloadChanged(downloadDelta: Downloads.OnChang
   if (downloadItem === undefined) {
     return;
   }
-  const currentTab = await findCurrentTab();
-  if (downloadDelta.filename?.previous === "" && downloadDelta.filename.current) {
-    downloadItem.filename = downloadDelta.filename.current;
-    await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
-      await removeDownloadItemCompletely(downloadItem);
-      try {
-        await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
-        if (extensionOptions.notifyFileIsAdded) {
-          await showNotification(i18n("addFileSuccess", server.name));
-        }
-      } catch (error) {
-        console.error(error);
-        if (extensionOptions.notifyErrorOccurs) {
-          await showNotification(i18n("addFileError", server.name));
-        }
-      }
-    });
-    delete downloadItems[downloadItem.id];
+  const filename = downloadDelta.filename?.previous === "" ? downloadDelta.filename.current : undefined;
+  if (!filename) {
+    // Every download is tracked: forget the ones that end before their filename is known.
+    if (downloadDelta.state?.current === "interrupted" || downloadDelta.state?.current === "complete") {
+      delete downloadItems[downloadDelta.id];
+    }
+    return;
   }
+  delete downloadItems[downloadItem.id];
+  downloadItem.filename = filename;
+  await waitForExtensionOptions();
+  const currentTab = await findCurrentTab();
+  await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
+    await removeDownloadItemCompletely(downloadItem);
+    try {
+      await captureDownloadItem(connection, server, downloadItem, referrer, cookies, extensionOptions.useCompleteFilePath, !!currentTab?.incognito);
+      if (extensionOptions.notifyFileIsAdded) {
+        await showNotification(i18n("addFileSuccess", server.name));
+      }
+    } catch (error) {
+      console.error(error);
+      if (extensionOptions.notifyErrorOccurs) {
+        await showNotification(i18n("addFileError", server.name));
+      }
+    }
+  });
 }
 
 browser.downloads?.onCreated.addListener(listenerOnDownloadCreated);
@@ -232,12 +247,12 @@ browser.downloads?.onCreated.addListener(listenerOnDownloadCreated);
 export async function listenerOnDownloadCreated(downloadItem: Downloads.DownloadItem) {
   if (isChromium()) {
     // Chromium only knows the filename once onChanged fires, which can happen before any awaited call here resolves:
-    // track the item right away and let listenerOnDownloadChanged decide whether to capture it.
-    if (extensionOptions.captureDownloads) {
-      downloadItems[downloadItem.id] = downloadItem;
-    }
+    // track the item right away (options may not even be loaded yet) and let listenerOnDownloadChanged decide whether
+    // to capture it.
+    downloadItems[downloadItem.id] = downloadItem;
     return;
   }
+  await waitForExtensionOptions();
   const currentTab = await findCurrentTab();
   await handleDownload(downloadItem, async (connection, server, referrer, cookies) => {
     await removeDownloadItemCompletely(downloadItem);
@@ -258,6 +273,7 @@ export async function listenerOnDownloadCreated(downloadItem: Downloads.Download
 browser.contextMenus?.onClicked.addListener(listenerOnClicked);
 
 export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
+  await waitForExtensionOptions();
   const connection = connections[info.menuItemId];
   const server = extensionOptions.servers[info.menuItemId];
 
@@ -290,6 +306,7 @@ export async function listenerOnCommand(command: string) {
   if (command === "open_popup") {
     await browser.action.openPopup();
   } else if (command === "toggle_capture_downloads") {
+    await waitForExtensionOptions();
     const newCaptureDownloads = !extensionOptions.captureDownloads;
     let newCaptureServer = extensionOptions.captureServer;
     if (newCaptureServer === "") {
@@ -330,6 +347,7 @@ async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, g
 
 export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === ALARM_NAME) {
+    await waitForExtensionOptions();
     const numActives = Object.entries(connections).map(async ([serverId, aria2]) => {
       const server = extensionOptions.servers[serverId];
       const globalStat = await getGlobalStat(aria2);
