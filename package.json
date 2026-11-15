@@ -25,7 +25,7 @@
     "@stdlib/regexp-basename-windows": "0.2.4",
     "@stdlib/regexp-dirname-posix": "0.2.2",
     "@stdlib/regexp-dirname-windows": "0.2.2",
-    "bootstrap": "5.3.8",
+    "bootstrap": "5.3.9",
     "bootstrap-icons": "1.13.2",
     "filesize": "11.0.30",
     "luxon": "3.7.2",
