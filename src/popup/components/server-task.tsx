@@ -59,7 +59,7 @@ function ServerTask({ server, aria2, task }: Props) {
   const progressTextColor = progressPercent <= PROGRESS_TEXT_COLOR_THRESHOLD ? "inherit" : "white";
 
   return (
-    <Row className="mt-2 gx-0 ps-2 pe-2 small">
+    <Row as="li" className="mt-2 gx-0 ps-2 pe-2 small">
       <Col xs={9}>
         <Row>
           <Col xs={12} sm={12} className="align-self-start text-start text-truncate fw-bold">

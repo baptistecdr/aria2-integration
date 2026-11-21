@@ -84,13 +84,21 @@ function ServerTab({ server }: Props) {
       {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
       {showQuickOptions && <ServerQuickOptions server={server} />}
       {showTaskList && tasks.length === 0 && (
-        <Row>
+        // A status, so that screen readers announce when the server becomes unreachable.
+        <Row role="status">
           <Col xs={12}>
             <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
           </Col>
         </Row>
       )}
-      {showTaskList && tasks.map((task) => <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />)}
+      {showTaskList && tasks.length > 0 && (
+        // A list, so that screen readers tell how many downloads there are and move from one to the next.
+        <ul className="list-unstyled mb-0">
+          {tasks.map((task) => (
+            <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />
+          ))}
+        </ul>
+      )}
     </Container>
   );
 }

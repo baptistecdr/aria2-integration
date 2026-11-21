@@ -9,6 +9,7 @@ import ExtensionOptionsTab from "@/options/components/extension-options-tab";
 import ServerOptionsTab from "@/options/components/server-options-tab";
 import i18n from "@/platform/i18n";
 import { ExtensionOptionsProvider, useExtensionOptions } from "@/shared/ui/extension-options-provider";
+import { describePage, extensionName } from "@/shared/ui/page";
 
 const ADD_SERVER_TAB = "add-server";
 const EXTENSION_OPTIONS_TAB = "extension-options";
@@ -69,13 +70,16 @@ function Options() {
   );
 }
 
+describePage(`${extensionName()} - ${i18n("extensionOptionsTitle")}`);
+
 const container = document.getElementById("root");
 // biome-ignore lint/style/noNonNullAssertion: We are sure the container exists
 const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <Container className="p-3" fluid>
+    <Container as="main" className="p-3" fluid>
+      <h1 className="visually-hidden">{`${extensionName()} - ${i18n("extensionOptionsTitle")}`}</h1>
       <ExtensionOptionsProvider>
         <Options />
       </ExtensionOptionsProvider>
