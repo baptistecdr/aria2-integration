@@ -25,6 +25,7 @@ describe("ServersTabs", () => {
         servers: {},
       } as ExtensionOptions,
       updateExtensionOptions: vi.fn(),
+      managedOptions: new Set(),
     } as any);
 
     render(<ServersTabs />);
@@ -44,6 +45,7 @@ describe("ServersTabs", () => {
         servers,
       } as ExtensionOptions,
       updateExtensionOptions: vi.fn(),
+      managedOptions: new Set(),
     } as any);
 
     render(<ServersTabs />);
@@ -66,6 +68,7 @@ describe("ServersTabs", () => {
         servers,
       } as ExtensionOptions,
       updateExtensionOptions: vi.fn(),
+      managedOptions: new Set(),
     } as any);
 
     render(<ServersTabs />);

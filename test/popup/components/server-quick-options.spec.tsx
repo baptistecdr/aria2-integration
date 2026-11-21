@@ -33,6 +33,7 @@ describe("ServerQuickOptions", () => {
     mockUseExtensionOptions.mockReturnValue({
       extensionOptions,
       updateExtensionOptions: mockUpdateExtensionOptions,
+      managedOptions: new Set(),
     });
   });
 
@@ -56,6 +57,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -85,6 +87,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       const user = userEvent.setup();
@@ -116,6 +119,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -134,6 +138,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCompletePath,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -152,6 +157,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -165,6 +171,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       const user = userEvent.setup();
@@ -190,6 +197,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -203,6 +211,7 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       await user.click(captureCheckbox);
@@ -222,12 +231,42 @@ describe("ServerQuickOptions", () => {
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCaptureOnDifferentServer,
         updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(),
       });
 
       render(<ServerQuickOptions server={server} />);
 
       const checkbox = screen.getByLabelText(USE_COMPLETE_FILE_PATH_LABEL) as HTMLInputElement;
       expect(checkbox.disabled).toBe(true);
+    });
+  });
+
+  describe("Managed by a policy", () => {
+    it.each(["captureDownloads", "captureServer"] as const)("disables capture downloads when the policy sets %s", (option) => {
+      mockUseExtensionOptions.mockReturnValue({
+        extensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set([option]),
+      });
+
+      render(<ServerQuickOptions server={server} />);
+
+      expect(screen.getByLabelText(CAPTURE_DOWNLOADS_LABEL)).toBeDisabled();
+      expect(screen.getByText(/managedByPolicy/)).toBeInTheDocument();
+    });
+
+    it("disables use complete file path when the policy sets it", () => {
+      const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
+      mockUseExtensionOptions.mockReturnValue({
+        extensionOptions: optionsWithCapture,
+        updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(["useCompleteFilePath"]),
+      });
+
+      render(<ServerQuickOptions server={server} />);
+
+      expect(screen.getByLabelText(USE_COMPLETE_FILE_PATH_LABEL)).toBeDisabled();
+      expect(screen.getByLabelText(CAPTURE_DOWNLOADS_LABEL)).toBeEnabled();
     });
   });
 });

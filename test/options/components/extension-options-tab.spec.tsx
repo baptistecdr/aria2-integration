@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
 import ExtensionOptionsTab from "@/options/components/extension-options-tab";
+import type { ManagedOption } from "@/services/options-store";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 vi.mock("@/platform/i18n", () => ({
@@ -25,9 +26,9 @@ describe("ExtensionOptionsTab", () => {
   const updateExtensionOptions = vi.fn();
 
   // Renders the tab with the given options, like the provider does.
-  const showOptions = (options: ExtensionOptions) => {
+  const showOptions = (options: ExtensionOptions, managedOptions: ManagedOption[] = []) => {
     current = options;
-    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions: current, updateExtensionOptions });
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions: current, managedOptions: new Set(managedOptions), updateExtensionOptions });
   };
 
   beforeEach(() => {
@@ -109,5 +110,34 @@ describe("ExtensionOptionsTab", () => {
     await user.click(screen.getByRole("button", { name: "serverOptionsSave" }));
 
     await waitFor(() => expect(screen.getByText("serverOptionsError")).toBeInTheDocument());
+  });
+
+  it("shows the options set by the policy read-only, and the others editable", () => {
+    showOptions(current, ["excludedSites", "notifyUrlIsAdded", "theme"]);
+
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.getByLabelText("extensionOptionsNotifyUrlIsAdded")).toBeDisabled();
+    expect(screen.getByLabelText("extensionOptionsThemeDark")).toBeDisabled();
+    expect(screen.getByLabelText("extensionOptionsNotifyFileIsAdded")).toBeEnabled();
+    expect(screen.getByRole("checkbox", { name: "extensionOptionsCaptureDownloads" })).toBeEnabled();
+    expect(screen.getAllByText("managedByPolicy")).toHaveLength(3);
+  });
+
+  it("keeps a managed capture field read-only while downloads are captured", async () => {
+    const user = userEvent.setup();
+    showOptions(current, ["excludedSites"]);
+    render(<ExtensionOptionsTab />);
+
+    await user.click(screen.getByRole("checkbox", { name: "extensionOptionsCaptureDownloads" }));
+
+    expect(screen.getByLabelText("extensionOptionsExcludeSites")).toBeDisabled();
+    expect(screen.getByLabelText("extensionOptionsExcludeProtocols")).toBeEnabled();
+  });
+
+  it("shows no policy hint without a policy", () => {
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.queryByText("managedByPolicy")).not.toBeInTheDocument();
   });
 });

@@ -70,4 +70,21 @@ describe("Commands", () => {
     expect(store.get().captureDownloads).toBe(false);
     expect(showNotification).toHaveBeenCalledWith("Translated: toggleCaptureDownloadsNoServer");
   });
+
+  it("tells the user the policy sets capture downloads instead of toggling it", async () => {
+    const store = fakeOptionsStore({ servers: { server1 }, captureServer: "server1", captureDownloads: true }, ["captureDownloads"]);
+
+    await createCommandHandler({ store, connections })(TOGGLE_CAPTURE_DOWNLOADS_COMMAND);
+
+    expect(store.update).not.toHaveBeenCalled();
+    expect(showNotification).toHaveBeenCalledWith("Translated: toggleCaptureDownloadsManaged");
+  });
+
+  it("toggles capture downloads on the capture server set by the policy", async () => {
+    const store = fakeOptionsStore({ servers: { server1, server2 }, captureServer: "server2" }, ["captureServer"]);
+
+    await createCommandHandler({ store, connections })(TOGGLE_CAPTURE_DOWNLOADS_COMMAND);
+
+    expect(store.get()).toMatchObject({ captureDownloads: true, captureServer: "server2" });
+  });
 });

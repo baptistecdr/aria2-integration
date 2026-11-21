@@ -21,6 +21,12 @@ export function createCommandHandler({ store }: BackgroundContext) {
 }
 
 async function toggleCaptureDownloads(store: BackgroundContext["store"]) {
+  await store.ready();
+  if (store.managed().has("captureDownloads")) {
+    // The policy would override the toggle. A capture server set by the policy is fine: it is the one used.
+    await showNotification(i18n("toggleCaptureDownloadsManaged"));
+    return;
+  }
   let hasServer = true;
   // The toggle is computed from the latest stored options, so it can't undo a change made meanwhile on another page.
   const options = await store.update((current) => {

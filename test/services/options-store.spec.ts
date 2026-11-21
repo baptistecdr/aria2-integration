@@ -368,4 +368,85 @@ describe("options store", () => {
       expect(browser.storage.onChanged.removeListener).toHaveBeenCalledWith(vi.mocked(browser.storage.onChanged.addListener).mock.calls[0][0]);
     });
   });
+
+  describe("options managed by a policy", () => {
+    let store: OptionsStore;
+    let policy: Record<string, unknown>;
+
+    // Simulates an administrator changing the policy while the extension runs.
+    const changePolicy = (newPolicy: Record<string, unknown>) => {
+      policy = newPolicy;
+      const onChanged = vi.mocked(browser.storage.onChanged.addListener).mock.calls.at(-1)?.[0] as (changes: object, areaName: string) => void;
+      onChanged({}, "managed");
+    };
+
+    beforeEach(() => {
+      policy = { captureDownloads: true, theme: Theme.Dark };
+      (browser.storage as any).managed = { get: vi.fn(async () => policy) };
+    });
+
+    afterEach(() => {
+      store.dispose();
+      delete (browser.storage as any).managed;
+    });
+
+    it("should tell which options the policy sets", async () => {
+      fakeSyncStorage();
+      store = createOptionsStore();
+
+      await store.ready();
+
+      expect([...store.managed()].sort()).toEqual(["captureDownloads", "theme"]);
+      expect(store.get()).toMatchObject({ captureDownloads: true, theme: Theme.Dark });
+    });
+
+    it("should not tell any option as managed without a policy", async () => {
+      delete (browser.storage as any).managed;
+      fakeSyncStorage();
+      store = createOptionsStore();
+
+      await store.ready();
+
+      expect(store.managed().size).toBe(0);
+    });
+
+    it("should keep the user's own values in storage for the options set by the policy", async () => {
+      const storage = fakeSyncStorage(ExtensionOptions.create({ captureDownloads: false, theme: Theme.Light }));
+      store = createOptionsStore();
+
+      const updated = await store.update((options) =>
+        ExtensionOptions.withOverrides(options, { captureDownloads: false, theme: Theme.Auto, notifyErrorOccurs: false }),
+      );
+
+      // The policy still applies...
+      expect(updated).toMatchObject({ captureDownloads: true, theme: Theme.Dark, notifyErrorOccurs: false });
+      expect(store.get()).toEqual(updated);
+      // ...on top of what the user chose, the only options the user can change.
+      expect(storage.stored()).toMatchObject({ captureDownloads: false, theme: Theme.Light, notifyErrorOccurs: false });
+    });
+
+    it("should apply the user's own values again once the policy stops setting them", async () => {
+      fakeSyncStorage(ExtensionOptions.create({ theme: Theme.Light }));
+      store = createOptionsStore();
+      await store.update((options) => ExtensionOptions.withOverrides(options, { notifyErrorOccurs: false }));
+
+      changePolicy({ captureDownloads: true });
+
+      await vi.waitFor(() => expect(store.get().theme).toBe(Theme.Light));
+      expect([...store.managed()]).toEqual(["captureDownloads"]);
+    });
+
+    it("should notify subscribers when the policy changes which options it sets, even with the same values", async () => {
+      fakeSyncStorage(ExtensionOptions.create({ captureDownloads: true, theme: Theme.Dark }));
+      store = createOptionsStore();
+      await store.ready();
+      const listener = vi.fn();
+      store.subscribe(listener);
+
+      changePolicy({ captureDownloads: true });
+
+      await vi.waitFor(() => expect(listener).toHaveBeenCalled());
+      expect([...store.managed()]).toEqual(["captureDownloads"]);
+    });
+  });
 });

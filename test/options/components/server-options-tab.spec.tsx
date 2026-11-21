@@ -40,6 +40,7 @@ describe("ServerOptionsTab", () => {
     vi.mocked(useExtensionOptions).mockReturnValue({
       extensionOptions,
       updateExtensionOptions,
+      managedOptions: new Set(),
     });
   });
 
@@ -415,5 +416,27 @@ describe("ServerOptionsTab", () => {
 
     expect(screen.getByLabelText("serverOptionsName")).toHaveValue("Renamed");
     expect(screen.getByText("serverOptionsSuccess")).toBeInTheDocument();
+  });
+
+  it("shows the server read-only when the policy sets the servers", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByText("managedServersByPolicy")).toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeDisabled();
+    expect(screen.getByLabelText("serverOptionsHost")).toBeDisabled();
+    expect(screen.queryByText("serverOptionsSave")).not.toBeInTheDocument();
+    expect(screen.queryByText("serverOptionsDelete")).not.toBeInTheDocument();
+  });
+
+  it("lets the server be edited when the policy does not set the servers", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["captureDownloads"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.queryByText("managedServersByPolicy")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeEnabled();
+    expect(screen.getByText("serverOptionsSave")).toBeInTheDocument();
   });
 });

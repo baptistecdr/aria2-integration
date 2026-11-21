@@ -46,6 +46,7 @@ const setupDefaultExtensionOptions = (overrides = {}) => {
       incognitoModeOptions: { overwriteRpcParameters: false },
     } as any,
     updateExtensionOptions: vi.fn(),
+    managedOptions: new Set(),
   });
 };
 
