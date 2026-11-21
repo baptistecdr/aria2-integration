@@ -120,9 +120,11 @@ The accepted keys are listed in [`managed-schema.json`](public/managed-schema.js
 - Run `npm run lint:fix` to lint and fix files
 - Run `npm run test` to run tests
   - Run `npm run test:coverage` to run tests with coverage
-- Run `npm run test:e2e` to run end-to-end tests on Chromium with Playwright
+- Run `npm run test:e2e` to run end-to-end tests on Chromium and Firefox with Playwright
+  - Run `npm run test:e2e:chromium` or `npm run test:e2e:firefox` to run them on one browser
   - Requires Docker: aria2 is started from `compose.yaml` (port 16800) and stopped after the tests
-  - Run `npx playwright install chromium` once to install the browser
+  - Run `npx playwright install chromium` once to install Chromium
+  - Firefox must be installed: Playwright can't load extensions in Firefox, so the tests drive it with WebDriver BiDi. Set `FIREFOX_PATH` when it is not at its default location
 - Firefox
   - Run `npm run build:firefox:debug:watch` to auto-build for Firefox
   - Run `npm run start:firefox` to install on Firefox with auto-reload

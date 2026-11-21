@@ -10,6 +10,8 @@ const r = (...args: string[]) => resolve(import.meta.dirname, ...args);
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, r("."), "");
   const isDebug = mode.endsWith("-debug");
+  // The end-to-end tests build each browser in its own folder (see .env.firefox-e2e).
+  const outDir = r(env.OUT_DIR || "dist");
 
   return {
     root: r("src"),
@@ -29,7 +31,7 @@ export default defineConfig(({ mode }) => {
           popup: r("src", "popup", "popup.html"),
         },
         output: {
-          dir: r("dist"),
+          dir: outDir,
           entryFileNames: "js/[name].js",
           chunkFileNames: "js/[name].js",
           assetFileNames: "media/[name].[ext]",

@@ -29,7 +29,7 @@
     }
   },
   "files": {
-    "includes": ["**", "!**/.idea", "!**/dist", "!**/node_modules", "!**/coverage", "!**/test-results", "!**/playwright-report"]
+    "includes": ["**", "!**/.idea", "!**/dist", "!**/dist-firefox", "!**/node_modules", "!**/coverage", "!**/test-results", "!**/playwright-report"]
   },
   "javascript": {
     "formatter": {
