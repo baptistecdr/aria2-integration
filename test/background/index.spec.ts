@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
 import { isChromium } from "@/platform/browser-info";
-import { captureURL } from "@/services/capture";
+import { captureUrl } from "@/services/capture";
 import browser from "../setupTests";
 
 vi.mock("@/services/capture", () => ({
-  captureTorrentFromURL: vi.fn(),
-  captureURL: vi.fn().mockResolvedValue(undefined),
+  captureUrl: vi.fn().mockResolvedValue(undefined),
 }));
 
 vi.mock("@/platform/browser-info", () => ({
@@ -87,7 +86,7 @@ describe("Background script", () => {
     resolveStorage({ options: JSON.stringify(OPTIONS) });
     await listener;
 
-    expect(captureURL).toHaveBeenCalledOnce();
+    expect(captureUrl).toHaveBeenCalledOnce();
   });
 
   it("captures a download created before the options are loaded on Chromium", async () => {
@@ -99,7 +98,7 @@ describe("Background script", () => {
     resolveStorage({ options: JSON.stringify(OPTIONS) });
     await listener;
 
-    expect(captureURL).toHaveBeenCalledOnce();
+    expect(captureUrl).toHaveBeenCalledOnce();
   });
 
   it("does not capture a download when capture downloads is disabled", async () => {
@@ -109,7 +108,7 @@ describe("Background script", () => {
     resolveStorage({ options: JSON.stringify({ ...OPTIONS, captureDownloads: false }) });
     await listener;
 
-    expect(captureURL).not.toHaveBeenCalled();
+    expect(captureUrl).not.toHaveBeenCalled();
   });
 
   it("opens the options page when the extension is installed", async () => {

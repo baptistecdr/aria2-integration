@@ -13,7 +13,7 @@ import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
 import { getCookies } from "@/platform/cookies";
 import { showNotification } from "@/platform/notifications";
-import { captureURL } from "@/services/capture";
+import { captureUrl } from "@/services/capture";
 import { fakeOptionsStore } from "../helpers/fake-options-store";
 
 vi.mock("@/platform/cookies", () => ({
@@ -25,7 +25,7 @@ vi.mock("@/platform/notifications", () => ({
 }));
 
 vi.mock("@/services/capture", () => ({
-  captureURL: vi.fn(),
+  captureUrl: vi.fn(),
 }));
 
 describe("Context Menus", () => {
@@ -158,7 +158,7 @@ describe("Context menu click", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.mocked(captureURL).mockResolvedValue(undefined);
+    vi.mocked(captureUrl).mockResolvedValue(undefined);
   });
 
   it("should send every selected URL to the clicked server with the page as referer", async () => {
@@ -167,14 +167,24 @@ describe("Context menu click", () => {
     await handler(click({ selectionText: "https://a.com/1 https://b.com/2" }), tab);
 
     expect(getCookies).toHaveBeenCalledWith("https://a.com/1", "store-1");
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://a.com/1", "https://example.com/page", "session=1;", true);
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://b.com/2", "https://example.com/page", "session=1;", true);
+    expect(captureUrl).toHaveBeenCalledWith(aria2, server, {
+      url: "https://a.com/1",
+      referer: "https://example.com/page",
+      cookies: "session=1;",
+      incognito: true,
+    });
+    expect(captureUrl).toHaveBeenCalledWith(aria2, server, {
+      url: "https://b.com/2",
+      referer: "https://example.com/page",
+      cookies: "session=1;",
+      incognito: true,
+    });
     expect(showNotification).toHaveBeenCalledWith("Translated: addUrlSuccess");
   });
 
   it("should notify the error when aria2 rejects the URL", async () => {
     vi.spyOn(console, "error").mockImplementation(() => {});
-    vi.mocked(captureURL).mockRejectedValueOnce(new Error("aria2 is down"));
+    vi.mocked(captureUrl).mockRejectedValueOnce(new Error("aria2 is down"));
     const handler = createContextMenuClickHandler({ store: fakeOptionsStore({ servers: { server1: server } }), connections });
 
     await handler(click({ linkUrl: "https://a.com/1" }), tab);
@@ -187,6 +197,6 @@ describe("Context menu click", () => {
 
     await handler(click({ menuItemId: "deleted", linkUrl: "https://a.com/1" }), tab);
 
-    expect(captureURL).not.toHaveBeenCalled();
+    expect(captureUrl).not.toHaveBeenCalled();
   });
 });

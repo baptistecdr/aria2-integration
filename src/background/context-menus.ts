@@ -3,7 +3,7 @@ import type { BackgroundContext } from "@/background/context";
 import type { ExtensionOptions } from "@/domain/extension-options";
 import { getCookies } from "@/platform/cookies";
 import i18n from "@/platform/i18n";
-import { captureURL } from "@/services/capture";
+import { captureUrl } from "@/services/capture";
 import { runWithNotification } from "@/services/notify";
 import type { OptionsStore } from "@/services/options-store";
 
@@ -57,11 +57,11 @@ export function createContextMenuClickHandler({ store, connections }: Background
       return;
     }
     const referer = tab?.url ?? "";
-    const isIncognito = !!tab?.incognito;
+    const incognito = !!tab?.incognito;
     await Promise.all(
       getSelectedUrls(info).map(async (url) => {
         const cookies = await getCookies(url, tab?.cookieStoreId);
-        await runWithNotification(() => captureURL(connection, server, url, referer, cookies, isIncognito), {
+        await runWithNotification(() => captureUrl(connection, server, { url, referer, cookies, incognito }), {
           success: options.notifyUrlIsAdded ? i18n("addUrlSuccess", server.name) : undefined,
           error: options.notifyErrorOccurs ? i18n("addUrlError", server.name) : undefined,
         });

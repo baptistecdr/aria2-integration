@@ -4,7 +4,7 @@ import type { Server } from "@/domain/server";
 import type { Task } from "@/domain/task";
 import i18n from "@/platform/i18n";
 import { showNotification } from "@/platform/notifications";
-import { captureURL } from "@/services/capture";
+import { captureUrl } from "@/services/capture";
 import { useCurrentTab } from "@/shared/ui/current-tab-provider";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
@@ -25,7 +25,12 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
       } else if (task.isPaused()) {
         await aria2.call("aria2.unpause", task.gid);
       } else if (task.isError()) {
-        await captureURL(aria2, server, task.files[0].uris[0].uri, "", "", !!currentTab?.incognito, task.dir, task.getFilename());
+        await captureUrl(aria2, server, {
+          url: task.files[0].uris[0].uri,
+          incognito: !!currentTab?.incognito,
+          directory: task.dir,
+          filename: task.getFilename(),
+        });
       }
     } catch (error) {
       console.error(error);

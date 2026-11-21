@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
 import type { Task } from "@/domain/task";
 import ServerTaskManagement from "@/popup/components/server-task-management";
-import { captureURL } from "@/services/capture";
+import { captureUrl } from "@/services/capture";
 
 vi.mock("@baptistecdr/aria2", () => ({
   default: vi.fn(function (this: Aria2) {
@@ -20,7 +20,7 @@ vi.mock("@/services/capture", async () => {
   const actual = await vi.importActual("@/services/capture");
   return {
     ...actual,
-    captureURL: vi.fn(),
+    captureUrl: vi.fn(),
   };
 });
 
@@ -72,11 +72,11 @@ describe("ServerTaskManagement", () => {
     expect(aria2.call).toHaveBeenCalledWith("aria2.unpause", "test-gid");
   });
 
-  it("calls captureURL when clicking retry", () => {
+  it("calls captureUrl when clicking retry", () => {
     const task = createTask({ isError: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "play-pause-retry" }));
-    expect(captureURL).toHaveBeenCalledWith(aria2, server, "http://test", "", "", false, "/downloads", "file.txt");
+    expect(captureUrl).toHaveBeenCalledWith(aria2, server, { url: "http://test", incognito: false, directory: "/downloads", filename: "file.txt" });
   });
 
   it("calls aria2.removeDownloadResult when deleting completed task", () => {

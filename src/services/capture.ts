@@ -1,56 +1,65 @@
 import type Aria2 from "@baptistecdr/aria2";
+import { isTorrentLike } from "@/domain/capture-rules";
 import type { Server } from "@/domain/server";
 import { download, encodeFileToBase64 } from "@/platform/files";
 
-export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File, isInIncognitoMode: boolean) {
-  const blobAsBase64 = await encodeFileToBase64(file);
-  const aria2Parameters: any = {
-    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
-  };
-  if (file.name.endsWith("torrent")) {
-    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
-  }
-  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
+// Options of aria2's addUri, addTorrent and addMetalink methods.
+export type Aria2Parameters = Record<string, string | string[]>;
+
+// A file to download with aria2.
+export interface CaptureRequest {
+  url: string;
+  // Whether the request comes from a private window: some servers use other parameters in that case.
+  incognito: boolean;
+  // Sent to the server hosting the file, so that downloads needing a session keep working.
+  referer?: string;
+  cookies?: string;
+  // Where aria2 saves the file. Defaults to the server's settings.
+  directory?: string;
+  filename?: string;
 }
 
-export async function captureTorrentFromURL(aria2: Aria2, server: Server, url: string, isInIncognitoMode: boolean, directory?: string, filename?: string) {
-  const blob = await download(url);
-  const blobAsBase64 = await encodeFileToBase64(blob);
-  const aria2Parameters: any = {
-    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
-  };
-  if (directory) {
-    aria2Parameters.dir = directory;
-  }
-  if (url.endsWith(".torrent") || filename?.endsWith(".torrent")) {
-    return aria2.call("aria2.addTorrent", blobAsBase64, [], aria2Parameters);
-  }
-  return aria2.call("aria2.addMetalink", blobAsBase64, [], aria2Parameters);
+// The aria2 parameters of the server, which can be replaced in private windows.
+export function serverParameters(server: Server, incognito: boolean): Aria2Parameters {
+  const { incognitoModeOptions } = server;
+  return { ...(incognito && incognitoModeOptions?.overwriteRpcParameters ? incognitoModeOptions.rpcParameters : server.rpcParameters) };
 }
 
-export async function captureURL(
-  aria2: Aria2,
-  server: Server,
-  url: string,
-  referer: string,
-  cookies: string,
-  isInIncognitoMode: boolean,
-  directory?: string,
-  filename?: string,
-) {
-  if (url.match(/\.torrent$|\.meta4$|\.metalink$/)) {
-    return captureTorrentFromURL(aria2, server, url, isInIncognitoMode, directory, filename);
-  }
-  const aria2Parameters: any = {
-    header: [`Referer: ${referer}`, `Cookie: ${cookies}`],
-    ...(server.incognitoModeOptions?.overwriteRpcParameters && isInIncognitoMode ? server.incognitoModeOptions.rpcParameters : server.rpcParameters),
-  };
+function addTorrentOrMetalink(aria2: Aria2, base64: unknown, isTorrent: boolean, parameters: Aria2Parameters) {
+  return aria2.call(isTorrent ? "aria2.addTorrent" : "aria2.addMetalink", base64, [], parameters);
+}
 
-  if (directory) {
-    aria2Parameters.dir = directory;
+// Adds a .torrent or metalink file chosen by the user.
+export async function captureTorrentFile(aria2: Aria2, server: Server, file: File, incognito: boolean) {
+  const base64 = await encodeFileToBase64(file);
+  return addTorrentOrMetalink(aria2, base64, file.name.endsWith("torrent"), serverParameters(server, incognito));
+}
+
+// Downloads the .torrent or metalink file and adds it, so that aria2 downloads its content.
+export async function captureTorrentFromUrl(aria2: Aria2, server: Server, request: CaptureRequest) {
+  const base64 = await encodeFileToBase64(await download(request.url));
+  const parameters = serverParameters(server, request.incognito);
+  if (request.directory) {
+    parameters.dir = request.directory;
   }
-  if (filename) {
-    aria2Parameters.out = filename;
+  const isTorrent = request.url.endsWith(".torrent") || !!request.filename?.endsWith(".torrent");
+  return addTorrentOrMetalink(aria2, base64, isTorrent, parameters);
+}
+
+// Sends the file to aria2. Torrents and metalinks are added so that aria2 downloads their content.
+export async function captureUrl(aria2: Aria2, server: Server, request: CaptureRequest) {
+  if (isTorrentLike(request.url) || isTorrentLike(request.filename)) {
+    return captureTorrentFromUrl(aria2, server, request);
   }
-  return aria2.call("aria2.addUri", [url], aria2Parameters);
+  const parameters: Aria2Parameters = {
+    header: [`Referer: ${request.referer ?? ""}`, `Cookie: ${request.cookies ?? ""}`],
+    ...serverParameters(server, request.incognito),
+  };
+  if (request.directory) {
+    parameters.dir = request.directory;
+  }
+  if (request.filename) {
+    parameters.out = request.filename;
+  }
+  return aria2.call("aria2.addUri", [request.url], parameters);
 }

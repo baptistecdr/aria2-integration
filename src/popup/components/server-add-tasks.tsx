@@ -4,7 +4,7 @@ import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
 import i18n from "@/platform/i18n";
 import { showNotification } from "@/platform/notifications";
-import { captureTorrentFromFile, captureURL } from "@/services/capture";
+import { captureTorrentFile, captureUrl } from "@/services/capture";
 import { useCurrentTab } from "@/shared/ui/current-tab-provider";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
@@ -24,7 +24,7 @@ function ServerAddTasks({ aria2, server }: Props) {
   const formAddUrlsOnSubmit = (formEvent: SubmitEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     for (const url of formUrls) {
-      captureURL(aria2, server, url, "", "", !!currentTab?.incognito)
+      captureUrl(aria2, server, { url, incognito: !!currentTab?.incognito })
         .then(() => {
           if (extensionOptions.notifyUrlIsAdded) {
             showNotification(i18n("addUrlSuccess", server.name));
@@ -45,7 +45,7 @@ function ServerAddTasks({ aria2, server }: Props) {
     formEvent.preventDefault();
     if (formFiles.files !== null) {
       for (let i = 0; i < formFiles.files.length; i += 1) {
-        captureTorrentFromFile(aria2, server, formFiles.files[i], !!currentTab?.incognito)
+        captureTorrentFile(aria2, server, formFiles.files[i], !!currentTab?.incognito)
           .then(() => {
             if (extensionOptions.notifyFileIsAdded) {
               showNotification(i18n("addFileSuccess", server.name));

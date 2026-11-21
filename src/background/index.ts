@@ -5,13 +5,12 @@ import { createCommandHandler } from "@/background/commands";
 import { createConnections } from "@/background/connections";
 import type { BackgroundContext } from "@/background/context";
 import { createContextMenuClickHandler, keepContextMenusInSync } from "@/background/context-menus";
-import { createDownloadHandlers } from "@/background/downloads";
-import { isChromium } from "@/platform/browser-info";
+import { createDownloadCapturer } from "@/background/download-capture";
+import { createDownloadInterceptor } from "@/background/download-interceptors";
 import { createOptionsStore } from "@/services/options-store";
 
 const store = createOptionsStore();
 const context: BackgroundContext = { store, connections: createConnections(store) };
-const downloads = createDownloadHandlers(context);
 
 // Listeners must be registered synchronously, at the top level: the browser may start the background script only to
 // dispatch one of these events (e.g. a download right after a browser restart), and dispatches it right after this
@@ -21,9 +20,8 @@ browser.runtime.onInstalled.addListener(async (details) => {
     await browser.runtime.openOptionsPage();
   }
 });
-browser.downloads?.onCreated.addListener(downloads.onCreated);
-if (isChromium()) {
-  browser.downloads.onChanged.addListener(downloads.onChanged);
+if (browser.downloads) {
+  createDownloadInterceptor(createDownloadCapturer(context)).listen(browser.downloads);
 }
 browser.contextMenus?.onClicked.addListener(createContextMenuClickHandler(context));
 browser.commands?.onCommand.addListener(createCommandHandler(context));
