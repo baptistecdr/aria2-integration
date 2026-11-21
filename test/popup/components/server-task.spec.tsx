@@ -1,20 +1,29 @@
-import Aria2 from "@baptistecdr/aria2";
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import { type Task, TaskStatus } from "@/domain/task";
 import ServerTask from "@/popup/components/server-task";
-import { type Task, TaskStatus } from "@/popup/models/task";
+import type { Aria2Client } from "@/services/aria2-client";
+import browser from "../../setupTests";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,
 }));
 
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn(function (this: Aria2) {
-    this.call = vi.fn().mockResolvedValue({});
-    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
-  }),
-}));
+// A fake aria2 client: every method resolves.
+const aria2 = {
+  addUri: vi.fn(),
+  addTorrent: vi.fn(),
+  addMetalink: vi.fn(),
+  pause: vi.fn().mockResolvedValue("OK"),
+  unpause: vi.fn().mockResolvedValue("OK"),
+  remove: vi.fn().mockResolvedValue("OK"),
+  removeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  purgeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  getGlobalStat: vi.fn(),
+  getTasks: vi.fn(),
+} satisfies Aria2Client;
 
 describe("ServerTask", () => {
   const server: Server = {
@@ -22,26 +31,21 @@ describe("ServerTask", () => {
     name: "Test Server",
     rpcParameters: {},
   } as Server;
-  const aria2 = new Aria2({});
   let task: Task;
 
   beforeEach(() => {
     task = {
       gid: "123",
-      status: "active",
+      status: TaskStatus.Active,
       completedLength: 50000000,
       totalLength: 100000000,
       downloadSpeed: 1000000,
       uploadSpeed: 10000,
       connections: 1337,
-      isActive: vi.fn().mockReturnValue(true),
-      isComplete: vi.fn().mockReturnValue(false),
-      isError: vi.fn().mockReturnValue(false),
-      isRemoved: vi.fn().mockReturnValue(false),
-      isPaused: vi.fn().mockReturnValue(false),
-      isWaiting: vi.fn().mockReturnValue(false),
-      getFilename: vi.fn().mockReturnValue("test-file.mp4"),
-    } as unknown as Task;
+      uploadLength: 0,
+      dir: "/downloads",
+      files: [{ completedLength: 50000000, length: 100000000, path: "/downloads/test-file.mp4", uris: [] }],
+    } as Task;
   });
 
   it("renders active task correctly", () => {
@@ -65,8 +69,6 @@ describe("ServerTask", () => {
 
   it("renders completed task correctly", () => {
     task.status = TaskStatus.Complete;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isComplete = vi.fn().mockReturnValue(true);
     task.completedLength = task.totalLength;
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
@@ -81,8 +83,6 @@ describe("ServerTask", () => {
 
   it("renders paused task correctly", () => {
     task.status = TaskStatus.Paused;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isPaused = vi.fn().mockReturnValue(true);
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
@@ -95,8 +95,6 @@ describe("ServerTask", () => {
 
   it("renders error task correctly", () => {
     task.status = TaskStatus.Error;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isError = vi.fn().mockReturnValue(true);
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
@@ -121,5 +119,45 @@ describe("ServerTask", () => {
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
     expect(screen.getByText(/00:00:50/)).toBeInTheDocument();
+  });
+
+  it("names the progress bar after the file and gives its percentage", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    const progressBar = screen.getByRole("progressbar", { name: "Translated: taskProgress" });
+    expect(progressBar).toHaveAttribute("aria-valuenow", "50");
+    expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+    expect(browser.i18n.getMessage).toHaveBeenCalledWith("taskProgress", "test-file.mp4");
+  });
+
+  it("names the speeds for screen readers", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    expect(screen.getByText("Translated: popupDownloadSpeed")).toHaveClass("visually-hidden");
+    expect(screen.getByText("Translated: popupUploadSpeed")).toHaveClass("visually-hidden");
+  });
+
+  it.each([
+    { status: TaskStatus.Active, completed: 40, color: "inherit" },
+    { status: TaskStatus.Active, completed: 80, color: "white" },
+    { status: TaskStatus.Paused, completed: 80, color: "rgb(0, 0, 0)" },
+    { status: TaskStatus.Complete, completed: 100, color: "white" },
+  ])("writes the percentage of a $status task at $completed % in a contrasting color", ({ status, completed, color }) => {
+    task.status = status;
+    task.completedLength = (task.totalLength * completed) / 100;
+
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    // The inline style: jsdom computes "inherit" to black as well.
+    expect(screen.getByText(`${completed} %`).style.color).toBe(color);
+  });
+
+  it("shows the full file name when it gets the keyboard focus", async () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    await userEvent.tab();
+    expect(document.activeElement).toHaveTextContent("test-file.mp4");
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("test-file.mp4");
   });
 });

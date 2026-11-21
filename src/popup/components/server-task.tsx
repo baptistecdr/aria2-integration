@@ -1,33 +1,42 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { filesize } from "filesize";
 import { Duration } from "luxon";
 import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import browser from "webextension-polyfill";
-import i18n from "@/i18n";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import { Task, TaskStatus } from "@/domain/task";
+import i18n, { getUILanguage, type MessageKey } from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
-import type { Task } from "@/popup/models/task";
+import Speeds from "@/popup/components/speeds";
+import type { Aria2Client } from "@/services/aria2-client";
 
 interface Props {
   server: Server;
-  aria2: Aria2;
+  aria2: Aria2Client;
   task: Task;
 }
 
 const FILESIZE_BASE = { base: 2 } as const;
 const PROGRESS_TEXT_COLOR_THRESHOLD = 55;
 
+const STATUS_MESSAGES: Record<TaskStatus, MessageKey> = {
+  [TaskStatus.Active]: "taskStatusActive",
+  [TaskStatus.Complete]: "taskStatusComplete",
+  [TaskStatus.Error]: "taskStatusError",
+  [TaskStatus.Paused]: "taskStatusPaused",
+  [TaskStatus.Removed]: "taskStatusRemoved",
+  [TaskStatus.Waiting]: "taskStatusWaiting",
+};
+
 function formatETA(seconds: number): string {
   const milliseconds = seconds * 1000;
   const duration = Duration.fromMillis(milliseconds, {
-    locale: browser.i18n.getUILanguage(),
+    locale: getUILanguage(),
   });
   return duration.toISOTime()?.replace(/\.\d{3}$/, "") ?? "";
 }
 
 function ServerTask({ server, aria2, task }: Props) {
-  const filename = task.getFilename();
+  const filename = Task.filename(task);
 
   const progressPercent = task.totalLength > 0 ? Math.round((task.completedLength * 100) / task.totalLength) : 0;
 
@@ -43,15 +52,20 @@ function ServerTask({ server, aria2, task }: Props) {
     }
   };
 
-  const capitalizedStatus = task.status.charAt(0).toUpperCase() + task.status.slice(1);
-  const status = i18n(`taskStatus${capitalizedStatus}`);
+  const status = i18n(STATUS_MESSAGES[task.status]);
 
   const eta = task.downloadSpeed !== 0 ? formatETA((task.totalLength - task.completedLength) / task.downloadSpeed) : "∞";
 
-  const progressTextColor = progressPercent <= PROGRESS_TEXT_COLOR_THRESHOLD ? "inherit" : "white";
+  // Once the bar is under the percentage, the text must contrast with the bar: white, except on the light yellow of
+  // paused tasks, where only dark text reaches the WCAG contrast ratio (like Bootstrap's text-bg-warning).
+  const progressVariant = getProgressVariant();
+  let progressTextColor = "inherit";
+  if (progressPercent > PROGRESS_TEXT_COLOR_THRESHOLD) {
+    progressTextColor = progressVariant === "warning" ? "#000" : "white";
+  }
 
   return (
-    <Row className="mt-2 gx-0 ps-2 pe-2 small">
+    <Row as="li" className="mt-2 gx-0 ps-2 pe-2 small">
       <Col xs={9}>
         <Row>
           <Col xs={12} sm={12} className="align-self-start text-start text-truncate fw-bold">
@@ -64,17 +78,17 @@ function ServerTask({ server, aria2, task }: Props) {
                 </Tooltip>
               }
             >
-              <span>{filename}</span>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: the tooltip shows the full name of a truncated file, which keyboard users must be able to open too (WCAG 1.4.13). */}
+              <span tabIndex={0}>{filename}</span>
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
             {status}, {filesize(task.completedLength, FILESIZE_BASE)} / {filesize(task.totalLength, FILESIZE_BASE)}
-            {task.isActive() && `, ${eta}`}
+            {Task.isActive(task) && `, ${eta}`}
           </Col>
-          {task.isActive() && (
+          {Task.isActive(task) && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
-              {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, FILESIZE_BASE)}/s -{" "}
-              <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, FILESIZE_BASE)}/s
+              {task.connections} {i18n("taskConnections")}, <Speeds downloadSpeed={task.downloadSpeed} uploadSpeed={task.uploadSpeed} />
             </Col>
           )}
         </Row>
@@ -85,14 +99,16 @@ function ServerTask({ server, aria2, task }: Props) {
       <Col xs={12} sm={12}>
         <div className="progress position-relative">
           <div
-            className={`progress-bar bg-${getProgressVariant()}`}
+            className={`progress-bar bg-${progressVariant}`}
             role="progressbar"
             style={{ width: `${progressPercent}%` }}
-            aria-valuenow={progressPercent * 10}
+            aria-label={i18n("taskProgress", filename)}
+            aria-valuenow={progressPercent}
             aria-valuemin={0}
-            aria-valuemax={1000}
+            aria-valuemax={100}
           />
-          <small className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
+          {/* The progress bar already gives the percentage to screen readers. */}
+          <small aria-hidden="true" className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
             {progressPercent} %
           </small>
         </div>

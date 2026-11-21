@@ -104,7 +104,9 @@ The accepted keys are listed in [`managed-schema.json`](public/managed-schema.js
 - If any value is invalid (wrong type, missing or duplicated server `uuid`…), the **whole policy is ignored**. The error
   is only logged in the extension console (`about:debugging` in Firefox, the service worker of `chrome://extensions` in
   Chrome). `about:policies` (Firefox) and `chrome://policy` (Chrome/Edge) show whether the browser loaded the policy.
-- Options set by a policy can still be edited in the options page, but the policy value is restored on the next load.
+- Options set by a policy are shown read-only, in the options page and in the popup. When the policy sets `servers`,
+  servers can't be added, edited or deleted. The user's own values are kept: they apply again if the policy stops
+  setting an option.
 - Changes to the policy are applied after the browser restarts.
 
 ## How to build
@@ -120,9 +122,11 @@ The accepted keys are listed in [`managed-schema.json`](public/managed-schema.js
 - Run `npm run lint:fix` to lint and fix files
 - Run `npm run test` to run tests
   - Run `npm run test:coverage` to run tests with coverage
-- Run `npm run test:e2e` to run end-to-end tests on Chromium with Playwright
+- Run `npm run test:e2e` to run end-to-end tests on Chromium and Firefox with Playwright
+  - Run `npm run test:e2e:chromium` or `npm run test:e2e:firefox` to run them on one browser
   - Requires Docker: aria2 is started from `compose.yaml` (port 16800) and stopped after the tests
-  - Run `npx playwright install chromium` once to install the browser
+  - Run `npx playwright install chromium` once to install Chromium
+  - Firefox must be installed: Playwright can't load extensions in Firefox, so the tests drive it with WebDriver BiDi. Set `FIREFOX_PATH` when it is not at its default location
 - Firefox
   - Run `npm run build:firefox:debug:watch` to auto-build for Firefox
   - Run `npm run start:firefox` to install on Firefox with auto-reload

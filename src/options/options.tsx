@@ -3,12 +3,13 @@ import "bootstrap";
 import React, { useId, useState } from "react";
 import { Container, Tab, Tabs } from "react-bootstrap";
 import { createRoot } from "react-dom/client";
-import { ExtensionOptionsProvider, useExtensionOptions } from "@/extension-options-provider";
-import i18n from "@/i18n";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
 import ExtensionOptionsTab from "@/options/components/extension-options-tab";
 import ServerOptionsTab from "@/options/components/server-options-tab";
+import i18n from "@/platform/i18n";
+import { ExtensionOptionsProvider, useExtensionOptions } from "@/shared/ui/extension-options-provider";
+import { describePage, extensionName } from "@/shared/ui/page";
 
 const ADD_SERVER_TAB = "add-server";
 const EXTENSION_OPTIONS_TAB = "extension-options";
@@ -17,20 +18,18 @@ function Options() {
   const tabsId = useId();
 
   const [activeTab, setActiveTab] = useState(EXTENSION_OPTIONS_TAB);
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, managedOptions, updateExtensionOptions } = useExtensionOptions();
 
   const addServer = async () => {
     const server = Server.create();
-    const newExtensionOptions = await ExtensionOptions.addServer(extensionOptions, server);
-    setExtensionOptions(newExtensionOptions);
+    await updateExtensionOptions((options) => ExtensionOptions.withServer(options, server));
     setActiveTab(server.uuid);
   };
 
   const deleteServer = async (server: Server) => {
-    const newExtensionOptions = await ExtensionOptions.deleteServer(extensionOptions, server);
+    const newExtensionOptions = await updateExtensionOptions((options) => ExtensionOptions.withoutServer(options, server));
     const serverKeys = Object.keys(newExtensionOptions.servers);
     const newActiveTab = serverKeys.length === 0 ? EXTENSION_OPTIONS_TAB : serverKeys[0];
-    setExtensionOptions(newExtensionOptions);
     setActiveTab(newActiveTab);
   };
 
@@ -52,7 +51,18 @@ function Options() {
   return (
     <Tabs id={tabsId} defaultActiveKey={EXTENSION_OPTIONS_TAB} activeKey={activeTab} onSelect={handleTabSelect}>
       {renderServerTabs()}
-      <Tab eventKey={ADD_SERVER_TAB} title="+" />
+      {/* Servers added by the user would be replaced by the ones of the policy. */}
+      {!managedOptions.has("servers") && (
+        <Tab
+          eventKey={ADD_SERVER_TAB}
+          title={
+            <>
+              <span aria-hidden="true">+</span>
+              <span className="visually-hidden">{i18n("optionsAddServer")}</span>
+            </>
+          }
+        />
+      )}
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
         <ExtensionOptionsTab />
       </Tab>
@@ -60,13 +70,16 @@ function Options() {
   );
 }
 
+describePage(`${extensionName()} - ${i18n("extensionOptionsTitle")}`);
+
 const container = document.getElementById("root");
 // biome-ignore lint/style/noNonNullAssertion: We are sure the container exists
 const root = createRoot(container!);
 
 root.render(
   <React.StrictMode>
-    <Container className="p-3" fluid>
+    <Container as="main" className="p-3" fluid>
+      <h1 className="visually-hidden">{`${extensionName()} - ${i18n("extensionOptionsTitle")}`}</h1>
       <ExtensionOptionsProvider>
         <Options />
       </ExtensionOptionsProvider>

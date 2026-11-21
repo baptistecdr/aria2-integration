@@ -290,5 +290,78 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "Aucun serveur disponible pour capturer les téléchargements."
+  },
+  "managedByPolicy": {
+    "message": "Défini par votre organisation."
+  },
+  "managedServersByPolicy": {
+    "message": "Les serveurs sont définis par votre organisation : ils ne peuvent pas être modifiés."
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "La capture des téléchargements est définie par votre organisation."
+  },
+  "popupQuickOptions": {
+    "message": "Options rapides"
+  },
+  "popupDownloadSpeed": {
+    "message": "Vitesse de téléchargement"
+  },
+  "popupUploadSpeed": {
+    "message": "Vitesse d'envoi"
+  },
+  "popupLoading": {
+    "message": "Chargement…"
+  },
+  "taskPause": {
+    "message": "Mettre en pause $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskResume": {
+    "message": "Reprendre $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskRetry": {
+    "message": "Réessayer $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskDelete": {
+    "message": "Supprimer $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskProgress": {
+    "message": "Progression de $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsAddServer": {
+    "message": "Ajouter un serveur"
+  },
+  "serverOptionsShowSecret": {
+    "message": "Afficher le secret"
+  },
+  "extensionOptionsMinimumFileSizeUnit": {
+    "message": "Unité de la taille minimum"
+  },
+  "extensionOptionsUseCompleteFilePathHelpLabel": {
+    "message": "Aide sur le chemin complet du fichier"
   }
 }

@@ -1,47 +1,32 @@
-import Aria2 from "@baptistecdr/aria2";
-import { filesize } from "filesize";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import i18n from "@/i18n";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import i18n from "@/platform/i18n";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 import ServerTask from "@/popup/components/server-task";
-import { Task } from "@/popup/models/task";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
-import { isOsAndroid } from "@/aria2-extension";
+import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
-import { defaultGlobalStat, getGlobalStat } from "@/popup/models/global-stat";
-
-const FILESIZE_BASE = { base: 2 } as const;
-const POLL_INTERVAL_MS = 1000; // 1 second
+import Speeds from "@/popup/components/speeds";
+import { useAria2Tasks } from "@/popup/hooks/use-aria2-tasks";
+import { createAria2Client } from "@/services/aria2-client";
+import { runWithNotification } from "@/services/notify";
 
 interface Props {
   server: Server;
 }
 
-type TaskGroups = [Task[][], Task[][], Task[][]];
-
-async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: number): Promise<Task[]> {
-  const result = (await aria2server.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]])) as TaskGroups;
-  return Task.parseMany(result.flatMap((tasks) => (Array.isArray(tasks) ? tasks : [])));
-}
-
 function ServerTab({ server }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [aria2] = useState(new Aria2(server));
-  const [globalStat, setGlobalStat] = useState(defaultGlobalStat());
-  const [tasks, setTasks] = useState<Task[]>([]);
+  const [aria2] = useState(() => createAria2Client(server));
+  const { loading, failed, globalStat, tasks } = useAria2Tasks(aria2);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
-  const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
   const [isAndroid, setIsAndroid] = useState(false);
 
-  const onClickPurge = () => {
-    aria2.call("aria2.purgeDownloadResult");
-  };
+  const onClickPurge = () => runWithNotification(() => aria2.purgeDownloadResult(), {});
 
   const toggleAddTask = useCallback(() => {
     setShowAddTask((prev) => !prev);
@@ -53,38 +38,9 @@ function ServerTab({ server }: Props) {
     setShowAddTask(false);
   }, []);
 
-  const updateTasks = useCallback(async () => {
-    try {
-      const stat = await getGlobalStat(aria2);
-      const fetchedTasks = await getTasks(aria2, stat.numWaiting, stat.numStopped);
-      setGlobalStat(stat);
-      setTasks(fetchedTasks);
-    } catch (error) {
-      console.error(error);
-      setDefaultMessage(i18n("serverError"));
-    }
-    setLoading(false);
-  }, [aria2]);
-
   useEffect(() => {
-    let cancelled = false;
-    let timeoutId: number | undefined;
-
-    const poll = async () => {
-      await updateTasks();
-      if (!cancelled) {
-        timeoutId = window.setTimeout(poll, POLL_INTERVAL_MS);
-      }
-    };
-
-    isOsAndroid().then(setIsAndroid);
-    poll();
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-    };
-  }, [updateTasks]);
+    void isOsAndroid().then(setIsAndroid);
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -96,19 +52,25 @@ function ServerTab({ server }: Props) {
     <Container fluid>
       <Row>
         <Col xs={6} className="align-self-baseline text-start stats">
-          <i className="bi-arrow-down" /> {filesize(globalStat.downloadSpeed, FILESIZE_BASE)}/s - <i className="bi-arrow-up" />{" "}
-          {filesize(globalStat.uploadSpeed, FILESIZE_BASE)}/s
+          <Speeds downloadSpeed={globalStat.downloadSpeed} uploadSpeed={globalStat.uploadSpeed} />
         </Col>
         <Col xs={6} className="align-self-baseline text-end">
-          <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
+          <Button variant="primary" size="sm" className="btn-left" aria-expanded={showAddTask} onClick={toggleAddTask}>
             {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
           </Button>
           <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
             {i18n("serverPurge")}
           </Button>
           {!isAndroid && (
-            <Button variant="secondary" size="sm" className="btn-right" aria-label="quick-options" onClick={toggleQuickOptions}>
-              {showQuickOptions ? <i className="bi-caret-left" /> : <i className="bi-gear" />}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="btn-right"
+              aria-label={i18n("popupQuickOptions")}
+              aria-expanded={showQuickOptions}
+              onClick={toggleQuickOptions}
+            >
+              {showQuickOptions ? <i className="bi-caret-left" aria-hidden="true" /> : <i className="bi-gear" aria-hidden="true" />}
             </Button>
           )}
         </Col>
@@ -119,13 +81,21 @@ function ServerTab({ server }: Props) {
       {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
       {showQuickOptions && <ServerQuickOptions server={server} />}
       {showTaskList && tasks.length === 0 && (
-        <Row>
+        // A status, so that screen readers announce when the server becomes unreachable.
+        <Row role="status">
           <Col xs={12}>
-            <em>{defaultMessage}</em>
+            <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
           </Col>
         </Row>
       )}
-      {showTaskList && tasks.map((task) => <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />)}
+      {showTaskList && tasks.length > 0 && (
+        // A list, so that screen readers tell how many downloads there are and move from one to the next.
+        <ul className="list-unstyled mb-0">
+          {tasks.map((task) => (
+            <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />
+          ))}
+        </ul>
+      )}
     </Container>
   );
 }

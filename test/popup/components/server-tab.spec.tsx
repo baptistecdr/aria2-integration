@@ -1,25 +1,26 @@
-import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
+import { type Aria2Client, createAria2Client } from "@/services/aria2-client";
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
 }));
 
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn(function (this: Aria2) {
-    this.call = vi.fn().mockResolvedValue({
-      downloadSpeed: "1048576",
-      uploadSpeed: "1048576",
-      numActive: "0",
-      numWaiting: "0",
-      numStopped: "0",
-      numStoppedTotal: "0",
-    });
-    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
-  }),
+vi.mock("@/services/aria2-client", () => ({
+  createAria2Client: vi.fn(),
 }));
+
+const globalStat = { downloadSpeed: 1048576, uploadSpeed: 1048576, numActive: 0, numWaiting: 0, numStopped: 0, numStoppedTotal: 0 };
+
+function fakeClient(overrides: Partial<Aria2Client> = {}) {
+  return {
+    getGlobalStat: vi.fn().mockResolvedValue(globalStat),
+    getTasks: vi.fn().mockResolvedValue([]),
+    purgeDownloadResult: vi.fn().mockResolvedValue("OK"),
+    ...overrides,
+  } as unknown as Aria2Client;
+}
 vi.mock("filesize", () => ({
   filesize: vi.fn(() => "1 MB"),
 }));
@@ -30,7 +31,7 @@ vi.mock("@/popup/components/server-quick-options", () => ({
   default: () => <div>ServerQuickOptions</div>,
 }));
 vi.mock("@/popup/components/server-task", () => ({
-  default: ({ task }: any) => <div>ServerTask {task.gid}</div>,
+  default: ({ task }: any) => <li>ServerTask {task.gid}</li>,
 }));
 
 const server = { name: "Server1" };
@@ -38,6 +39,7 @@ const server = { name: "Server1" };
 describe("ServerTab", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient());
   });
 
   it("shows stats and buttons after loading", async () => {
@@ -62,42 +64,72 @@ describe("ServerTab", () => {
     render(<ServerTab server={server as any} />);
     await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument(), { timeout: 5000 });
 
-    fireEvent.click(screen.getByRole("button", { name: "quick-options" }));
+    fireEvent.click(screen.getByRole("button", { name: "Translated: popupQuickOptions" }));
 
     expect(screen.getByText("ServerQuickOptions")).toBeInTheDocument();
   });
 
-  it("calls aria2.purgeDownloadResult when Purge button is clicked", async () => {
-    const mockCall = vi.fn().mockResolvedValue({
-      downloadSpeed: "1048576",
-      uploadSpeed: "1048576",
-      numActive: "0",
-      numWaiting: "0",
-      numStopped: "0",
-      numStoppedTotal: "0",
-    });
-    vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
-      this.call = mockCall;
-      this.multicall = vi.fn().mockResolvedValue([[], [], []]);
-    });
+  it("purges the finished downloads when Purge button is clicked", async () => {
+    const client = fakeClient();
+    vi.mocked(createAria2Client).mockReturnValue(client);
     render(<ServerTab server={server as any} />);
     await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button", { name: /Translated: serverPurge/ }));
-    expect(mockCall).toHaveBeenCalledWith("aria2.purgeDownloadResult");
+    expect(client.purgeDownloadResult).toHaveBeenCalled();
+  });
+
+  it("shows the tasks of the server", async () => {
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getTasks: vi.fn().mockResolvedValue([{ gid: "gid-1" }, { gid: "gid-2" }]) }));
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByText("ServerTask gid-1")).toBeInTheDocument());
+    expect(screen.getByText("ServerTask gid-2")).toBeInTheDocument();
   });
 
   it("shows error message when server call fails", async () => {
-    const mockCall = vi.fn().mockRejectedValue(new Error("Connection failed"));
-    const mockMulticall = vi.fn().mockRejectedValue(new Error("Connection failed"));
-    vi.mocked(Aria2).mockImplementation(function (this: Aria2) {
-      this.call = mockCall;
-      this.multicall = mockMulticall;
-    });
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getGlobalStat: vi.fn().mockRejectedValue(new Error("Connection failed")) }));
 
     render(<ServerTab server={server as any} />);
 
     await waitFor(() => expect(screen.getByText(/Translated: serverError/)).toBeInTheDocument());
 
     expect(screen.queryByText(/Translated: serverNoTasks/)).not.toBeInTheDocument();
+  });
+
+  it("tells screen readers which panel the toggle buttons show", async () => {
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
+    const quickOptions = screen.getByRole("button", { name: "Translated: popupQuickOptions" });
+    const add = screen.getByRole("button", { name: /Translated: serverAdd/ });
+
+    expect(quickOptions).toHaveAttribute("aria-expanded", "false");
+    expect(add).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(quickOptions);
+    expect(quickOptions).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("announces the loading state", () => {
+    render(<ServerTab server={server as any} />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Translated: popupLoading");
+  });
+
+  it("lists the tasks for screen readers", async () => {
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getTasks: vi.fn().mockResolvedValue([{ gid: "gid-1" }, { gid: "gid-2" }]) }));
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByRole("list")).toBeInTheDocument());
+  });
+
+  it("announces when the server can't be reached", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getGlobalStat: vi.fn().mockRejectedValue(new Error("Connection failed")) }));
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Translated: serverError"));
   });
 });

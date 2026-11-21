@@ -1,26 +1,25 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useExtensionOptions } from "@/extension-options-provider";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
-import { ServerIncognitoModeOptions } from "@/models/server-incognito-mode-options";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
+import { ServerIncognitoModeOptions } from "@/domain/server-incognito-mode-options";
 import ServerOptionsTab from "@/options/components/server-options-tab";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
-vi.mock("@/i18n", () => ({
+vi.mock("@/platform/i18n", () => ({
   default: (key: string) => key,
 }));
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
-  setExtensionOptions: vi.fn(),
 }));
 
-const addServerSpy = vi.spyOn(ExtensionOptions, "addServer");
+const addServerSpy = vi.spyOn(ExtensionOptions, "withServer");
 
 describe("ServerOptionsTab", () => {
   const extensionOptions = ExtensionOptions.create();
-  const setExtensionOptions = vi.fn();
+  const updateExtensionOptions = vi.fn();
   const server = Server.create({
     uuid: "test-uuid",
     name: "Test Server",
@@ -36,12 +35,13 @@ describe("ServerOptionsTab", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    addServerSpy.mockResolvedValue(extensionOptions);
+    updateExtensionOptions.mockImplementation(async (updater) => updater(extensionOptions));
 
     vi.mocked(useExtensionOptions).mockReturnValue({
       extensionOptions,
-      setExtensionOptions,
-    } as any);
+      updateExtensionOptions,
+      managedOptions: new Set(),
+    });
   });
 
   it("renders with server data", async () => {
@@ -89,7 +89,7 @@ describe("ServerOptionsTab", () => {
     expect(passwordInput).toHaveAttribute("type", "password");
   });
 
-  it("calls addServer when form is submitted with valid data", async () => {
+  it("saves the server when form is submitted with valid data", async () => {
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     await userEvent.clear(screen.getByLabelText("serverOptionsName"));
@@ -125,7 +125,7 @@ describe("ServerOptionsTab", () => {
       }),
     );
 
-    expect(setExtensionOptions).toHaveBeenCalled();
+    expect(updateExtensionOptions).toHaveBeenCalled();
   });
 
   it("formats path with a leading slash when it is missing", async () => {
@@ -238,7 +238,7 @@ describe("ServerOptionsTab", () => {
   });
 
   it("shows error alert when server save fails", async () => {
-    addServerSpy.mockRejectedValueOnce(new Error("Save failed"));
+    updateExtensionOptions.mockRejectedValueOnce(new Error("Save failed"));
 
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
@@ -246,7 +246,7 @@ describe("ServerOptionsTab", () => {
     await userEvent.click(saveButton);
 
     expect(screen.getByText("serverOptionsError")).toBeInTheDocument();
-    expect(setExtensionOptions).not.toHaveBeenCalled();
+    expect(screen.queryByText("serverOptionsSuccess")).not.toBeInTheDocument();
   });
 
   it("shows empty URL when server host is empty", async () => {
@@ -405,5 +405,94 @@ describe("ServerOptionsTab", () => {
         }),
       }),
     );
+  });
+
+  it("shows the server again when it changes elsewhere, keeping the confirmation", async () => {
+    const { rerender } = render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+    await userEvent.click(screen.getByText("serverOptionsSave"));
+    expect(await screen.findByText("serverOptionsSuccess")).toBeInTheDocument();
+
+    rerender(<ServerOptionsTab server={Server.create({ ...server, name: "Renamed" })} deleteServer={deleteServer} />);
+
+    expect(screen.getByLabelText("serverOptionsName")).toHaveValue("Renamed");
+    expect(screen.getByText("serverOptionsSuccess")).toBeInTheDocument();
+  });
+
+  it("shows the server read-only when the policy sets the servers", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByText("managedServersByPolicy")).toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeDisabled();
+    expect(screen.getByLabelText("serverOptionsHost")).toBeDisabled();
+    expect(screen.queryByText("serverOptionsSave")).not.toBeInTheDocument();
+    expect(screen.queryByText("serverOptionsDelete")).not.toBeInTheDocument();
+  });
+
+  it("still copies the server uuid when the policy sets the servers", async () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+    const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const copyButton = screen.getByRole("button", { name: "serverOptionsCopyUuid" });
+    expect(copyButton).toBeEnabled();
+    await user.click(copyButton);
+
+    expect(writeText).toHaveBeenCalledWith("test-uuid");
+  });
+
+  it("lets the server be edited when the policy does not set the servers", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["captureDownloads"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.queryByText("managedServersByPolicy")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("serverOptionsName")).toBeEnabled();
+    expect(screen.getByText("serverOptionsSave")).toBeInTheDocument();
+  });
+
+  it("tells screen readers whether the secret is shown", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+    const toggle = screen.getByRole("button", { name: "serverOptionsShowSecret" });
+
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("reads the descriptions of the fields with them", () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByLabelText("serverOptionsSecret")).toHaveAccessibleDescription("serverOptionsSecretDescription");
+    expect(screen.getByLabelText("serverOptionsUuid")).toHaveAccessibleDescription("serverOptionsUuidDescription");
+  });
+
+  it("tells apart the RPC parameters used in private windows", () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const incognito = screen.getByRole("group", { name: "serverOptionsIncognitoMode" });
+    const [rpcParameters, incognitoRpcParameters] = screen.getAllByLabelText("serverOptionsRpcParameters");
+    expect(incognito).toContainElement(incognitoRpcParameters);
+    expect(incognito).not.toContainElement(rpcParameters);
+  });
+
+  it("explains why a required field is invalid", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    await userEvent.clear(screen.getByLabelText("serverOptionsName"));
+    await userEvent.click(screen.getByText("serverOptionsSave"));
+
+    expect(screen.getAllByText("serverOptionsInvalidFeedback").length).toBeGreaterThan(0);
+    expect(updateExtensionOptions).not.toHaveBeenCalled();
+  });
+
+  it("describes the read-only server form with the policy notice", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByRole("group", { description: /managedServersByPolicy/ })).toBeDisabled();
   });
 });
