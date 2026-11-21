@@ -9,6 +9,8 @@ import { join } from "node:path";
 
 const DEFAULT_FIREFOX_PATH = process.platform === "darwin" ? "/Applications/Firefox.app/Contents/MacOS/firefox" : "firefox";
 const STARTUP_TIMEOUT_MS = 30_000;
+// How long close() waits for Firefox to quit before killing it.
+const CLOSE_TIMEOUT_MS = 5_000;
 
 export interface FirefoxOptions {
   // Extension id -> moz-extension:// host, so that the extension pages have a known URL.
@@ -41,6 +43,13 @@ export class Firefox {
     // Where Firefox saves the downloads it is not asked about.
     readonly downloadDirectory: string,
   ) {
+    // Firefox crashed or quit: the requests still waiting for an answer would never get one.
+    socket.onclose = () => {
+      for (const pending of this.pending.values()) {
+        pending.reject(new Error("Firefox connection closed"));
+      }
+      this.pending.clear();
+    };
     socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       const pending = this.pending.get(message.id);
@@ -79,17 +88,31 @@ export class Firefox {
     );
 
     const port = await freePort();
+    const firefoxPath = process.env.FIREFOX_PATH ?? DEFAULT_FIREFOX_PATH;
     const process_ = spawn(
-      process.env.FIREFOX_PATH ?? DEFAULT_FIREFOX_PATH,
+      firefoxPath,
       ["-headless", "-no-remote", "-profile", profile, `--remote-debugging-port=${port}`],
       // System access lets the tests stop the background script like Firefox does when it is idle or at startup.
       { stdio: "ignore", env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: "1" } },
     );
+    // Stops waiting for Firefox as soon as it can't run or quits, instead of retrying until the timeout.
+    let startFailure: Error | undefined;
+    process_.once("error", (error) => {
+      startFailure = new Error(`Cannot run Firefox at ${firefoxPath} (${error.message}): set FIREFOX_PATH to the Firefox executable.`);
+    });
+    process_.once("exit", (code, signal) => {
+      startFailure ??= new Error(`Firefox quit while starting (${signal ?? `exit code ${code}`}).`);
+    });
 
     const deadline = Date.now() + STARTUP_TIMEOUT_MS;
     for (;;) {
+      if (startFailure !== undefined) {
+        rmSync(workDirectory, { recursive: true, force: true });
+        throw startFailure;
+      }
+      let socket: WebSocket | undefined;
       try {
-        const socket = await new Promise<WebSocket>((resolve, reject) => {
+        socket = await new Promise<WebSocket>((resolve, reject) => {
           const ws = new WebSocket(`ws://127.0.0.1:${port}/session`);
           ws.onopen = () => resolve(ws);
           ws.onerror = () => reject(new Error("Firefox is not listening yet"));
@@ -98,8 +121,11 @@ export class Firefox {
         await firefox.send("session.new", { capabilities: {} });
         return firefox;
       } catch (error) {
+        // The connection is retried from scratch.
+        socket?.close();
         if (Date.now() > deadline) {
           process_.kill();
+          rmSync(workDirectory, { recursive: true, force: true });
           throw new Error(`Firefox did not start: ${error}`);
         }
         await new Promise((r) => setTimeout(r, 200));
@@ -154,9 +180,14 @@ export class Firefox {
 
   async close(): Promise<void> {
     this.socket.close();
-    const exited = new Promise((resolve) => this.process.once("exit", resolve));
-    this.process.kill();
-    await exited;
+    // Firefox may have crashed already: its exit event won't come again.
+    if (this.process.exitCode === null && this.process.signalCode === null) {
+      const exited = new Promise((resolve) => this.process.once("exit", resolve));
+      this.process.kill();
+      const timeoutId = setTimeout(() => this.process.kill("SIGKILL"), CLOSE_TIMEOUT_MS);
+      await exited;
+      clearTimeout(timeoutId);
+    }
     rmSync(this.workDirectory, { recursive: true, force: true });
   }
 }
