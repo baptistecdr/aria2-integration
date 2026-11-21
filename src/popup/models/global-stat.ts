@@ -1,18 +1,14 @@
 import type Aria2 from "@baptistecdr/aria2";
 import * as z from "zod/mini";
-
-const parseIntStr = z.pipe(
-  z.string(),
-  z.transform((v) => Number.parseInt(v, 10)),
-);
+import { intFromString } from "@/models/zod";
 
 const GlobalStatSchema = z.object({
-  downloadSpeed: parseIntStr,
-  uploadSpeed: parseIntStr,
-  numActive: parseIntStr,
-  numWaiting: parseIntStr,
-  numStopped: parseIntStr,
-  numStoppedTotal: parseIntStr,
+  downloadSpeed: intFromString,
+  uploadSpeed: intFromString,
+  numActive: intFromString,
+  numWaiting: intFromString,
+  numStopped: intFromString,
+  numStoppedTotal: intFromString,
 });
 
 export type GlobalStat = z.infer<typeof GlobalStatSchema>;

@@ -179,6 +179,22 @@ describe("Capture Download Item", () => {
       excludedFileTypes: ["txt"],
       expected: false,
     },
+    {
+      description: "should treat file types literally instead of as regular expressions",
+      url: "https://example.com/file.cpp",
+      referer: "",
+      filename: "",
+      excludedFileTypes: ["c++", ".z.p"],
+      expected: true,
+    },
+    {
+      description: "should not capture download item if its file type contains regular expression characters",
+      url: "https://example.com/file.c++",
+      referer: "",
+      filename: "",
+      excludedFileTypes: ["c++"],
+      expected: false,
+    },
   ])("$description", ({ url, referer, filename, excludedFileTypes, expected }) => {
     const extensionOptions = ExtensionOptions.create({ captureServer: "captureServer", excludedFileTypes });
 

@@ -31,7 +31,7 @@ async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: numb
 
 function ServerTab({ server }: Props) {
   const [loading, setLoading] = useState(true);
-  const [aria2] = useState(new Aria2(server));
+  const [aria2] = useState(() => new Aria2(server));
   const [globalStat, setGlobalStat] = useState(defaultGlobalStat());
   const [tasks, setTasks] = useState<Task[]>([]);
   const [showAddTask, setShowAddTask] = useState(false);

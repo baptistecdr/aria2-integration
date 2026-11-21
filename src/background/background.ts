@@ -125,7 +125,8 @@ export function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, i
     let excludedProtocols = extensionOptions.excludedProtocols.map((p) => `${p}:`);
     excludedProtocols.push("blob:", "data:", "file:");
     excludedProtocols = [...new Set(excludedProtocols)];
-    const excludedFileTypesRegExp = new RegExp(`${extensionOptions.excludedFileTypes.join("$|")}$`);
+    // File types are compared as plain suffixes: they come from the user and must not be interpreted as regular expressions.
+    const hasExcludedFileType = (path: string) => extensionOptions.excludedFileTypes.some((fileType) => path.endsWith(fileType));
 
     // @ts-expect-error finalUrl exists only on Chromium
     const url = new URL(item.finalUrl ?? item.url);
@@ -147,12 +148,7 @@ export function downloadItemMustBeCaptured(extensionOptions: ExtensionOptions, i
       return false;
     }
 
-    return !(
-      extensionOptions.excludedFileTypes.length > 0 &&
-      (excludedFileTypesRegExp.test(url.pathname) ||
-        (refererURL && excludedFileTypesRegExp.test(refererURL.pathname)) ||
-        excludedFileTypesRegExp.test(item.filename))
-    );
+    return !(hasExcludedFileType(url.pathname) || (refererURL !== null && hasExcludedFileType(refererURL.pathname)) || hasExcludedFileType(item.filename));
   }
   return false;
 }

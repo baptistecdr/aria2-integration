@@ -1,4 +1,5 @@
 import * as z from "zod/mini";
+import { intFromString } from "@/models/zod";
 import { FileSchema } from "@/popup/models/file";
 import { basename } from "@/stdlib";
 
@@ -19,22 +20,17 @@ const BittorrentSchema = z.object({
   ),
 });
 
-const parseIntStr = z.pipe(
-  z.string(),
-  z.transform((v) => Number.parseInt(v, 10)),
-);
-
 const TaskSchema = z.object({
   bittorrent: z.optional(BittorrentSchema),
-  completedLength: parseIntStr,
-  connections: parseIntStr,
-  downloadSpeed: parseIntStr,
+  completedLength: intFromString,
+  connections: intFromString,
+  downloadSpeed: intFromString,
   files: z.array(FileSchema),
   gid: z.string(),
   status: z.enum(TaskStatus),
-  totalLength: parseIntStr,
-  uploadLength: parseIntStr,
-  uploadSpeed: parseIntStr,
+  totalLength: intFromString,
+  uploadLength: intFromString,
+  uploadSpeed: intFromString,
   dir: z.string(),
 });
 
