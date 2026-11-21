@@ -140,4 +140,21 @@ describe("ExtensionOptionsTab", () => {
 
     expect(screen.queryByText("managedByPolicy")).not.toBeInTheDocument();
   });
+
+  it("reads the description of a field with it, and the policy hint when the policy sets it", () => {
+    showOptions(current, ["excludedSites", "theme"]);
+
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.getByLabelText("extensionOptionsExcludeSites")).toHaveAccessibleDescription("extensionOptionsExcludeSitesDescription managedByPolicy");
+    expect(screen.getByLabelText("extensionOptionsExcludeProtocols")).toHaveAccessibleDescription("extensionOptionsExcludeProtocolsDescription");
+    expect(screen.getByRole("group", { name: "extensionOptionsTheme" })).toHaveAccessibleDescription("managedByPolicy");
+  });
+
+  it("labels the notification checkboxes and the theme radio buttons as groups", () => {
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.getByRole("group", { name: "extensionOptionsNotify" })).toContainElement(screen.getByLabelText("extensionOptionsNotifyErrorOccurs"));
+    expect(screen.getByRole("group", { name: "extensionOptionsTheme" })).toContainElement(screen.getByLabelText("extensionOptionsThemeDark"));
+  });
 });

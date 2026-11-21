@@ -461,4 +461,38 @@ describe("ServerOptionsTab", () => {
     await userEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-pressed", "true");
   });
+
+  it("reads the descriptions of the fields with them", () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByLabelText("serverOptionsSecret")).toHaveAccessibleDescription("serverOptionsSecretDescription");
+    expect(screen.getByLabelText("serverOptionsUuid")).toHaveAccessibleDescription("serverOptionsUuidDescription");
+  });
+
+  it("tells apart the RPC parameters used in private windows", () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const incognito = screen.getByRole("group", { name: "serverOptionsIncognitoMode" });
+    const [rpcParameters, incognitoRpcParameters] = screen.getAllByLabelText("serverOptionsRpcParameters");
+    expect(incognito).toContainElement(incognitoRpcParameters);
+    expect(incognito).not.toContainElement(rpcParameters);
+  });
+
+  it("explains why a required field is invalid", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    await userEvent.clear(screen.getByLabelText("serverOptionsName"));
+    await userEvent.click(screen.getByText("serverOptionsSave"));
+
+    expect(screen.getAllByText("serverOptionsInvalidFeedback").length).toBeGreaterThan(0);
+    expect(updateExtensionOptions).not.toHaveBeenCalled();
+  });
+
+  it("describes the read-only server form with the policy notice", () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    expect(screen.getByRole("group", { description: /managedServersByPolicy/ })).toBeDisabled();
+  });
 });
