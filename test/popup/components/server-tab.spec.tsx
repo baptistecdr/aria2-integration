@@ -31,7 +31,7 @@ vi.mock("@/popup/components/server-quick-options", () => ({
   default: () => <div>ServerQuickOptions</div>,
 }));
 vi.mock("@/popup/components/server-task", () => ({
-  default: ({ task }: any) => <div>ServerTask {task.gid}</div>,
+  default: ({ task }: any) => <li>ServerTask {task.gid}</li>,
 }));
 
 const server = { name: "Server1" };
@@ -114,5 +114,22 @@ describe("ServerTab", () => {
     render(<ServerTab server={server as any} />);
 
     expect(screen.getByRole("status")).toHaveTextContent("Translated: popupLoading");
+  });
+
+  it("lists the tasks for screen readers", async () => {
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getTasks: vi.fn().mockResolvedValue([{ gid: "gid-1" }, { gid: "gid-2" }]) }));
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByRole("list")).toBeInTheDocument());
+  });
+
+  it("announces when the server can't be reached", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    vi.mocked(createAria2Client).mockReturnValue(fakeClient({ getGlobalStat: vi.fn().mockRejectedValue(new Error("Connection failed")) }));
+
+    render(<ServerTab server={server as any} />);
+
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Translated: serverError"));
   });
 });
