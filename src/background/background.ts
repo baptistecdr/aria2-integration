@@ -10,26 +10,26 @@ import i18n from "@/platform/i18n";
 import { showNotification } from "@/platform/notifications";
 import { findCurrentTab } from "@/platform/tabs";
 import { captureTorrentFromURL, captureURL } from "@/services/capture";
+import { createOptionsStore } from "@/services/options-store";
 
 export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
 
-let extensionOptions = ExtensionOptions.create();
+const optionsStore = createOptionsStore();
+let extensionOptions = optionsStore.get();
 let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
+optionsStore.subscribe(async (options) => {
+  extensionOptions = options;
+  connections = createConnections(extensionOptions);
+  await createContextMenus(extensionOptions);
+});
+
 // The background page can be woken up by an event (e.g. a download started right after the browser restarts) before
 // the options are loaded from storage: every listener relying on the options must wait for this promise first.
-const extensionOptionsLoaded: Promise<void> = ExtensionOptions.fromStorage()
-  .then(async (extOptions) => {
-    extensionOptions = extOptions;
-    connections = createConnections(extensionOptions);
-    await createContextMenus(extensionOptions);
-  })
-  .catch((error) => {
-    console.error(error);
-  });
+const extensionOptionsLoaded = optionsStore.ready();
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
@@ -86,17 +86,6 @@ browser.runtime.onInstalled.addListener(async (details) => {
     await browser.runtime.openOptionsPage();
   }
 });
-
-browser.storage.onChanged.addListener(listenerStorageOnChanged);
-
-export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
-  await extensionOptionsLoaded;
-  if (changes.options) {
-    extensionOptions = await ExtensionOptions.fromStorage();
-    connections = createConnections(extensionOptions);
-    await createContextMenus(extensionOptions);
-  }
-}
 
 export function formatCookies(cookies: Cookies.Cookie[]) {
   return cookies.reduce((acc, cookie) => {
@@ -310,8 +299,8 @@ export async function listenerOnCommand(command: string) {
       }
       [newCaptureServer] = serverKeys;
     }
-    await ExtensionOptions.toStorage(
-      ExtensionOptions.withOverrides(extensionOptions, {
+    await optionsStore.update((options) =>
+      ExtensionOptions.withOverrides(options, {
         captureServer: newCaptureServer,
         captureDownloads: newCaptureDownloads,
       }),

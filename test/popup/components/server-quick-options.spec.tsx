@@ -5,8 +5,8 @@ import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 
-const { mockSetExtensionOptions, mockUseExtensionOptions } = vi.hoisted(() => ({
-  mockSetExtensionOptions: vi.fn(),
+const { mockUpdateExtensionOptions, mockUseExtensionOptions } = vi.hoisted(() => ({
+  mockUpdateExtensionOptions: vi.fn(),
   mockUseExtensionOptions: vi.fn(),
 }));
 
@@ -14,7 +14,6 @@ vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: mockUseExtensionOptions,
 }));
 
-const toStorageSpy = vi.spyOn(ExtensionOptions, "toStorage").mockResolvedValue(ExtensionOptions.create());
 const withOverridesSpy = vi.spyOn(ExtensionOptions, "withOverrides").mockImplementation((options, overrides) => ({ ...options, ...overrides }));
 
 const CAPTURE_DOWNLOADS_LABEL = /extensionOptionsCaptureDownloads/i;
@@ -26,12 +25,14 @@ describe("ServerQuickOptions", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    // Applies the update to the options currently shown, like the store does with the stored ones.
+    mockUpdateExtensionOptions.mockImplementation(async (updater) => updater(mockUseExtensionOptions().extensionOptions));
     server = Server.create({ uuid: "server-1", name: "Test Server" });
     extensionOptions = ExtensionOptions.create({ servers: { [server.uuid]: server } });
 
     mockUseExtensionOptions.mockReturnValue({
       extensionOptions,
-      setExtensionOptions: mockSetExtensionOptions,
+      updateExtensionOptions: mockUpdateExtensionOptions,
     });
   });
 
@@ -54,7 +55,7 @@ describe("ServerQuickOptions", () => {
       const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -75,7 +76,7 @@ describe("ServerQuickOptions", () => {
           captureServer: server.uuid,
           captureDownloads: true,
         });
-        expect(toStorageSpy).toHaveBeenCalled();
+        expect(mockUpdateExtensionOptions).toHaveBeenCalled();
       });
     });
 
@@ -83,7 +84,7 @@ describe("ServerQuickOptions", () => {
       const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       const user = userEvent.setup();
@@ -97,7 +98,7 @@ describe("ServerQuickOptions", () => {
           captureServer: "",
           captureDownloads: false,
         });
-        expect(toStorageSpy).toHaveBeenCalled();
+        expect(mockUpdateExtensionOptions).toHaveBeenCalled();
       });
     });
   });
@@ -114,7 +115,7 @@ describe("ServerQuickOptions", () => {
       const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -132,7 +133,7 @@ describe("ServerQuickOptions", () => {
       });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCompletePath,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -150,7 +151,7 @@ describe("ServerQuickOptions", () => {
       });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -163,7 +164,7 @@ describe("ServerQuickOptions", () => {
       const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       const user = userEvent.setup();
@@ -176,8 +177,7 @@ describe("ServerQuickOptions", () => {
         expect(withOverridesSpy).toHaveBeenCalledWith(optionsWithCapture, {
           useCompleteFilePath: true,
         });
-        expect(toStorageSpy).toHaveBeenCalled();
-        expect(mockSetExtensionOptions).toHaveBeenCalled();
+        expect(mockUpdateExtensionOptions).toHaveBeenCalled();
       });
     });
   });
@@ -189,7 +189,7 @@ describe("ServerQuickOptions", () => {
 
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);
@@ -202,13 +202,13 @@ describe("ServerQuickOptions", () => {
       // Mock the updated options after capture is enabled
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCapture,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       await user.click(captureCheckbox);
 
       await waitFor(() => {
-        expect(mockSetExtensionOptions).toHaveBeenCalled();
+        expect(mockUpdateExtensionOptions).toHaveBeenCalled();
       });
     });
 
@@ -221,7 +221,7 @@ describe("ServerQuickOptions", () => {
       });
       mockUseExtensionOptions.mockReturnValue({
         extensionOptions: optionsWithCaptureOnDifferentServer,
-        setExtensionOptions: mockSetExtensionOptions,
+        updateExtensionOptions: mockUpdateExtensionOptions,
       });
 
       render(<ServerQuickOptions server={server} />);

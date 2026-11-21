@@ -1,9 +1,10 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ExtensionOptions } from "@/domain/extension-options";
 import Theme from "@/domain/theme";
+import { createOptionsStore, type OptionsStore } from "@/services/options-store";
 import { ExtensionOptionsProvider, useExtensionOptions } from "@/shared/ui/extension-options-provider";
 import { applyTheme } from "@/shared/ui/theme";
 
@@ -21,9 +22,9 @@ const ThemeConsumer = () => {
 };
 
 const NoopSetter = () => {
-  const { setExtensionOptions } = useExtensionOptions();
+  const { updateExtensionOptions } = useExtensionOptions();
   return (
-    <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.create())}>
+    <button type="button" onClick={() => updateExtensionOptions((options) => options)}>
       Set
     </button>
   );
@@ -51,11 +52,11 @@ const TestConsumer = () => {
 };
 
 const TestSetter = () => {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, updateExtensionOptions } = useExtensionOptions();
   return (
     <div>
       <span data-testid="theme">{extensionOptions.theme}</span>
-      <button type="button" onClick={() => setExtensionOptions(ExtensionOptions.withOverrides(extensionOptions, { theme: Theme.Dark }))}>
+      <button type="button" onClick={() => updateExtensionOptions((options) => ExtensionOptions.withOverrides(options, { theme: Theme.Dark }))}>
         Set Dark
       </button>
     </div>
@@ -63,8 +64,21 @@ const TestSetter = () => {
 };
 
 describe("extension-options-provider", () => {
+  const stores: OptionsStore[] = [];
+
+  // Each test gets its own store, created after the storage mocks are set up.
+  const newStore = () => {
+    const store = createOptionsStore();
+    stores.push(store);
+    return store;
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    for (const store of stores.splice(0)) store.dispose();
   });
 
   describe("ExtensionOptionsProvider", () => {
@@ -72,7 +86,7 @@ describe("extension-options-provider", () => {
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <div data-testid="child">Hello</div>
         </ExtensionOptionsProvider>,
       );
@@ -87,7 +101,7 @@ describe("extension-options-provider", () => {
       });
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestConsumer />
         </ExtensionOptionsProvider>,
       );
@@ -102,7 +116,7 @@ describe("extension-options-provider", () => {
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestConsumer />
         </ExtensionOptionsProvider>,
       );
@@ -118,7 +132,7 @@ describe("extension-options-provider", () => {
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestConsumer />
         </ExtensionOptionsProvider>,
       );
@@ -134,7 +148,7 @@ describe("extension-options-provider", () => {
       const user = userEvent.setup();
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestSetter />
         </ExtensionOptionsProvider>,
       );
@@ -153,7 +167,7 @@ describe("extension-options-provider", () => {
       });
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestConsumer />
         </ExtensionOptionsProvider>,
       );
@@ -164,13 +178,13 @@ describe("extension-options-provider", () => {
       });
     });
 
-    it("should provide setExtensionOptions that updates the context value", async () => {
+    it("should provide updateExtensionOptions that saves the options and updates the context value", async () => {
       vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
 
       const user = userEvent.setup();
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <TestSetter />
         </ExtensionOptionsProvider>,
       );
@@ -184,6 +198,26 @@ describe("extension-options-provider", () => {
       await waitFor(() => {
         expect(screen.getByTestId("theme")).toHaveTextContent(Theme.Dark);
       });
+      expect(browser.storage.sync.set).toHaveBeenCalledWith({ options: expect.stringContaining(`"theme":"${Theme.Dark}"`) });
+    });
+
+    it("should update the context value when the options are changed elsewhere", async () => {
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({});
+
+      render(
+        <ExtensionOptionsProvider store={newStore()}>
+          <TestConsumer />
+        </ExtensionOptionsProvider>,
+      );
+      await waitFor(() => expect(screen.getByTestId("capture-downloads")).toHaveTextContent("false"));
+
+      // E.g. capture downloads toggled with the keyboard shortcut while the page is open.
+      const changedOptions = ExtensionOptions.serialize(ExtensionOptions.create({ captureDownloads: true }));
+      vi.mocked(browser.storage.sync.get).mockResolvedValueOnce({ options: changedOptions });
+      const onChanged = vi.mocked(browser.storage.onChanged.addListener).mock.calls.at(-1)?.[0] as (changes: object, areaName: string) => void;
+      onChanged({ options: { newValue: changedOptions } }, "sync");
+
+      await waitFor(() => expect(screen.getByTestId("capture-downloads")).toHaveTextContent("true"));
     });
 
     it("should share the same context value across multiple consumers", async () => {
@@ -193,7 +227,7 @@ describe("extension-options-provider", () => {
       });
 
       render(
-        <ExtensionOptionsProvider>
+        <ExtensionOptionsProvider store={newStore()}>
           <CaptureServerConsumer1 />
           <CaptureServerConsumer2 />
         </ExtensionOptionsProvider>,
@@ -213,7 +247,7 @@ describe("extension-options-provider", () => {
       expect(screen.getByTestId("theme")).toHaveTextContent(Theme.Auto);
     });
 
-    it("should return a no-op setExtensionOptions when used outside provider", () => {
+    it("should return a no-op updateExtensionOptions when used outside provider", () => {
       render(<NoopSetter />);
 
       // Should not throw

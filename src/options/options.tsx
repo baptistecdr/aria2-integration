@@ -17,20 +17,18 @@ function Options() {
   const tabsId = useId();
 
   const [activeTab, setActiveTab] = useState(EXTENSION_OPTIONS_TAB);
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, updateExtensionOptions } = useExtensionOptions();
 
   const addServer = async () => {
     const server = Server.create();
-    const newExtensionOptions = await ExtensionOptions.addServer(extensionOptions, server);
-    setExtensionOptions(newExtensionOptions);
+    await updateExtensionOptions((options) => ExtensionOptions.withServer(options, server));
     setActiveTab(server.uuid);
   };
 
   const deleteServer = async (server: Server) => {
-    const newExtensionOptions = await ExtensionOptions.deleteServer(extensionOptions, server);
+    const newExtensionOptions = await updateExtensionOptions((options) => ExtensionOptions.withoutServer(options, server));
     const serverKeys = Object.keys(newExtensionOptions.servers);
     const newActiveTab = serverKeys.length === 0 ? EXTENSION_OPTIONS_TAB : serverKeys[0];
-    setExtensionOptions(newExtensionOptions);
     setActiveTab(newActiveTab);
   };
 

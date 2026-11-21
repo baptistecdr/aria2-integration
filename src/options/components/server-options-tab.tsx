@@ -42,7 +42,7 @@ function serializeRpcParameters(rpcParameters: string): Record<string, string> {
 }
 
 function ServerOptionsTab({ server, deleteServer }: Props) {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { updateExtensionOptions } = useExtensionOptions();
 
   const [serverName, setServerName] = useState(server.name);
   const [serverHost, setServerHost] = useState(server.host);
@@ -78,25 +78,22 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
     const form = formEvent.currentTarget;
     if (form.checkValidity()) {
       try {
-        const newExtensionOptions = await ExtensionOptions.addServer(
-          extensionOptions,
-          Server.create({
-            uuid: server.uuid,
-            name: serverName,
-            secure: serverSecure,
-            host: serverHost,
-            port: serverPort,
-            path: serverPath,
-            secret: serverSecret,
-            rpcParameters: serializeRpcParameters(serverRpcParameters),
-            incognitoModeOptions: ServerIncognitoModeOptions.create({
-              automaticallyPurgeDownloads: serverIncognitoModeAutomaticallyPurgeDownloads,
-              overwriteRpcParameters: serverIncognitoModeOverwriteRpcParameters,
-              rpcParameters: serializeRpcParameters(serverIncognitoModeRpcParameters),
-            }),
+        const updatedServer = Server.create({
+          uuid: server.uuid,
+          name: serverName,
+          secure: serverSecure,
+          host: serverHost,
+          port: serverPort,
+          path: serverPath,
+          secret: serverSecret,
+          rpcParameters: serializeRpcParameters(serverRpcParameters),
+          incognitoModeOptions: ServerIncognitoModeOptions.create({
+            automaticallyPurgeDownloads: serverIncognitoModeAutomaticallyPurgeDownloads,
+            overwriteRpcParameters: serverIncognitoModeOverwriteRpcParameters,
+            rpcParameters: serializeRpcParameters(serverIncognitoModeRpcParameters),
           }),
-        );
-        setExtensionOptions(newExtensionOptions);
+        });
+        await updateExtensionOptions((options) => ExtensionOptions.withServer(options, updatedServer));
         setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
       } catch (error) {
         console.error(error);

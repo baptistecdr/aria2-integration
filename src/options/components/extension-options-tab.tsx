@@ -27,7 +27,7 @@ function parseFileSize(fileSizeInBytes: number): [number, number] {
 }
 
 function ExtensionOptionsTab() {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, updateExtensionOptions } = useExtensionOptions();
 
   const [isAndroid, setIsAndroid] = useState(false);
   const [captureDownloads, setCaptureDownloads] = useState(extensionOptions.captureDownloads);
@@ -108,9 +108,9 @@ function ExtensionOptionsTab() {
 
   const onClickSaveExtensionOptions = async () => {
     try {
-      const newExtensionOptions = await ExtensionOptions.toStorage(
+      await updateExtensionOptions((options) =>
         ExtensionOptions.create({
-          servers: extensionOptions.servers,
+          servers: options.servers,
           captureServer,
           captureDownloads,
           minFileSizeInBytes: minFileSize * 1024 ** minFileSizeExponent,
@@ -124,7 +124,6 @@ function ExtensionOptionsTab() {
           theme,
         }),
       );
-      setExtensionOptions(newExtensionOptions);
       setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
     } catch (error) {
       console.error(error);

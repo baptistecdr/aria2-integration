@@ -13,14 +13,13 @@ vi.mock("@/platform/i18n", () => ({
 
 vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
-  setExtensionOptions: vi.fn(),
 }));
 
-const addServerSpy = vi.spyOn(ExtensionOptions, "addServer");
+const addServerSpy = vi.spyOn(ExtensionOptions, "withServer");
 
 describe("ServerOptionsTab", () => {
   const extensionOptions = ExtensionOptions.create();
-  const setExtensionOptions = vi.fn();
+  const updateExtensionOptions = vi.fn();
   const server = Server.create({
     uuid: "test-uuid",
     name: "Test Server",
@@ -36,12 +35,12 @@ describe("ServerOptionsTab", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    addServerSpy.mockResolvedValue(extensionOptions);
+    updateExtensionOptions.mockImplementation(async (updater) => updater(extensionOptions));
 
     vi.mocked(useExtensionOptions).mockReturnValue({
       extensionOptions,
-      setExtensionOptions,
-    } as any);
+      updateExtensionOptions,
+    });
   });
 
   it("renders with server data", async () => {
@@ -89,7 +88,7 @@ describe("ServerOptionsTab", () => {
     expect(passwordInput).toHaveAttribute("type", "password");
   });
 
-  it("calls addServer when form is submitted with valid data", async () => {
+  it("saves the server when form is submitted with valid data", async () => {
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
     await userEvent.clear(screen.getByLabelText("serverOptionsName"));
@@ -125,7 +124,7 @@ describe("ServerOptionsTab", () => {
       }),
     );
 
-    expect(setExtensionOptions).toHaveBeenCalled();
+    expect(updateExtensionOptions).toHaveBeenCalled();
   });
 
   it("formats path with a leading slash when it is missing", async () => {
@@ -238,7 +237,7 @@ describe("ServerOptionsTab", () => {
   });
 
   it("shows error alert when server save fails", async () => {
-    addServerSpy.mockRejectedValueOnce(new Error("Save failed"));
+    updateExtensionOptions.mockRejectedValueOnce(new Error("Save failed"));
 
     render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
 
@@ -246,7 +245,7 @@ describe("ServerOptionsTab", () => {
     await userEvent.click(saveButton);
 
     expect(screen.getByText("serverOptionsError")).toBeInTheDocument();
-    expect(setExtensionOptions).not.toHaveBeenCalled();
+    expect(screen.queryByText("serverOptionsSuccess")).not.toBeInTheDocument();
   });
 
   it("shows empty URL when server host is empty", async () => {

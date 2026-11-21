@@ -1,4 +1,3 @@
-import browser from "webextension-polyfill";
 import * as z from "zod/mini";
 import { Server, ServerSchema } from "@/domain/server";
 import Theme from "@/domain/theme";
@@ -29,26 +28,24 @@ export const ExtensionOptions = {
     return JSON.stringify(options);
   },
 
-  async toStorage(options: ExtensionOptions): Promise<ExtensionOptions> {
-    await browser.storage.sync.set({
-      options: ExtensionOptions.serialize(options),
-    });
-    return options;
+  // Throws when the serialized options are not valid JSON or do not match the schema.
+  deserialize(serialized: string): ExtensionOptions {
+    return ExtensionOptions.create(JSON.parse(serialized));
   },
 
   withOverrides(options: ExtensionOptions, overrides: Partial<ExtensionOptions>): ExtensionOptions {
     return ExtensionOptions.create({ ...options, ...overrides });
   },
 
-  addServer(options: ExtensionOptions, server: Server): Promise<ExtensionOptions> {
-    return ExtensionOptions.toStorage(
-      ExtensionOptions.withOverrides(options, {
-        servers: { ...options.servers, [server.uuid]: server },
-      }),
-    );
+  // Adds the server, or replaces the one with the same uuid.
+  withServer(options: ExtensionOptions, server: Server): ExtensionOptions {
+    return ExtensionOptions.withOverrides(options, {
+      servers: { ...options.servers, [server.uuid]: server },
+    });
   },
 
-  deleteServer(options: ExtensionOptions, server: Server): Promise<ExtensionOptions> {
+  // Removes the server and stops capturing downloads if it was the capture server.
+  withoutServer(options: ExtensionOptions, server: Server): ExtensionOptions {
     const remainingServers = { ...options.servers };
     delete remainingServers[server.uuid];
     const overrides: Partial<ExtensionOptions> = { servers: remainingServers };
@@ -56,50 +53,24 @@ export const ExtensionOptions = {
       overrides.captureServer = "";
       overrides.captureDownloads = false;
     }
-    return ExtensionOptions.toStorage(ExtensionOptions.withOverrides(options, overrides));
+    return ExtensionOptions.withOverrides(options, overrides);
   },
 
-  async fromManagedStorage(): Promise<Partial<ExtensionOptions>> {
-    let managed: Record<string, unknown> | undefined;
-    try {
-      managed = await browser.storage.managed?.get(null);
-    } catch {
-      // Firefox rejects when no policy is configured: nothing to override.
-      return {};
-    }
-    if (!managed || Object.keys(managed).length === 0) {
-      return {};
-    }
-    try {
-      const { servers, ...rest } = managed;
-      const overrides: Record<string, unknown> = { ...rest };
-      if (servers !== undefined) {
-        // Policies can't use uuids as keys, so servers are given as a list and each one must carry its own uuid.
-        const managedServers = z.array(z.looseObject({ uuid: z.uuid() })).parse(servers) as Partial<Server>[];
-        if (new Set(managedServers.map((server) => server.uuid)).size !== managedServers.length) {
-          throw new Error("Managed servers must have unique uuids");
-        }
-        overrides.servers = Object.fromEntries(managedServers.map((server) => [server.uuid, Server.create(server)]));
+  // Converts the options set by an enterprise policy into overrides of the user options.
+  // Throws when the policy is invalid.
+  parseManagedOverrides(managed: Record<string, unknown>): Partial<ExtensionOptions> {
+    const { servers, ...rest } = managed;
+    const overrides: Record<string, unknown> = { ...rest };
+    if (servers !== undefined) {
+      // Policies can't use uuids as keys, so servers are given as a list and each one must carry its own uuid.
+      const managedServers = z.array(z.looseObject({ uuid: z.uuid() })).parse(servers) as Partial<Server>[];
+      if (new Set(managedServers.map((server) => server.uuid)).size !== managedServers.length) {
+        throw new Error("Managed servers must have unique uuids");
       }
-      const parsed = z.partial(ExtensionOptionsSchema).parse(overrides);
-      // Partial schemas still fill in defaults for missing fields: keep only the fields the policy actually sets.
-      return Object.fromEntries(Object.entries(parsed).filter(([key]) => key in overrides));
-    } catch (error) {
-      console.error("Invalid managed storage configuration", error);
-      return {};
+      overrides.servers = Object.fromEntries(managedServers.map((server) => [server.uuid, Server.create(server)]));
     }
-  },
-
-  async fromStorage(): Promise<ExtensionOptions> {
-    const storage = await browser.storage.sync.get(null);
-    let options = ExtensionOptions.create();
-    if (storage.options) {
-      try {
-        options = ExtensionOptions.create(JSON.parse(storage.options as string));
-      } catch (error) {
-        console.error(error);
-      }
-    }
-    return ExtensionOptions.withOverrides(options, await ExtensionOptions.fromManagedStorage());
+    const parsed = z.partial(ExtensionOptionsSchema).parse(overrides);
+    // Partial schemas still fill in defaults for missing fields: keep only the fields the policy actually sets.
+    return Object.fromEntries(Object.entries(parsed).filter(([key]) => key in overrides));
   },
 };

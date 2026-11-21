@@ -10,15 +10,11 @@ interface Props {
 }
 
 function ServerQuickOptions({ server }: Props) {
-  const { extensionOptions, setExtensionOptions } = useExtensionOptions();
+  const { extensionOptions, updateExtensionOptions } = useExtensionOptions();
 
   const isCapturingOnThisServer = extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid;
 
-  const updateOptions = async (overrides: Partial<ExtensionOptions>) => {
-    const updatedOptions = ExtensionOptions.withOverrides(extensionOptions, overrides);
-    await ExtensionOptions.toStorage(updatedOptions);
-    setExtensionOptions(updatedOptions);
-  };
+  const updateOptions = (overrides: Partial<ExtensionOptions>) => updateExtensionOptions((options) => ExtensionOptions.withOverrides(options, overrides));
 
   const onChangeCaptureDownloads = (e: ChangeEvent<HTMLInputElement>) =>
     updateOptions({
