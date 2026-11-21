@@ -129,10 +129,8 @@ describe("ServerTab", () => {
     render(<ServerTab server={server as any} />);
     await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
     const quickOptions = screen.getByRole("button", { name: "Translated: popupQuickOptions" });
-    const add = screen.getByRole("button", { name: /Translated: serverAdd/ });
 
     expect(quickOptions).toHaveAttribute("aria-expanded", "false");
-    expect(add).toHaveAttribute("aria-expanded", "false");
     fireEvent.click(quickOptions);
     expect(quickOptions).toHaveAttribute("aria-expanded", "true");
   });

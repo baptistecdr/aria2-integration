@@ -113,7 +113,6 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 disabled={isManaged("captureDownloads")}
                 aria-describedby={describedBy("captureDownloads")}
                 label={i18n("extensionOptionsCaptureDownloads")}
-                aria-label={i18n("extensionOptionsCaptureDownloads")}
                 onChange={onChangeCaptureDownloads}
               />
               <ManagedHint id={policyHintId("captureDownloads")} managed={isManaged("captureDownloads")} />
@@ -234,7 +233,6 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 aria-describedby={describedBy("useCompleteFilePath")}
                 checked={values.useCompleteFilePath}
                 label={i18n("extensionOptionsUseCompleteFilePath")}
-                aria-label={i18n("extensionOptionsUseCompleteFilePath")}
                 onChange={(e) => set("useCompleteFilePath", e.target.checked)}
               />
               <ManagedHint id={policyHintId("useCompleteFilePath")} managed={isManaged("useCompleteFilePath")} />
@@ -275,7 +273,6 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
           aria-describedby={describedBy("notifyUrlIsAdded")}
           onChange={(e) => set("notifyUrlIsAdded", e.target.checked)}
           label={i18n("extensionOptionsNotifyUrlIsAdded")}
-          aria-label={i18n("extensionOptionsNotifyUrlIsAdded")}
         />
         <ManagedHint id={policyHintId("notifyUrlIsAdded")} managed={isManaged("notifyUrlIsAdded")} />
         <Form.Check
@@ -285,7 +282,6 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
           aria-describedby={describedBy("notifyFileIsAdded")}
           onChange={(e) => set("notifyFileIsAdded", e.target.checked)}
           label={i18n("extensionOptionsNotifyFileIsAdded")}
-          aria-label={i18n("extensionOptionsNotifyFileIsAdded")}
         />
         <ManagedHint id={policyHintId("notifyFileIsAdded")} managed={isManaged("notifyFileIsAdded")} />
         <Form.Check
@@ -295,7 +291,6 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
           aria-describedby={describedBy("notifyErrorOccurs")}
           onChange={(e) => set("notifyErrorOccurs", e.target.checked)}
           label={i18n("extensionOptionsNotifyErrorOccurs")}
-          aria-label={i18n("extensionOptionsNotifyErrorOccurs")}
         />
         <ManagedHint id={policyHintId("notifyErrorOccurs")} managed={isManaged("notifyErrorOccurs")} />
       </Col>

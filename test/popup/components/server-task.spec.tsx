@@ -140,7 +140,7 @@ describe("ServerTask", () => {
   it.each([
     { status: TaskStatus.Active, completed: 40, color: "inherit" },
     { status: TaskStatus.Active, completed: 80, color: "white" },
-    { status: TaskStatus.Paused, completed: 80, color: "rgb(0, 0, 0)" },
+    { status: TaskStatus.Paused, completed: 80, color: "var(--bs-black)" },
     { status: TaskStatus.Complete, completed: 100, color: "white" },
   ])("writes the percentage of a $status task at $completed % in a contrasting color", ({ status, completed, color }) => {
     task.status = status;
@@ -152,12 +152,22 @@ describe("ServerTask", () => {
     expect(screen.getByText(`${completed} %`).style.color).toBe(color);
   });
 
+  it("does not add a tab stop for a file name that is not truncated", async () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    expect(screen.getByText("test-file.mp4")).not.toHaveAttribute("tabindex");
+  });
+
   it("shows the full file name when it gets the keyboard focus", async () => {
+    // jsdom has no layout: the name is truncated when its box is narrower than its text.
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(200);
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(100);
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
     await userEvent.tab();
     expect(document.activeElement).toHaveTextContent("test-file.mp4");
 
     expect(await screen.findByRole("tooltip")).toHaveTextContent("test-file.mp4");
+    vi.restoreAllMocks();
   });
 });

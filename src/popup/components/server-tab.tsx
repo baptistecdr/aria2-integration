@@ -45,53 +45,55 @@ function ServerTab({ server }: Props) {
     void isOsAndroid().then(setIsAndroid);
   }, []);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   const showTaskList = !showAddTask && !showQuickOptions;
 
+  // The status is always mounted, and only its content changes: screen readers announce a change of a live region, not
+  // one that is added with its text (the loading state, then the server becoming unreachable).
   return (
     <Container fluid>
-      <Row>
-        <Col xs={6} className="align-self-baseline text-start stats">
-          <Speeds downloadSpeed={globalStat.downloadSpeed} uploadSpeed={globalStat.uploadSpeed} />
-        </Col>
-        <Col xs={6} className="align-self-baseline text-end">
-          <Button variant="primary" size="sm" className="btn-left" aria-expanded={showAddTask} onClick={toggleAddTask}>
-            {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
-          </Button>
-          <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
-            {i18n("serverPurge")}
-          </Button>
-          {!isAndroid && (
-            <Button
-              variant="secondary"
-              size="sm"
-              className="btn-right"
-              aria-label={i18n("popupQuickOptions")}
-              aria-expanded={showQuickOptions}
-              onClick={toggleQuickOptions}
-            >
-              {showQuickOptions ? <i className="bi-caret-left" aria-hidden="true" /> : <i className="bi-gear" aria-hidden="true" />}
+      {!loading && (
+        <Row>
+          <Col xs={6} className="align-self-baseline text-start stats">
+            <Speeds downloadSpeed={globalStat.downloadSpeed} uploadSpeed={globalStat.uploadSpeed} />
+          </Col>
+          <Col xs={6} className="align-self-baseline text-end">
+            <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
+              {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
             </Button>
-          )}
-        </Col>
-        <Col xs={12}>
-          <hr className="mt-2 mb-2" />
-        </Col>
-      </Row>
-      {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
-      {showQuickOptions && <ServerQuickOptions server={server} />}
-      {showTaskList && tasks.length === 0 && (
-        // A status, so that screen readers announce when the server becomes unreachable.
-        <Row role="status">
+            <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
+              {i18n("serverPurge")}
+            </Button>
+            {!isAndroid && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="btn-right"
+                aria-label={i18n("popupQuickOptions")}
+                aria-expanded={showQuickOptions}
+                onClick={toggleQuickOptions}
+              >
+                {showQuickOptions ? <i className="bi-caret-left" aria-hidden="true" /> : <i className="bi-gear" aria-hidden="true" />}
+              </Button>
+            )}
+          </Col>
           <Col xs={12}>
-            <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
+            <hr className="mt-2 mb-2" />
           </Col>
         </Row>
       )}
-      {showTaskList && tasks.length > 0 && (
+      {!loading && showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
+      {!loading && showQuickOptions && <ServerQuickOptions server={server} />}
+      <div role="status">
+        {loading && <LoadingSpinner />}
+        {!loading && showTaskList && tasks.length === 0 && (
+          <Row>
+            <Col xs={12}>
+              <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
+            </Col>
+          </Row>
+        )}
+      </div>
+      {!loading && showTaskList && tasks.length > 0 && (
         // A list, so that screen readers tell how many downloads there are and move from one to the next.
         <ul className="list-unstyled mb-0">
           {tasks.map((task) => (

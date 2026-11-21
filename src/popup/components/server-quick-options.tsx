@@ -38,7 +38,6 @@ function ServerQuickOptions({ server }: Props) {
             checked={isCapturingOnThisServer}
             disabled={captureDownloadsManaged}
             label={i18n("extensionOptionsCaptureDownloads")}
-            aria-label={i18n("extensionOptionsCaptureDownloads")}
             onChange={onChangeCaptureDownloads}
           />
           <ManagedHint managed={captureDownloadsManaged} />
@@ -50,7 +49,6 @@ function ServerQuickOptions({ server }: Props) {
             disabled={!isCapturingOnThisServer || useCompleteFilePathManaged}
             checked={extensionOptions.useCompleteFilePath}
             label={i18n("extensionOptionsUseCompleteFilePath")}
-            aria-label={i18n("extensionOptionsUseCompleteFilePath")}
             onChange={onChangeUseCompleteFilePath}
           />
           <ManagedHint managed={useCompleteFilePathManaged} />

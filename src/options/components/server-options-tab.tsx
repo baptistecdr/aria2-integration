@@ -60,11 +60,17 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
   const [validated, setValidated] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const readOnlyNoticeId = useId();
+  const nameFeedbackId = useId();
+  const hostFeedbackId = useId();
+  const pathFeedbackId = useId();
   const uuidDescriptionId = useId();
   const secretDescriptionId = useId();
   const rpcParametersDescriptionId = useId();
   const incognitoModeLabelId = useId();
   const incognitoRpcParametersDescriptionId = useId();
+
+  // Screen readers read a hidden description too, so the feedback is only linked to a field once it is invalid.
+  const feedbackFor = (feedbackId: string, value: string) => (validated && value === "" ? feedbackId : undefined);
 
   async function onSubmitSaveServer(formEvent: SubmitEvent<HTMLFormElement>) {
     formEvent.preventDefault();
@@ -120,13 +126,29 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
         <Row className="mb-3">
           <Form.Group as={Col} controlId="form-server-name">
             <Form.Label>{i18n("serverOptionsName")}</Form.Label>
-            <Form.Control type="text" value={values.name} required onChange={(e) => set("name", e.target.value)} />
-            <Form.Control.Feedback type="invalid">{i18n("serverOptionsInvalidFeedback")}</Form.Control.Feedback>
+            <Form.Control
+              type="text"
+              value={values.name}
+              required
+              aria-describedby={feedbackFor(nameFeedbackId, values.name)}
+              onChange={(e) => set("name", e.target.value)}
+            />
+            <Form.Control.Feedback id={nameFeedbackId} type="invalid">
+              {i18n("serverOptionsInvalidFeedback")}
+            </Form.Control.Feedback>
           </Form.Group>
           <Form.Group as={Col} controlId="form-server-host">
             <Form.Label>{i18n("serverOptionsHost")}</Form.Label>
-            <Form.Control type="text" value={values.host} required onChange={(e) => set("host", e.target.value)} />
-            <Form.Control.Feedback type="invalid">{i18n("serverOptionsInvalidFeedback")}</Form.Control.Feedback>
+            <Form.Control
+              type="text"
+              value={values.host}
+              required
+              aria-describedby={feedbackFor(hostFeedbackId, values.host)}
+              onChange={(e) => set("host", e.target.value)}
+            />
+            <Form.Control.Feedback id={hostFeedbackId} type="invalid">
+              {i18n("serverOptionsInvalidFeedback")}
+            </Form.Control.Feedback>
           </Form.Group>
         </Row>
 
@@ -138,8 +160,16 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
 
           <Form.Group as={Col} controlId="form-server-path">
             <Form.Label>{i18n("serverOptionsPath")}</Form.Label>
-            <Form.Control type="text" value={values.path} required onChange={(e) => set("path", formatPath(e.target.value))} />
-            <Form.Control.Feedback type="invalid">{i18n("serverOptionsInvalidFeedback")}</Form.Control.Feedback>
+            <Form.Control
+              type="text"
+              value={values.path}
+              required
+              aria-describedby={feedbackFor(pathFeedbackId, values.path)}
+              onChange={(e) => set("path", formatPath(e.target.value))}
+            />
+            <Form.Control.Feedback id={pathFeedbackId} type="invalid">
+              {i18n("serverOptionsInvalidFeedback")}
+            </Form.Control.Feedback>
           </Form.Group>
         </Row>
 
@@ -211,7 +241,6 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
             <Form.Group controlId="form-im-automatically-purge-downloads">
               <Form.Check
                 label={i18n("serverOptionsAutomaticallyPurgeDownloads")}
-                aria-label={i18n("serverOptionsAutomaticallyPurgeDownloads")}
                 checked={values.incognitoAutomaticallyPurgeDownloads}
                 onChange={(e) => set("incognitoAutomaticallyPurgeDownloads", e.target.checked)}
               />
@@ -222,7 +251,6 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
             <Form.Group controlId="form-im-overwrite-rpc-parameters">
               <Form.Check
                 label={i18n("serverOptionsOverwriteRpcParameters")}
-                aria-label={i18n("serverOptionsOverwriteRpcParameters")}
                 checked={values.incognitoOverwriteRpcParameters}
                 onChange={(e) => set("incognitoOverwriteRpcParameters", e.target.checked)}
               />
