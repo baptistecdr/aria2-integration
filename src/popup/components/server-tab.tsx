@@ -1,4 +1,3 @@
-import { filesize } from "filesize";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
@@ -11,11 +10,10 @@ import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
 import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
+import Speeds from "@/popup/components/speeds";
 import { useAria2Tasks } from "@/popup/hooks/use-aria2-tasks";
 import { createAria2Client } from "@/services/aria2-client";
 import { runWithNotification } from "@/services/notify";
-
-const FILESIZE_BASE = { base: 2 } as const;
 
 interface Props {
   server: Server;
@@ -54,19 +52,25 @@ function ServerTab({ server }: Props) {
     <Container fluid>
       <Row>
         <Col xs={6} className="align-self-baseline text-start stats">
-          <i className="bi-arrow-down" /> {filesize(globalStat.downloadSpeed, FILESIZE_BASE)}/s - <i className="bi-arrow-up" />{" "}
-          {filesize(globalStat.uploadSpeed, FILESIZE_BASE)}/s
+          <Speeds downloadSpeed={globalStat.downloadSpeed} uploadSpeed={globalStat.uploadSpeed} />
         </Col>
         <Col xs={6} className="align-self-baseline text-end">
-          <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
+          <Button variant="primary" size="sm" className="btn-left" aria-expanded={showAddTask} onClick={toggleAddTask}>
             {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
           </Button>
           <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
             {i18n("serverPurge")}
           </Button>
           {!isAndroid && (
-            <Button variant="secondary" size="sm" className="btn-right" aria-label="quick-options" onClick={toggleQuickOptions}>
-              {showQuickOptions ? <i className="bi-caret-left" /> : <i className="bi-gear" />}
+            <Button
+              variant="secondary"
+              size="sm"
+              className="btn-right"
+              aria-label={i18n("popupQuickOptions")}
+              aria-expanded={showQuickOptions}
+              onClick={toggleQuickOptions}
+            >
+              {showQuickOptions ? <i className="bi-caret-left" aria-hidden="true" /> : <i className="bi-gear" aria-hidden="true" />}
             </Button>
           )}
         </Col>

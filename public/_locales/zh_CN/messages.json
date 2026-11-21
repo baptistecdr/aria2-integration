@@ -299,5 +299,69 @@
   },
   "toggleCaptureDownloadsManaged": {
     "message": "拦截下载由您的组织设置。"
+  },
+  "popupQuickOptions": {
+    "message": "快速选项"
+  },
+  "popupDownloadSpeed": {
+    "message": "下载速度"
+  },
+  "popupUploadSpeed": {
+    "message": "上传速度"
+  },
+  "popupLoading": {
+    "message": "加载中…"
+  },
+  "taskPause": {
+    "message": "暂停 $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskResume": {
+    "message": "继续 $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskRetry": {
+    "message": "重试 $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskDelete": {
+    "message": "删除 $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskProgress": {
+    "message": "$FILE$ 的进度",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsAddServer": {
+    "message": "添加服务器"
+  },
+  "serverOptionsShowSecret": {
+    "message": "显示加密"
+  },
+  "extensionOptionsMinimumFileSizeUnit": {
+    "message": "最小文件大小的单位"
+  },
+  "extensionOptionsUseCompleteFilePathHelpLabel": {
+    "message": "关于完整文件路径的帮助"
   }
 }

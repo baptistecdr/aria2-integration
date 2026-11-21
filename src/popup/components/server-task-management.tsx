@@ -18,6 +18,16 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
   const { extensionOptions } = useExtensionOptions();
   const currentTab = useCurrentTab();
 
+  // The buttons are icons: their names say what they do, and on which task, since every task has the same buttons.
+  const filename = Task.filename(task);
+  const deleteLabel = i18n("taskDelete", filename);
+  const playPauseRetryLabel = () => {
+    if (Task.isActive(task)) {
+      return i18n("taskPause", filename);
+    }
+    return Task.isPaused(task) ? i18n("taskResume", filename) : i18n("taskRetry", filename);
+  };
+
   const errorNotification = { error: extensionOptions.notifyErrorOccurs ? i18n("taskActionError") : undefined };
 
   const playPauseOrRetry = () => {
@@ -32,7 +42,7 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
       url: task.files[0].uris[0].uri,
       incognito: !!currentTab?.incognito,
       directory: task.dir,
-      filename: Task.filename(task),
+      filename,
     });
   };
 
@@ -44,20 +54,20 @@ function ServerTaskManagement({ server, aria2, task }: Props) {
   if (Task.isActive(task) || Task.isPaused(task) || Task.isError(task)) {
     return (
       <>
-        <Button variant="primary" size="sm" className="btn-left" aria-label="play-pause-retry" onClick={onClickPlayPauseRetry}>
-          {Task.isActive(task) && <i className="bi bi-pause" />}
-          {Task.isPaused(task) && <i className="bi bi-play" />}
-          {Task.isError(task) && <i className="bi bi-arrow-repeat" />}
+        <Button variant="primary" size="sm" className="btn-left" aria-label={playPauseRetryLabel()} onClick={onClickPlayPauseRetry}>
+          {Task.isActive(task) && <i className="bi bi-pause" aria-hidden="true" />}
+          {Task.isPaused(task) && <i className="bi bi-play" aria-hidden="true" />}
+          {Task.isError(task) && <i className="bi bi-arrow-repeat" aria-hidden="true" />}
         </Button>
-        <Button variant="danger" size="sm" className="btn-right" aria-label="delete" onClick={onClickDelete}>
-          <i className="bi bi-trash" />
+        <Button variant="danger" size="sm" className="btn-right" aria-label={deleteLabel} onClick={onClickDelete}>
+          <i className="bi bi-trash" aria-hidden="true" />
         </Button>
       </>
     );
   }
   return (
-    <Button variant="danger" size="sm" aria-label="delete" onClick={onClickDelete}>
-      <i className="bi bi-trash" />
+    <Button variant="danger" size="sm" aria-label={deleteLabel} onClick={onClickDelete}>
+      <i className="bi bi-trash" aria-hidden="true" />
     </Button>
   );
 }

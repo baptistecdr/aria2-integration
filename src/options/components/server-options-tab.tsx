@@ -101,7 +101,7 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
               title={i18n("serverOptionsCopyUuid")}
               onClick={() => navigator.clipboard.writeText(server.uuid)}
             >
-              <i className="bi-clipboard" />
+              <i className="bi-clipboard" aria-hidden="true" />
             </Button>
           </InputGroup>
           <Form.Text muted>{i18n("serverOptionsUuidDescription")}</Form.Text>
@@ -149,8 +149,13 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
             <Form.Label>{i18n("serverOptionsSecret")}</Form.Label>
             <InputGroup>
               <Form.Control type={showPassword ? "text" : "password"} value={values.secret} onChange={(e) => set("secret", e.target.value)} />
-              <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
-                <i className={showPassword ? "bi-eye-slash" : "bi-eye"} />
+              <Button
+                variant="outline-secondary"
+                aria-label={i18n("serverOptionsShowSecret")}
+                aria-pressed={showPassword}
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                <i className={showPassword ? "bi-eye-slash" : "bi-eye"} aria-hidden="true" />
               </Button>
             </InputGroup>
             <Form.Text muted>{i18n("serverOptionsSecretDescription")}</Form.Text>

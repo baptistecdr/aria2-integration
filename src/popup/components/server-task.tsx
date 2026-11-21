@@ -6,6 +6,7 @@ import type { Server } from "@/domain/server";
 import { Task, TaskStatus } from "@/domain/task";
 import i18n, { getUILanguage, type MessageKey } from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
+import Speeds from "@/popup/components/speeds";
 import type { Aria2Client } from "@/services/aria2-client";
 
 interface Props {
@@ -80,8 +81,7 @@ function ServerTask({ server, aria2, task }: Props) {
           </Col>
           {Task.isActive(task) && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
-              {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, FILESIZE_BASE)}/s -{" "}
-              <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, FILESIZE_BASE)}/s
+              {task.connections} {i18n("taskConnections")}, <Speeds downloadSpeed={task.downloadSpeed} uploadSpeed={task.uploadSpeed} />
             </Col>
           )}
         </Row>
@@ -95,11 +95,13 @@ function ServerTask({ server, aria2, task }: Props) {
             className={`progress-bar bg-${getProgressVariant()}`}
             role="progressbar"
             style={{ width: `${progressPercent}%` }}
-            aria-valuenow={progressPercent * 10}
+            aria-label={i18n("taskProgress", filename)}
+            aria-valuenow={progressPercent}
             aria-valuemin={0}
-            aria-valuemax={1000}
+            aria-valuemax={100}
           />
-          <small className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
+          {/* The progress bar already gives the percentage to screen readers. */}
+          <small aria-hidden="true" className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
             {progressPercent} %
           </small>
         </div>

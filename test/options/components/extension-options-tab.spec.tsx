@@ -50,7 +50,7 @@ describe("ExtensionOptionsTab", () => {
     render(<ExtensionOptionsTab />);
 
     await user.click(screen.getByRole("checkbox", { name: "extensionOptionsCaptureDownloads" }));
-    await user.selectOptions(screen.getByRole("combobox", { name: "extensionOptionsCaptureDownloads" }), "server1");
+    await user.selectOptions(screen.getByRole("combobox", { name: "extensionOptionsServerToSendDownloads" }), "server1");
     await user.clear(screen.getByLabelText("extensionOptionsExcludeFileTypes"));
     await user.type(screen.getByLabelText("extensionOptionsExcludeFileTypes"), "zip, rar");
     await user.click(screen.getByLabelText("extensionOptionsNotifyUrlIsAdded"));

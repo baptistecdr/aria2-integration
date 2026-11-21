@@ -115,7 +115,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
           </Col>
           <Col xs={12} sm={12} className="mb-3">
             <Form.Group controlId="form-capture-downloads-servers">
-              <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
+              <Form.Label>{i18n("extensionOptionsServerToSendDownloads")}</Form.Label>
               <Form.Select disabled={captureFieldDisabled("captureServer")} value={captureServer} onChange={onChangeCaptureServer}>
                 <option value="" disabled>
                   {i18n("extensionOptionsNoServerSelected")}
@@ -143,6 +143,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 />
                 <Form.Select
                   id={formMinimumFileSizeExponentId}
+                  aria-label={i18n("extensionOptionsMinimumFileSizeUnit")}
                   disabled={captureFieldDisabled("minFileSizeInBytes")}
                   value={values.minFileSizeExponent}
                   onChange={(e) => set("minFileSizeExponent", Number.parseInt(e.target.value, 10))}
@@ -224,8 +225,13 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
           </Col>
           <Col xs={1} sm={1} className="mb-3 align-self-center">
             <Form.Group controlId="form-use-complete-path-help">
-              <Button variant="link" disabled={!captureDownloads} onClick={() => setShowModal(true)}>
-                <i className="bi bi-question-circle" />
+              <Button
+                variant="link"
+                disabled={!captureDownloads}
+                aria-label={i18n("extensionOptionsUseCompleteFilePathHelpLabel")}
+                onClick={() => setShowModal(true)}
+              >
+                <i className="bi bi-question-circle" aria-hidden="true" />
               </Button>
             </Form.Group>
           </Col>
