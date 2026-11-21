@@ -1,4 +1,3 @@
-import type Aria2 from "@baptistecdr/aria2";
 import * as z from "zod/mini";
 import { intFromString } from "@/domain/zod";
 
@@ -28,9 +27,4 @@ export function parseGlobalStat(data: unknown): GlobalStat {
 
 export function defaultGlobalStat(): GlobalStat {
   return { ...DEFAULT_GLOBAL_STAT };
-}
-
-export async function getGlobalStat(aria2server: Aria2): Promise<GlobalStat> {
-  const globalStat = await aria2server.call("getGlobalStat", [], {});
-  return parseGlobalStat(globalStat);
 }

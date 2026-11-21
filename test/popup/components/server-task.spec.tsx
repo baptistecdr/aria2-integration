@@ -1,20 +1,27 @@
-import Aria2 from "@baptistecdr/aria2";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
 import { type Task, TaskStatus } from "@/domain/task";
 import ServerTask from "@/popup/components/server-task";
+import type { Aria2Client } from "@/services/aria2-client";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,
 }));
 
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn(function (this: Aria2) {
-    this.call = vi.fn().mockResolvedValue({});
-    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
-  }),
-}));
+// A fake aria2 client: every method resolves.
+const aria2 = {
+  addUri: vi.fn(),
+  addTorrent: vi.fn(),
+  addMetalink: vi.fn(),
+  pause: vi.fn().mockResolvedValue("OK"),
+  unpause: vi.fn().mockResolvedValue("OK"),
+  remove: vi.fn().mockResolvedValue("OK"),
+  removeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  purgeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  getGlobalStat: vi.fn(),
+  getTasks: vi.fn(),
+} satisfies Aria2Client;
 
 describe("ServerTask", () => {
   const server: Server = {
@@ -22,7 +29,6 @@ describe("ServerTask", () => {
     name: "Test Server",
     rpcParameters: {},
   } as Server;
-  const aria2 = new Aria2({});
   let task: Task;
 
   beforeEach(() => {

@@ -1,10 +1,10 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Server } from "@/domain/server";
 import { showNotification } from "@/platform/notifications";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
+import type { Aria2Client } from "@/services/aria2-client";
 import { captureTorrentFile, captureUrl } from "@/services/capture";
 import { useCurrentTab } from "@/shared/ui/current-tab-provider";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
@@ -12,7 +12,7 @@ import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 // A plain object is used instead of `vi.mockObject(new Aria2(...))`: auto-mocking a real Aria2 instance
 // (which extends EventTarget) makes vitest's deep-equal assertions on it (toHaveBeenCalledWith) pathologically
 // slow (seconds per assertion) once certain other modules are also loaded in the same test file.
-const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
+const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2Client;
 const server = Server.create({ uuid: "uuid", name: "TestServer" });
 
 vi.mock("@/services/capture", () => ({

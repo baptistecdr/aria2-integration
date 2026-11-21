@@ -1,4 +1,3 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Tabs } from "webextension-polyfill";
 import type { Connections } from "@/background/connections";
@@ -6,6 +5,7 @@ import { type BrowserDownload, createDownloadCapturer } from "@/background/downl
 import { Server } from "@/domain/server";
 import { showNotification } from "@/platform/notifications";
 import { findCurrentTab } from "@/platform/tabs";
+import type { Aria2Client } from "@/services/aria2-client";
 import { captureUrl } from "@/services/capture";
 import { fakeOptionsStore } from "../helpers/fake-options-store";
 import browser from "../setupTests";
@@ -29,7 +29,7 @@ vi.mock("@/platform/tabs", () => ({
 describe("Download capture", () => {
   const SERVER_UUID = "6f1c7a3e-2b4d-4e8f-9a1b-3c5d7e9f1a2b";
   const server = Server.create({ uuid: SERVER_UUID, name: "aria2" });
-  const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
+  const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2Client;
   const connections: Connections = { get: (id) => (id === SERVER_UUID ? aria2 : undefined), all: () => [[server, aria2]] };
   const captureOptions = { servers: { [SERVER_UUID]: server }, captureDownloads: true, captureServer: SERVER_UUID };
   const download = (overrides: Partial<BrowserDownload> = {}): BrowserDownload => ({

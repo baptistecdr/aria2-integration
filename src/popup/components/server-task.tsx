@@ -1,4 +1,3 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { filesize } from "filesize";
 import { Duration } from "luxon";
 import { useId } from "react";
@@ -8,10 +7,11 @@ import type { Server } from "@/domain/server";
 import type { Task } from "@/domain/task";
 import i18n from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
+import type { Aria2Client } from "@/services/aria2-client";
 
 interface Props {
   server: Server;
-  aria2: Aria2;
+  aria2: Aria2Client;
   task: Task;
 }
 

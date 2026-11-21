@@ -1,4 +1,3 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
 import { ALARM_NAME, createBadgeUpdater, scheduleBadgeUpdates } from "@/background/badge";
@@ -6,6 +5,7 @@ import type { Connections } from "@/background/connections";
 import { Server } from "@/domain/server";
 import { ServerIncognitoModeOptions } from "@/domain/server-incognito-mode-options";
 import { findCurrentTab } from "@/platform/tabs";
+import { type Aria2Client, createAria2Client } from "@/services/aria2-client";
 import { fakeOptionsStore } from "../helpers/fake-options-store";
 
 vi.mock("@/platform/tabs", () => ({
@@ -16,11 +16,13 @@ function globalStat(numActive: number, numStopped = 0) {
   return { downloadSpeed: "0", uploadSpeed: "0", numActive: `${numActive}`, numWaiting: "0", numStopped: `${numStopped}`, numStoppedTotal: "0" };
 }
 
-function fakeAria2(call: Aria2["call"]) {
-  return { call: vi.fn(call), multicall: vi.fn() } as unknown as Aria2;
+// A real client whose RPC calls are answered by `call`.
+function fakeAria2(call: (method: string) => Promise<unknown>) {
+  const rpc = { call: vi.fn(call), multicall: vi.fn() };
+  return Object.assign(createAria2Client({}, rpc), { rpc });
 }
 
-function connectionsOf(...entries: [Server, Aria2][]): Connections {
+function connectionsOf(...entries: [Server, Aria2Client][]): Connections {
   return { get: vi.fn(), all: () => entries };
 }
 
@@ -83,9 +85,9 @@ describe("Badge", () => {
     await createBadgeUpdater({ store: fakeOptionsStore(), connections: connectionsOf([server, aria2]) })(alarm);
 
     if (expected) {
-      expect(aria2.call).toHaveBeenCalledWith("aria2.purgeDownloadResult");
+      expect(aria2.rpc.call).toHaveBeenCalledWith("aria2.purgeDownloadResult");
     } else {
-      expect(aria2.call).not.toHaveBeenCalledWith("aria2.purgeDownloadResult");
+      expect(aria2.rpc.call).not.toHaveBeenCalledWith("aria2.purgeDownloadResult");
     }
   });
 });

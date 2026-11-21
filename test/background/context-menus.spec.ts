@@ -1,4 +1,3 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser, { type Menus, type Tabs } from "webextension-polyfill";
 import type { Connections } from "@/background/connections";
@@ -13,6 +12,7 @@ import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
 import { getCookies } from "@/platform/cookies";
 import { showNotification } from "@/platform/notifications";
+import type { Aria2Client } from "@/services/aria2-client";
 import { captureUrl } from "@/services/capture";
 import { fakeOptionsStore } from "../helpers/fake-options-store";
 
@@ -151,7 +151,7 @@ describe("Context menus sync", () => {
 
 describe("Context menu click", () => {
   const server = Server.create({ uuid: "server1", name: "aria2" });
-  const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
+  const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2Client;
   const connections: Connections = { get: (id) => (id === "server1" ? aria2 : undefined), all: () => [[server, aria2]] };
   const tab = { url: "https://example.com/page", incognito: true, cookieStoreId: "store-1" } as Tabs.Tab;
   const click = (info: Partial<Menus.OnClickData>) => ({ editable: false, modifiers: [], menuItemId: "server1", ...info }) as Menus.OnClickData;

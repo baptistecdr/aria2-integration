@@ -1,18 +1,10 @@
-import Aria2 from "@baptistecdr/aria2";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
+import { createAria2Client } from "@/services/aria2-client";
 import * as capture from "@/services/capture";
 
-const aria2Call = vi.fn();
-
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn(function (this: Aria2) {
-    this.call = aria2Call;
-    this.multicall = vi.fn();
-  }),
-}));
-
-const aria2 = new Aria2({});
+const rpc = { call: vi.fn(), multicall: vi.fn() };
+const aria2 = createAria2Client({}, rpc);
 
 describe("captureTorrentFile", () => {
   beforeEach(() => {
@@ -30,7 +22,7 @@ describe("captureTorrentFile", () => {
 
     await capture.captureTorrentFile(aria2, server, file, false);
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("calls aria2.addMetalink for non-torrent file", async () => {
@@ -39,7 +31,7 @@ describe("captureTorrentFile", () => {
 
     await capture.captureTorrentFile(aria2, server, file as any, false);
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
   });
 });
 
@@ -60,7 +52,7 @@ describe("captureTorrentFromUrl", () => {
 
     await capture.captureTorrentFromUrl(aria2, server, { url: "http://test.torrent", incognito: false });
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("calls aria2.addTorrent when filename ends with .torrent", async () => {
@@ -68,7 +60,7 @@ describe("captureTorrentFromUrl", () => {
 
     await capture.captureTorrentFromUrl(aria2, server, { url: "http://test/download", incognito: false, filename: "file.torrent" });
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addTorrent", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("calls aria2.addMetalink for .meta4 url", async () => {
@@ -76,7 +68,7 @@ describe("captureTorrentFromUrl", () => {
 
     await capture.captureTorrentFromUrl(aria2, server, { url: "http://test.meta4", incognito: false });
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value" });
   });
 
   it("includes directory in parameters when provided", async () => {
@@ -84,7 +76,7 @@ describe("captureTorrentFromUrl", () => {
 
     await capture.captureTorrentFromUrl(aria2, server, { url: "http://test.meta4", incognito: false, directory: "/downloads" });
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value", dir: "/downloads" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addMetalink", "ZGF0YQ==", [], { key: "value", dir: "/downloads" });
   });
 });
 
@@ -105,7 +97,7 @@ describe("captureUrl", () => {
       filename: "output.mp4",
     });
 
-    expect(aria2.call).toHaveBeenCalledWith(
+    expect(rpc.call).toHaveBeenCalledWith(
       "aria2.addUri",
       ["http://test"],
       expect.objectContaining({
@@ -122,7 +114,7 @@ describe("captureUrl", () => {
 
     await capture.captureUrl(aria2, server, { url: "http://test", referer: "referer", cookies: "cookie", incognito: false });
 
-    expect(aria2.call).toHaveBeenCalledWith(
+    expect(rpc.call).toHaveBeenCalledWith(
       "aria2.addUri",
       ["http://test"],
       expect.objectContaining({
@@ -131,8 +123,8 @@ describe("captureUrl", () => {
       }),
     );
 
-    expect(vi.mocked(aria2.call).mock.calls[0][2]).not.toHaveProperty("dir");
-    expect(vi.mocked(aria2.call).mock.calls[0][2]).not.toHaveProperty("out");
+    expect(vi.mocked(rpc.call).mock.calls[0][2]).not.toHaveProperty("dir");
+    expect(vi.mocked(rpc.call).mock.calls[0][2]).not.toHaveProperty("out");
   });
 });
 
@@ -157,13 +149,13 @@ describe("captureUrl with torrents", () => {
     await capture.captureUrl(aria2, server, { url, filename, incognito: false });
 
     expect(global.fetch).toHaveBeenCalledWith(url);
-    expect(aria2.call).toHaveBeenCalledWith(method, "ZGF0YQ==", [], { key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith(method, "ZGF0YQ==", [], { key: "value" });
   });
 
   it("sends empty referer and cookie headers when none is given", async () => {
     await capture.captureUrl(aria2, server, { url: "http://test/file.zip", incognito: false });
 
-    expect(aria2.call).toHaveBeenCalledWith("aria2.addUri", ["http://test/file.zip"], { header: ["Referer: ", "Cookie: "], key: "value" });
+    expect(rpc.call).toHaveBeenCalledWith("aria2.addUri", ["http://test/file.zip"], { header: ["Referer: ", "Cookie: "], key: "value" });
   });
 });
 

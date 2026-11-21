@@ -1,15 +1,15 @@
-import type Aria2 from "@baptistecdr/aria2";
 import { type SubmitEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
 import i18n from "@/platform/i18n";
 import { showNotification } from "@/platform/notifications";
+import type { Aria2Client } from "@/services/aria2-client";
 import { captureTorrentFile, captureUrl } from "@/services/capture";
 import { useCurrentTab } from "@/shared/ui/current-tab-provider";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 interface Props {
-  aria2: Aria2;
+  aria2: Aria2Client;
   server: Server;
 }
 

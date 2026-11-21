@@ -1,9 +1,9 @@
-import type Aria2 from "@baptistecdr/aria2";
 import browser, { type Alarms } from "webextension-polyfill";
 import type { BackgroundContext } from "@/background/context";
-import { type GlobalStat, getGlobalStat } from "@/domain/global-stat";
+import type { GlobalStat } from "@/domain/global-stat";
 import type { Server } from "@/domain/server";
 import { findCurrentTab } from "@/platform/tabs";
+import type { Aria2Client } from "@/services/aria2-client";
 
 export const ALARM_NAME = "set-badge";
 const ALARM_INTERVAL_SECONDS = 5;
@@ -13,12 +13,12 @@ export function scheduleBadgeUpdates() {
   browser.alarms.create(ALARM_NAME, { periodInMinutes: ALARM_INTERVAL_SECONDS / 60 });
 }
 
-async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, globalStat: GlobalStat) {
+async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2Client, globalStat: GlobalStat) {
   if (!server.incognitoModeOptions?.automaticallyPurgeDownloads || globalStat.numStopped <= 0) return;
 
   const currentTab = await findCurrentTab();
   if (currentTab?.incognito) {
-    await aria2.call("aria2.purgeDownloadResult");
+    await aria2.purgeDownloadResult();
   }
 }
 
@@ -32,7 +32,7 @@ export function createBadgeUpdater({ store, connections }: BackgroundContext) {
     const numActives = await Promise.all(
       connections.all().map(async ([server, aria2]) => {
         try {
-          const globalStat = await getGlobalStat(aria2);
+          const globalStat = await aria2.getGlobalStat();
           await purgeDownloadsWhenInIncognitoMode(server, aria2, globalStat);
           return globalStat.numActive;
         } catch {

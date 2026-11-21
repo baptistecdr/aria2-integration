@@ -1,4 +1,3 @@
-import Aria2 from "@baptistecdr/aria2";
 import { describe, expect, it } from "vitest";
 import { createConnections } from "@/background/connections";
 import { ExtensionOptions } from "@/domain/extension-options";
@@ -12,8 +11,8 @@ describe("Connections", () => {
     const all = createConnections(store).all();
 
     expect(all.map(([server]) => server)).toEqual(Object.values(store.get().servers));
-    expect(all[0][1]).toBeInstanceOf(Aria2);
-    expect(all[1][1]).toBeInstanceOf(Aria2);
+    expect(all[0][1]).toHaveProperty("getGlobalStat");
+    expect(all[1][1]).toHaveProperty("getGlobalStat");
   });
 
   it("should return undefined for an unknown server", () => {
@@ -44,7 +43,7 @@ describe("Connections", () => {
     const connections = createConnections(store);
 
     await store.update((options) => ExtensionOptions.withOverrides(options, { servers: { server1: Server.create() } }));
-    expect(connections.get("server1")).toBeInstanceOf(Aria2);
+    expect(connections.get("server1")).toHaveProperty("getGlobalStat");
 
     await store.update((options) => ExtensionOptions.withOverrides(options, { servers: {} }));
     expect(connections.get("server1")).toBeUndefined();

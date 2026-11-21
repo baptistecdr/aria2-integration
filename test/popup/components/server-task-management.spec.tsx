@@ -1,19 +1,25 @@
-import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
 import type { Task } from "@/domain/task";
 import ServerTaskManagement from "@/popup/components/server-task-management";
+import type { Aria2Client } from "@/services/aria2-client";
 import { captureUrl } from "@/services/capture";
 
-vi.mock("@baptistecdr/aria2", () => ({
-  default: vi.fn(function (this: Aria2) {
-    this.call = vi.fn().mockResolvedValue({});
-    this.multicall = vi.fn().mockResolvedValue([[], [], []]);
-  }),
-}));
+// A fake aria2 client: every method resolves.
+const aria2 = {
+  addUri: vi.fn(),
+  addTorrent: vi.fn(),
+  addMetalink: vi.fn(),
+  pause: vi.fn().mockResolvedValue("OK"),
+  unpause: vi.fn().mockResolvedValue("OK"),
+  remove: vi.fn().mockResolvedValue("OK"),
+  removeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  purgeDownloadResult: vi.fn().mockResolvedValue("OK"),
+  getGlobalStat: vi.fn(),
+  getTasks: vi.fn(),
+} satisfies Aria2Client;
 
-const aria2 = new Aria2({});
 const server: Server = { uuid: "server-1" } as Server;
 
 vi.mock("@/services/capture", async () => {
@@ -62,14 +68,14 @@ describe("ServerTaskManagement", () => {
     const task = createTask({ isActive: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "play-pause-retry" }));
-    expect(aria2.call).toHaveBeenCalledWith("aria2.pause", "test-gid");
+    expect(aria2.pause).toHaveBeenCalledWith("test-gid");
   });
 
   it("calls aria2.unpause when clicking play", () => {
     const task = createTask({ isPaused: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "play-pause-retry" }));
-    expect(aria2.call).toHaveBeenCalledWith("aria2.unpause", "test-gid");
+    expect(aria2.unpause).toHaveBeenCalledWith("test-gid");
   });
 
   it("calls captureUrl when clicking retry", () => {
@@ -83,13 +89,13 @@ describe("ServerTaskManagement", () => {
     const task = createTask({ isComplete: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "delete" }));
-    expect(aria2.call).toHaveBeenCalledWith("aria2.removeDownloadResult", "test-gid");
+    expect(aria2.removeDownloadResult).toHaveBeenCalledWith("test-gid");
   });
 
   it("calls aria2.remove when deleting active task", () => {
     const task = createTask({ isActive: () => true });
     render(<ServerTaskManagement server={server} aria2={aria2} task={task} />);
     fireEvent.click(screen.getByRole("button", { name: "delete" }));
-    expect(aria2.call).toHaveBeenCalledWith("aria2.remove", "test-gid");
+    expect(aria2.remove).toHaveBeenCalledWith("test-gid");
   });
 });

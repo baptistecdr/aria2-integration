@@ -1,4 +1,4 @@
-export function encodeFileToBase64(file: File | Blob) {
+export function encodeFileToBase64(file: File | Blob): Promise<string> {
   return new Promise((resolve, reject) => {
     const temporaryFileReader = new FileReader();
     temporaryFileReader.onerror = () => {
