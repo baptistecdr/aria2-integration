@@ -138,7 +138,7 @@ jobs:
         run: git archive --format zip --output "$ARTIFACTS_DIR/$ARTIFACT_ARCHIVE_FILENAME" ${{ github.ref_name }}
 
       - name: Release Firefox extension
-        uses: baptistecdr/release-firefox-addon@main
+        uses: baptistecdr/release-firefox-addon@87ce116910b76de75cbfa0afc5cd416646429a8f # main
         if: ${{ vars.RELEASE_FIREFOX_EXTENSION == 'true' }}
         with:
           addon-id: ${{ secrets.MOZILLA_ADDONS_ADDON_ID }}
