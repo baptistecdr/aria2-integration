@@ -14,9 +14,22 @@ export interface Aria2Tasks {
   tasks: Task[];
 }
 
+const initialTasks = (): Aria2Tasks => ({ loading: true, failed: false, globalStat: GlobalStat.empty(), tasks: [] });
+
+interface State {
+  // The client the tasks come from.
+  client: Aria2Client;
+  tasks: Aria2Tasks;
+}
+
+// The tasks of the client, or the loading state when they come from a previous client.
+const tasksOf = (state: State, client: Aria2Client): Aria2Tasks => (state.client === client ? state.tasks : initialTasks());
+
 // Polls the server for its downloads while the component is mounted.
 export function useAria2Tasks(aria2: Aria2Client): Aria2Tasks {
-  const [state, setState] = useState<Aria2Tasks>({ loading: true, failed: false, globalStat: GlobalStat.empty(), tasks: [] });
+  // Kept with the client it comes from: a new client (the server settings changed) starts over from the loading state
+  // instead of showing the previous server's tasks.
+  const [state, setState] = useState<State>(() => ({ client: aria2, tasks: initialTasks() }));
 
   useEffect(() => {
     let cancelled = false;
@@ -27,12 +40,12 @@ export function useAria2Tasks(aria2: Aria2Client): Aria2Tasks {
         const globalStat = await aria2.getGlobalStat();
         const tasks = await aria2.getTasks(globalStat.numWaiting, globalStat.numStopped);
         if (!cancelled) {
-          setState({ loading: false, failed: false, globalStat, tasks });
+          setState({ client: aria2, tasks: { loading: false, failed: false, globalStat, tasks } });
         }
       } catch (error) {
         console.error(error);
         if (!cancelled) {
-          setState((previous) => ({ ...previous, loading: false, failed: true }));
+          setState((previous) => ({ client: aria2, tasks: { ...tasksOf(previous, aria2), loading: false, failed: true } }));
         }
       }
       if (!cancelled) {
@@ -48,5 +61,5 @@ export function useAria2Tasks(aria2: Aria2Client): Aria2Tasks {
     };
   }, [aria2]);
 
-  return state;
+  return tasksOf(state, aria2);
 }

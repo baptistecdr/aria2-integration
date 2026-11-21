@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Server } from "@/domain/server";
 import ServerTab from "@/popup/components/server-tab";
 import { type Aria2Client, createAria2Client } from "@/services/aria2-client";
 
@@ -96,5 +97,31 @@ describe("ServerTab", () => {
     await waitFor(() => expect(screen.getByText(/Translated: serverError/)).toBeInTheDocument());
 
     expect(screen.queryByText(/Translated: serverNoTasks/)).not.toBeInTheDocument();
+  });
+
+  describe("when the server is changed elsewhere while the popup is open", () => {
+    const savedServer = Server.create({ uuid: "server-1", name: "Server1", host: "aria2.lan", port: 6800 });
+
+    it("connects to the server with its new settings", async () => {
+      const oldClient = fakeClient();
+      const newClient = fakeClient();
+      vi.mocked(createAria2Client).mockReturnValueOnce(oldClient).mockReturnValueOnce(newClient);
+      const { rerender } = render(<ServerTab server={savedServer} />);
+      await waitFor(() => expect(oldClient.getGlobalStat).toHaveBeenCalled());
+
+      rerender(<ServerTab server={{ ...savedServer, port: 6801 }} />);
+
+      await waitFor(() => expect(newClient.getGlobalStat).toHaveBeenCalled());
+      expect(createAria2Client).toHaveBeenLastCalledWith(expect.objectContaining({ host: "aria2.lan", port: 6801 }));
+    });
+
+    it("keeps its connection when only settings it does not use change", async () => {
+      const { rerender } = render(<ServerTab server={savedServer} />);
+      await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
+
+      rerender(<ServerTab server={{ ...savedServer, name: "Renamed", rpcParameters: { split: "5" } }} />);
+
+      expect(createAria2Client).toHaveBeenCalledTimes(1);
+    });
   });
 });

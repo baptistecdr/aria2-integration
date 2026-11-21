@@ -70,4 +70,18 @@ describe("useAria2Tasks", () => {
 
     expect(client.getGlobalStat).toHaveBeenCalledTimes(1);
   });
+
+  it("starts over when the client changes, instead of showing the previous server's tasks", async () => {
+    const oldClient = fakeClient();
+    const newClient = fakeClient();
+    // The new server has not answered yet.
+    newClient.getGlobalStat.mockReturnValue(new Promise(() => {}));
+    const { result, rerender } = renderHook(({ client }) => useAria2Tasks(client), { initialProps: { client: oldClient } });
+    await waitFor(() => expect(result.current.tasks).toHaveLength(1));
+
+    rerender({ client: newClient });
+
+    expect(result.current.loading).toBe(true);
+    expect(result.current.tasks).toEqual([]);
+  });
 });

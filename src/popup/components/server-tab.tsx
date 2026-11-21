@@ -1,5 +1,5 @@
 import { filesize } from "filesize";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
 import i18n from "@/platform/i18n";
@@ -22,7 +22,10 @@ interface Props {
 }
 
 function ServerTab({ server }: Props) {
-  const [aria2] = useState(() => createAria2Client(server));
+  // The server can be changed elsewhere while the popup is open: reconnect when a setting of the connection changes, but
+  // not on a rename or new download parameters.
+  const { secure, host, port, path, secret } = server;
+  const aria2 = useMemo(() => createAria2Client({ secure, host, port, path, secret }), [secure, host, port, path, secret]);
   const { loading, failed, globalStat, tasks } = useAria2Tasks(aria2);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
