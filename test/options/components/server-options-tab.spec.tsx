@@ -452,4 +452,13 @@ describe("ServerOptionsTab", () => {
     expect(screen.getByLabelText("serverOptionsName")).toBeEnabled();
     expect(screen.getByText("serverOptionsSave")).toBeInTheDocument();
   });
+
+  it("tells screen readers whether the secret is shown", async () => {
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+    const toggle = screen.getByRole("button", { name: "serverOptionsShowSecret" });
+
+    expect(toggle).toHaveAttribute("aria-pressed", "false");
+    await userEvent.click(toggle);
+    expect(toggle).toHaveAttribute("aria-pressed", "true");
+  });
 });

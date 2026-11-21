@@ -8,7 +8,7 @@ test("opens the options page on install", async ({ context, extension }) => {
 test("adds a server and saves its settings", async ({ extension }) => {
   const page = await extension.openOptions();
 
-  await page.getByRole("tab", { name: "+" }).click();
+  await page.getByRole("tab", { name: "Add a server" }).click();
   await expect(page.getByRole("tab", { name: "Localhost" })).toHaveAttribute("aria-selected", "true");
 
   await page.getByLabel("Name", { exact: true }).fill("My NAS");
@@ -56,7 +56,7 @@ test("saves the extension options", async ({ extension, aria2 }) => {
   await expect(page.getByRole("tab", { name: "E2E aria2" })).toBeVisible();
 
   await page.getByRole("checkbox", { name: "Capture downloads" }).check();
-  await page.getByRole("combobox", { name: "Capture downloads" }).selectOption({ label: "E2E aria2" });
+  await page.getByRole("combobox", { name: "Server to send downloads" }).selectOption({ label: "E2E aria2" });
   await page.getByLabel("Exclude Protocols").fill("ftp, magnet");
   await page.getByLabel("Exclude Sites").fill("example.com");
   await page.getByLabel("Exclude File Types").fill("zip, rar");

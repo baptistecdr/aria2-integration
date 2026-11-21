@@ -65,7 +65,7 @@ describe("ServerTab", () => {
     render(<ServerTab server={server as any} />);
     await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument(), { timeout: 5000 });
 
-    fireEvent.click(screen.getByRole("button", { name: "quick-options" }));
+    fireEvent.click(screen.getByRole("button", { name: "Translated: popupQuickOptions" }));
 
     expect(screen.getByText("ServerQuickOptions")).toBeInTheDocument();
   });
@@ -123,5 +123,23 @@ describe("ServerTab", () => {
 
       expect(createAria2Client).toHaveBeenCalledTimes(1);
     });
+  });
+
+  it("tells screen readers which panel the toggle buttons show", async () => {
+    render(<ServerTab server={server as any} />);
+    await waitFor(() => expect(screen.getByText(/Translated: serverNoTasks/)).toBeInTheDocument());
+    const quickOptions = screen.getByRole("button", { name: "Translated: popupQuickOptions" });
+    const add = screen.getByRole("button", { name: /Translated: serverAdd/ });
+
+    expect(quickOptions).toHaveAttribute("aria-expanded", "false");
+    expect(add).toHaveAttribute("aria-expanded", "false");
+    fireEvent.click(quickOptions);
+    expect(quickOptions).toHaveAttribute("aria-expanded", "true");
+  });
+
+  it("announces the loading state", () => {
+    render(<ServerTab server={server as any} />);
+
+    expect(screen.getByRole("status")).toHaveTextContent("Translated: popupLoading");
   });
 });

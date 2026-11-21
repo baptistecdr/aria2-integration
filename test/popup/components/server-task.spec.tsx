@@ -4,6 +4,7 @@ import type { Server } from "@/domain/server";
 import { type Task, TaskStatus } from "@/domain/task";
 import ServerTask from "@/popup/components/server-task";
 import type { Aria2Client } from "@/services/aria2-client";
+import browser from "../../setupTests";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,
@@ -117,5 +118,21 @@ describe("ServerTask", () => {
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
     expect(screen.getByText(/00:00:50/)).toBeInTheDocument();
+  });
+
+  it("names the progress bar after the file and gives its percentage", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    const progressBar = screen.getByRole("progressbar", { name: "Translated: taskProgress" });
+    expect(progressBar).toHaveAttribute("aria-valuenow", "50");
+    expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+    expect(browser.i18n.getMessage).toHaveBeenCalledWith("taskProgress", "test-file.mp4");
+  });
+
+  it("names the speeds for screen readers", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    expect(screen.getByText("Translated: popupDownloadSpeed")).toHaveClass("visually-hidden");
+    expect(screen.getByText("Translated: popupUploadSpeed")).toHaveClass("visually-hidden");
   });
 });

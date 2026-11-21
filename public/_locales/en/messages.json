@@ -299,5 +299,69 @@
   },
   "toggleCaptureDownloadsManaged": {
     "message": "Capture downloads is set by your organization."
+  },
+  "popupQuickOptions": {
+    "message": "Quick options"
+  },
+  "popupDownloadSpeed": {
+    "message": "Download speed"
+  },
+  "popupUploadSpeed": {
+    "message": "Upload speed"
+  },
+  "popupLoading": {
+    "message": "Loading…"
+  },
+  "taskPause": {
+    "message": "Pause $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskResume": {
+    "message": "Resume $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskRetry": {
+    "message": "Retry $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskDelete": {
+    "message": "Delete $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "taskProgress": {
+    "message": "Progress of $FILE$",
+    "placeholders": {
+      "file": {
+        "content": "$1"
+      }
+    }
+  },
+  "optionsAddServer": {
+    "message": "Add a server"
+  },
+  "serverOptionsShowSecret": {
+    "message": "Show the secret"
+  },
+  "extensionOptionsMinimumFileSizeUnit": {
+    "message": "Unit of the minimum file size"
+  },
+  "extensionOptionsUseCompleteFilePathHelpLabel": {
+    "message": "Help about the complete file path"
   }
 }

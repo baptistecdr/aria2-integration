@@ -51,7 +51,17 @@ function Options() {
     <Tabs id={tabsId} defaultActiveKey={EXTENSION_OPTIONS_TAB} activeKey={activeTab} onSelect={handleTabSelect}>
       {renderServerTabs()}
       {/* Servers added by the user would be replaced by the ones of the policy. */}
-      {!managedOptions.has("servers") && <Tab eventKey={ADD_SERVER_TAB} title="+" />}
+      {!managedOptions.has("servers") && (
+        <Tab
+          eventKey={ADD_SERVER_TAB}
+          title={
+            <>
+              <span aria-hidden="true">+</span>
+              <span className="visually-hidden">{i18n("optionsAddServer")}</span>
+            </>
+          }
+        />
+      )}
       <Tab eventKey={EXTENSION_OPTIONS_TAB} title={i18n("extensionOptionsTitle")}>
         <ExtensionOptionsTab />
       </Tab>
