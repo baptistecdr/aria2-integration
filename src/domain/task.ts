@@ -34,75 +34,36 @@ const TaskSchema = z.object({
   dir: z.string(),
 });
 
-export type TaskData = z.infer<typeof TaskSchema>;
+export type Task = z.infer<typeof TaskSchema>;
 export type Bittorrent = z.infer<typeof BittorrentSchema>;
 
-export class Task implements TaskData {
-  bittorrent?: Bittorrent;
-  completedLength: number;
-  connections: number;
-  downloadSpeed: number;
-  files: TaskData["files"];
-  gid: string;
-  status: TaskStatus;
-  totalLength: number;
-  uploadLength: number;
-  uploadSpeed: number;
-  dir: string;
+export const Task = {
+  parse(data: unknown): Task {
+    return TaskSchema.parse(data);
+  },
 
-  constructor(data: TaskData) {
-    this.bittorrent = data.bittorrent;
-    this.completedLength = data.completedLength;
-    this.connections = data.connections;
-    this.downloadSpeed = data.downloadSpeed;
-    this.files = data.files;
-    this.gid = data.gid;
-    this.status = data.status;
-    this.totalLength = data.totalLength;
-    this.uploadLength = data.uploadLength;
-    this.uploadSpeed = data.uploadSpeed;
-    this.dir = data.dir;
-  }
-
-  static parse(data: unknown): Task {
-    return new Task(TaskSchema.parse(data));
-  }
-
-  static parseMany(data: unknown[]): Task[] {
+  parseMany(data: unknown[]): Task[] {
     return data.map((item) => Task.parse(item));
-  }
+  },
 
-  getFilename(): string {
-    if (this.bittorrent?.info) {
-      return this.bittorrent.info.name;
+  // The torrent name, or the name of the first file, or the end of its first URL.
+  filename(task: Task): string {
+    if (task.bittorrent?.info) {
+      return task.bittorrent.info.name;
     }
-    if (this.files[0].path !== "") {
-      return basename(this.files[0].path);
+    if (task.files[0].path !== "") {
+      return basename(task.files[0].path);
     }
-    return basename(this.files[0].uris[0].uri);
-  }
+    return basename(task.files[0].uris[0].uri);
+  },
 
-  isActive(): boolean {
-    return this.status === TaskStatus.Active;
-  }
+  isActive: (task: Task) => task.status === TaskStatus.Active,
+  isComplete: (task: Task) => task.status === TaskStatus.Complete,
+  isError: (task: Task) => task.status === TaskStatus.Error,
+  isPaused: (task: Task) => task.status === TaskStatus.Paused,
+  isRemoved: (task: Task) => task.status === TaskStatus.Removed,
+  isWaiting: (task: Task) => task.status === TaskStatus.Waiting,
 
-  isComplete(): boolean {
-    return this.status === TaskStatus.Complete;
-  }
-
-  isError(): boolean {
-    return this.status === TaskStatus.Error;
-  }
-
-  isPaused(): boolean {
-    return this.status === TaskStatus.Paused;
-  }
-
-  isRemoved(): boolean {
-    return this.status === TaskStatus.Removed;
-  }
-
-  isWaiting(): boolean {
-    return this.status === TaskStatus.Waiting;
-  }
-}
+  // Whether aria2 keeps the task only as a result: complete, failed or removed.
+  isStopped: (task: Task) => Task.isComplete(task) || Task.isError(task) || Task.isRemoved(task),
+};

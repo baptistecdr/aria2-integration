@@ -1,5 +1,5 @@
 import Aria2 from "@baptistecdr/aria2";
-import { type GlobalStat, parseGlobalStat } from "@/domain/global-stat";
+import { GlobalStat } from "@/domain/global-stat";
 import type { Server } from "@/domain/server";
 import { Task } from "@/domain/task";
 
@@ -34,7 +34,7 @@ export function createAria2Client(server: Partial<Server>, rpc: Pick<Aria2, "cal
     remove: (gid) => rpc.call("aria2.remove", gid),
     removeDownloadResult: (gid) => rpc.call("aria2.removeDownloadResult", gid),
     purgeDownloadResult: () => rpc.call("aria2.purgeDownloadResult"),
-    getGlobalStat: async () => parseGlobalStat(await rpc.call("getGlobalStat", [], {})),
+    getGlobalStat: async () => GlobalStat.parse(await rpc.call("getGlobalStat", [], {})),
     async getTasks(numWaiting, numStopped) {
       const groups: unknown[] = await rpc.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]]);
       // A group is an error object instead of a list when its call failed.

@@ -3,7 +3,7 @@ import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { ExtensionOptions } from "@/domain/extension-options";
 import type { Server } from "@/domain/server";
-import AlertProps from "@/options/models/alert-props";
+import { AlertProps } from "@/options/models/alert-props";
 import { formatPath, fromServerFormValues, type ServerFormValues, serverUrl, toServerFormValues } from "@/options/models/server-form";
 import i18n from "@/platform/i18n";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
@@ -19,7 +19,7 @@ const VALIDATION_TIMEOUT = 1500; // 1,5 s
 function ServerOptionsTab({ server, deleteServer }: Props) {
   const { updateExtensionOptions } = useExtensionOptions();
   // Lives outside the form so that the confirmation stays visible when the saved server restarts the form.
-  const [alertProps, setAlertProps] = useState(new AlertProps());
+  const [alertProps, setAlertProps] = useState(AlertProps.none());
 
   const save = async (values: ServerFormValues) => {
     try {
@@ -37,7 +37,7 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       key={JSON.stringify(server)}
       server={server}
       alertProps={alertProps}
-      onCloseAlert={() => setAlertProps(new AlertProps())}
+      onCloseAlert={() => setAlertProps(AlertProps.none())}
       onSave={save}
       onDelete={() => deleteServer(server)}
     />

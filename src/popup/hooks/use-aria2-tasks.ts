@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { defaultGlobalStat, type GlobalStat } from "@/domain/global-stat";
+import { GlobalStat } from "@/domain/global-stat";
 import type { Task } from "@/domain/task";
 import type { Aria2Client } from "@/services/aria2-client";
 
@@ -16,7 +16,7 @@ export interface Aria2Tasks {
 
 // Polls the server for its downloads while the component is mounted.
 export function useAria2Tasks(aria2: Aria2Client): Aria2Tasks {
-  const [state, setState] = useState<Aria2Tasks>({ loading: true, failed: false, globalStat: defaultGlobalStat(), tasks: [] });
+  const [state, setState] = useState<Aria2Tasks>({ loading: true, failed: false, globalStat: GlobalStat.empty(), tasks: [] });
 
   useEffect(() => {
     let cancelled = false;

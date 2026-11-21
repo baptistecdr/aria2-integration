@@ -13,6 +13,7 @@ import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
 import { useAria2Tasks } from "@/popup/hooks/use-aria2-tasks";
 import { createAria2Client } from "@/services/aria2-client";
+import { runWithNotification } from "@/services/notify";
 
 const FILESIZE_BASE = { base: 2 } as const;
 
@@ -27,9 +28,7 @@ function ServerTab({ server }: Props) {
   const [showQuickOptions, setShowQuickOptions] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
-  const onClickPurge = () => {
-    aria2.purgeDownloadResult();
-  };
+  const onClickPurge = () => runWithNotification(() => aria2.purgeDownloadResult(), {});
 
   const toggleAddTask = useCallback(() => {
     setShowAddTask((prev) => !prev);

@@ -2,9 +2,9 @@ import { type SubmitEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
 import i18n from "@/platform/i18n";
-import { showNotification } from "@/platform/notifications";
 import type { Aria2Client } from "@/services/aria2-client";
 import { captureTorrentFile, captureUrl } from "@/services/capture";
+import { runWithNotification } from "@/services/notify";
 import { useCurrentTab } from "@/shared/ui/current-tab-provider";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
@@ -21,22 +21,19 @@ function ServerAddTasks({ aria2, server }: Props) {
   const [formFiles, setFormFiles] = useState(DEFAULT_FORM_FILES);
   const currentTab = useCurrentTab();
 
+  const incognito = !!currentTab?.incognito;
+
   const formAddUrlsOnSubmit = (formEvent: SubmitEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
-    for (const url of formUrls) {
-      captureUrl(aria2, server, { url, incognito: !!currentTab?.incognito })
-        .then(() => {
-          if (extensionOptions.notifyUrlIsAdded) {
-            showNotification(i18n("addUrlSuccess", server.name));
-          }
-        })
-        .catch((error) => {
-          console.error(error);
-          if (extensionOptions.notifyErrorOccurs) {
-            showNotification(i18n("addUrlError", server.name));
-          }
-        });
-    }
+    // The form is cleared right away: each URL is reported by its own notification.
+    void Promise.all(
+      formUrls.map((url) =>
+        runWithNotification(() => captureUrl(aria2, server, { url, incognito }), {
+          success: extensionOptions.notifyUrlIsAdded ? i18n("addUrlSuccess", server.name) : undefined,
+          error: extensionOptions.notifyErrorOccurs ? i18n("addUrlError", server.name) : undefined,
+        }),
+      ),
+    );
     formEvent.currentTarget.reset();
     setFormUrls([]);
   };
@@ -44,20 +41,14 @@ function ServerAddTasks({ aria2, server }: Props) {
   const formAddFilesOnSubmit = (formEvent: SubmitEvent<HTMLFormElement>) => {
     formEvent.preventDefault();
     if (formFiles.files !== null) {
-      for (let i = 0; i < formFiles.files.length; i += 1) {
-        captureTorrentFile(aria2, server, formFiles.files[i], !!currentTab?.incognito)
-          .then(() => {
-            if (extensionOptions.notifyFileIsAdded) {
-              showNotification(i18n("addFileSuccess", server.name));
-            }
-          })
-          .catch((error) => {
-            console.error(error);
-            if (extensionOptions.notifyErrorOccurs) {
-              showNotification(i18n("addFileError", server.name));
-            }
-          });
-      }
+      void Promise.all(
+        Array.from(formFiles.files, (file) =>
+          runWithNotification(() => captureTorrentFile(aria2, server, file, incognito), {
+            success: extensionOptions.notifyFileIsAdded ? i18n("addFileSuccess", server.name) : undefined,
+            error: extensionOptions.notifyErrorOccurs ? i18n("addFileError", server.name) : undefined,
+          }),
+        ),
+      );
       formEvent.currentTarget.reset();
       setFormFiles(DEFAULT_FORM_FILES);
     }

@@ -4,7 +4,7 @@ import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import browser from "webextension-polyfill";
 import type { Server } from "@/domain/server";
-import type { Task } from "@/domain/task";
+import { Task } from "@/domain/task";
 import i18n from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
 import type { Aria2Client } from "@/services/aria2-client";
@@ -27,7 +27,7 @@ function formatETA(seconds: number): string {
 }
 
 function ServerTask({ server, aria2, task }: Props) {
-  const filename = task.getFilename();
+  const filename = Task.filename(task);
 
   const progressPercent = task.totalLength > 0 ? Math.round((task.completedLength * 100) / task.totalLength) : 0;
 
@@ -69,9 +69,9 @@ function ServerTask({ server, aria2, task }: Props) {
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
             {status}, {filesize(task.completedLength, FILESIZE_BASE)} / {filesize(task.totalLength, FILESIZE_BASE)}
-            {task.isActive() && `, ${eta}`}
+            {Task.isActive(task) && `, ${eta}`}
           </Col>
-          {task.isActive() && (
+          {Task.isActive(task) && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
               {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, FILESIZE_BASE)}/s -{" "}
               <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, FILESIZE_BASE)}/s

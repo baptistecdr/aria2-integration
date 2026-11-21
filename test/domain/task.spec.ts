@@ -25,7 +25,6 @@ describe("Task.parse", () => {
   it("parses valid task data and converts string numbers to numbers", () => {
     const task = Task.parse(baseTaskData);
 
-    expect(task).toBeInstanceOf(Task);
     expect(task.completedLength).toBe(500);
     expect(task.connections).toBe(3);
     expect(task.downloadSpeed).toBe(1024);
@@ -69,7 +68,6 @@ describe("Task.parseMany", () => {
     ]);
 
     expect(tasks).toHaveLength(2);
-    expect(tasks[0]).toBeInstanceOf(Task);
     expect(tasks[0].gid).toBe("1");
     expect(tasks[1].gid).toBe("2");
     expect(tasks[1].status).toBe(TaskStatus.Complete);
@@ -82,14 +80,14 @@ describe("Task.parseMany", () => {
   });
 });
 
-describe("Task.getFilename", () => {
+describe("Task.filename", () => {
   it("returns bittorrent info name when bittorrent info is present", () => {
     const task = Task.parse({
       ...baseTaskData,
       bittorrent: { info: { name: "my-torrent" } },
     });
 
-    expect(task.getFilename()).toBe("my-torrent");
+    expect(Task.filename(task)).toBe("my-torrent");
   });
 
   it("returns basename of file path when path is not empty", () => {
@@ -105,13 +103,13 @@ describe("Task.getFilename", () => {
       ],
     });
 
-    expect(task.getFilename()).toBe("archive.zip");
+    expect(Task.filename(task)).toBe("archive.zip");
   });
 
   it("returns basename of URI when path is empty", () => {
     const task = Task.parse(baseTaskData);
 
-    expect(task.getFilename()).toBe("file.zip");
+    expect(Task.filename(task)).toBe("file.zip");
   });
 
   it("returns basename of Windows file path", () => {
@@ -127,12 +125,12 @@ describe("Task.getFilename", () => {
       ],
     });
 
-    expect(task.getFilename()).toBe("archive.zip");
+    expect(Task.filename(task)).toBe("archive.zip");
   });
 });
 
 describe("Task status helpers", () => {
-  const statusCases: Array<[string, keyof Task]> = [
+  const statusCases: Array<[string, "isActive" | "isComplete" | "isError" | "isPaused" | "isRemoved" | "isWaiting"]> = [
     ["active", "isActive"],
     ["complete", "isComplete"],
     ["error", "isError"],
@@ -145,14 +143,36 @@ describe("Task status helpers", () => {
     it(`${method}() returns true when status is "${status}"`, () => {
       const task = Task.parse({ ...baseTaskData, status });
 
-      expect((task[method] as () => boolean)()).toBe(true);
+      expect(Task[method](task)).toBe(true);
     });
 
     it(`${method}() returns false when status is not "${status}"`, () => {
       const otherStatus = status === "active" ? "complete" : "active";
       const task = Task.parse({ ...baseTaskData, status: otherStatus });
 
-      expect((task[method] as () => boolean)()).toBe(false);
+      expect(Task[method](task)).toBe(false);
     });
   }
+});
+
+describe("Task.isStopped", () => {
+  it.each([
+    ["complete", true],
+    ["error", true],
+    ["removed", true],
+    ["active", false],
+    ["paused", false],
+    ["waiting", false],
+  ])("returns %s for a %s task", (status, expected) => {
+    expect(Task.isStopped(Task.parse({ ...baseTaskData, status }))).toBe(expected);
+  });
+});
+
+describe("Task data", () => {
+  it("is plain data that can be copied and compared", () => {
+    const task = Task.parse(baseTaskData);
+
+    expect({ ...task }).toEqual(task);
+    expect(Object.getPrototypeOf(task)).toBe(Object.prototype);
+  });
 });

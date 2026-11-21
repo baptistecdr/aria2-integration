@@ -34,20 +34,16 @@ describe("ServerTask", () => {
   beforeEach(() => {
     task = {
       gid: "123",
-      status: "active",
+      status: TaskStatus.Active,
       completedLength: 50000000,
       totalLength: 100000000,
       downloadSpeed: 1000000,
       uploadSpeed: 10000,
       connections: 1337,
-      isActive: vi.fn().mockReturnValue(true),
-      isComplete: vi.fn().mockReturnValue(false),
-      isError: vi.fn().mockReturnValue(false),
-      isRemoved: vi.fn().mockReturnValue(false),
-      isPaused: vi.fn().mockReturnValue(false),
-      isWaiting: vi.fn().mockReturnValue(false),
-      getFilename: vi.fn().mockReturnValue("test-file.mp4"),
-    } as unknown as Task;
+      uploadLength: 0,
+      dir: "/downloads",
+      files: [{ completedLength: 50000000, length: 100000000, path: "/downloads/test-file.mp4", uris: [] }],
+    } as Task;
   });
 
   it("renders active task correctly", () => {
@@ -71,8 +67,6 @@ describe("ServerTask", () => {
 
   it("renders completed task correctly", () => {
     task.status = TaskStatus.Complete;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isComplete = vi.fn().mockReturnValue(true);
     task.completedLength = task.totalLength;
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
@@ -87,8 +81,6 @@ describe("ServerTask", () => {
 
   it("renders paused task correctly", () => {
     task.status = TaskStatus.Paused;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isPaused = vi.fn().mockReturnValue(true);
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
@@ -101,8 +93,6 @@ describe("ServerTask", () => {
 
   it("renders error task correctly", () => {
     task.status = TaskStatus.Error;
-    task.isActive = vi.fn().mockReturnValue(false);
-    task.isError = vi.fn().mockReturnValue(true);
 
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 

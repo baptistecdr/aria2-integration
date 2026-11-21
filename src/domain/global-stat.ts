@@ -12,19 +12,13 @@ const GlobalStatSchema = z.object({
 
 export type GlobalStat = z.infer<typeof GlobalStatSchema>;
 
-const DEFAULT_GLOBAL_STAT: GlobalStat = {
-  downloadSpeed: 0,
-  uploadSpeed: 0,
-  numActive: 0,
-  numWaiting: 0,
-  numStopped: 0,
-  numStoppedTotal: 0,
+export const GlobalStat = {
+  parse(data: unknown): GlobalStat {
+    return GlobalStatSchema.parse(data);
+  },
+
+  // The statistics shown until the server answers.
+  empty(): GlobalStat {
+    return { downloadSpeed: 0, uploadSpeed: 0, numActive: 0, numWaiting: 0, numStopped: 0, numStoppedTotal: 0 };
+  },
 };
-
-export function parseGlobalStat(data: unknown): GlobalStat {
-  return GlobalStatSchema.parse(data);
-}
-
-export function defaultGlobalStat(): GlobalStat {
-  return { ...DEFAULT_GLOBAL_STAT };
-}

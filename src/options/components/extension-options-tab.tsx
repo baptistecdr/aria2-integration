@@ -2,7 +2,7 @@ import { type ChangeEvent, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
 import { ExtensionOptions } from "@/domain/extension-options";
 import Theme from "@/domain/theme";
-import AlertProps from "@/options/models/alert-props";
+import { AlertProps } from "@/options/models/alert-props";
 import { applyExtensionOptionsFormValues, type ExtensionOptionsFormValues, toExtensionOptionsFormValues } from "@/options/models/extension-options-form";
 import { isChromium, isOsAndroid } from "@/platform/browser-info";
 import i18n from "@/platform/i18n";
@@ -12,7 +12,7 @@ import { useFormValues } from "@/shared/ui/use-form-values";
 function ExtensionOptionsTab() {
   const { extensionOptions, updateExtensionOptions } = useExtensionOptions();
   // Lives outside the form so that the confirmation stays visible when the saved options restart the form.
-  const [alertProps, setAlertProps] = useState(new AlertProps());
+  const [alertProps, setAlertProps] = useState(AlertProps.none());
 
   const save = async (values: ExtensionOptionsFormValues) => {
     try {
@@ -30,7 +30,7 @@ function ExtensionOptionsTab() {
       key={ExtensionOptions.serialize(extensionOptions)}
       options={extensionOptions}
       alertProps={alertProps}
-      onCloseAlert={() => setAlertProps(new AlertProps())}
+      onCloseAlert={() => setAlertProps(AlertProps.none())}
       onSave={save}
     />
   );
