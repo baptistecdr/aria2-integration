@@ -1,10 +1,9 @@
 {
   "compilerOptions": {
-    "allowImportingTsExtensions": false,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "module": "ES2022",
+    "module": "preserve",
     "moduleResolution": "bundler",
     "noEmit": true,
     "noFallthroughCasesInSwitch": true,
@@ -16,10 +15,8 @@
     "resolveJsonModule": true,
     "skipLibCheck": true,
     "strict": true,
-    "strictNullChecks": true,
     "target": "ES2023",
-    "types": ["bootstrap", "luxon", "node", "react", "react-dom", "vitest/globals", "webextension-polyfill"],
-    "useDefineForClassFields": true
+    "types": ["bootstrap", "luxon", "node", "react", "react-dom", "vitest/globals", "webextension-polyfill"]
   },
   "include": ["src", "test", "e2e", "playwright.config.ts"]
 }
