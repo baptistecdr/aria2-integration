@@ -1,12 +1,12 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useExtensionOptions } from "@/extension-options-provider";
-import type { ExtensionOptions } from "@/models/extension-options";
-import type { Server } from "@/models/server";
+import type { ExtensionOptions } from "@/domain/extension-options";
+import type { Server } from "@/domain/server";
 import ServersTabs from "@/popup/components/servers-tabs";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
 }));
 

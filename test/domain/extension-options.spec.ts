@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
-import Theme from "@/models/theme";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
+import Theme from "@/domain/theme";
 
 describe("ExtensionOptions", () => {
   const createMockServer = (overrides?: Partial<Server>): Server =>

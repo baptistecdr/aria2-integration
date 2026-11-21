@@ -1,13 +1,15 @@
 import Aria2 from "@baptistecdr/aria2";
 import type { Cookies, Downloads, Menus, Tabs } from "webextension-polyfill";
 import browser from "webextension-polyfill";
-import { captureTorrentFromURL, captureURL, isChromium, isFirefox, showNotification } from "@/aria2-extension";
-import { findCurrentTab } from "@/current-tab-provider";
-import i18n from "@/i18n";
-import { ExtensionOptions } from "@/models/extension-options";
-import type { Server } from "@/models/server";
-import { type GlobalStat, getGlobalStat } from "@/popup/models/global-stat";
-import { basename, dirname } from "@/stdlib";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { type GlobalStat, getGlobalStat } from "@/domain/global-stat";
+import { basename, dirname } from "@/domain/paths";
+import type { Server } from "@/domain/server";
+import { isChromium, isFirefox } from "@/platform/browser-info";
+import i18n from "@/platform/i18n";
+import { showNotification } from "@/platform/notifications";
+import { findCurrentTab } from "@/platform/tabs";
+import { captureTorrentFromURL, captureURL } from "@/services/capture";
 
 export const CONTEXT_MENUS_PARENT_ID = "aria2-integration";
 export const ALARM_NAME = "set-badge";

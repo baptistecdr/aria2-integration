@@ -1,6 +1,6 @@
 import { createContext, type Dispatch, type ReactNode, type SetStateAction, useContext, useEffect, useState } from "react";
-import { ExtensionOptions } from "@/models/extension-options";
-import { applyTheme } from "@/models/theme";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { applyTheme } from "@/shared/ui/theme";
 
 interface ExtensionOptionsContextValue {
   extensionOptions: ExtensionOptions;

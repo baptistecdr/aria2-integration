@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isWindowsPath } from "@/stdlib";
+import { isWindowsPath } from "@/domain/paths";
 
 describe("Windows Path", () => {
   it("should detect as Windows path", () => {

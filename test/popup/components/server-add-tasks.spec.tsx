@@ -2,11 +2,12 @@ import type Aria2 from "@baptistecdr/aria2";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
-import { useCurrentTab } from "@/current-tab-provider";
-import { useExtensionOptions } from "@/extension-options-provider";
-import { Server } from "@/models/server";
+import { Server } from "@/domain/server";
+import { showNotification } from "@/platform/notifications";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
+import { captureTorrentFromFile, captureURL } from "@/services/capture";
+import { useCurrentTab } from "@/shared/ui/current-tab-provider";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 // A plain object is used instead of `vi.mockObject(new Aria2(...))`: auto-mocking a real Aria2 instance
 // (which extends EventTarget) makes vitest's deep-equal assertions on it (toHaveBeenCalledWith) pathologically
@@ -14,21 +15,24 @@ import ServerAddTasks from "@/popup/components/server-add-tasks";
 const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
 const server = Server.create({ uuid: "uuid", name: "TestServer" });
 
-vi.mock("@/aria2-extension", () => ({
+vi.mock("@/services/capture", () => ({
   captureURL: vi.fn(),
   captureTorrentFromFile: vi.fn(),
+}));
+
+vi.mock("@/platform/notifications", () => ({
   showNotification: vi.fn(),
 }));
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
 }));
 
-vi.mock("@/current-tab-provider", () => ({
+vi.mock("@/shared/ui/current-tab-provider", () => ({
   useCurrentTab: vi.fn(),
 }));
 
-vi.mock("@/i18n", () => ({
+vi.mock("@/platform/i18n", () => ({
   default: vi.fn((key: string, ...args: any[]) => `${key}${args.length ? `:${args.join(",")}` : ""}`),
 }));
 

@@ -1,5 +1,5 @@
 import * as z from "zod/mini";
-import { intFromString } from "@/models/zod";
+import { intFromString } from "@/domain/zod";
 
 export const UrisSchema = z.object({
   uri: z.string(),

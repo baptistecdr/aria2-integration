@@ -1,17 +1,17 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { useExtensionOptions } from "@/extension-options-provider";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
-import { ServerIncognitoModeOptions } from "@/models/server-incognito-mode-options";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
+import { ServerIncognitoModeOptions } from "@/domain/server-incognito-mode-options";
 import ServerOptionsTab from "@/options/components/server-options-tab";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
-vi.mock("@/i18n", () => ({
+vi.mock("@/platform/i18n", () => ({
   default: (key: string) => key,
 }));
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
   setExtensionOptions: vi.fn(),
 }));

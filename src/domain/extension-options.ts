@@ -1,7 +1,7 @@
 import browser from "webextension-polyfill";
 import * as z from "zod/mini";
-import { Server, ServerSchema } from "@/models/server";
-import Theme from "@/models/theme";
+import { Server, ServerSchema } from "@/domain/server";
+import Theme from "@/domain/theme";
 
 const ExtensionOptionsSchema = z.object({
   servers: z._default(z.record(z.string(), ServerSchema), () => ({})),

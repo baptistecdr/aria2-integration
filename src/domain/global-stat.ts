@@ -1,6 +1,6 @@
 import type Aria2 from "@baptistecdr/aria2";
 import * as z from "zod/mini";
-import { intFromString } from "@/models/zod";
+import { intFromString } from "@/domain/zod";
 
 const GlobalStatSchema = z.object({
   downloadSpeed: intFromString,

@@ -1,12 +1,12 @@
 import { filesize } from "filesize";
 import { type ChangeEvent, useEffect, useId, useState } from "react";
 import { Alert, Button, Col, Form, FormText, InputGroup, Modal } from "react-bootstrap";
-import { isChromium, isOsAndroid } from "@/aria2-extension";
-import { useExtensionOptions } from "@/extension-options-provider";
-import i18n from "@/i18n";
-import { ExtensionOptions } from "@/models/extension-options";
-import Theme from "@/models/theme";
+import { ExtensionOptions } from "@/domain/extension-options";
+import Theme from "@/domain/theme";
 import AlertProps from "@/options/models/alert-props";
+import { isChromium, isOsAndroid } from "@/platform/browser-info";
+import i18n from "@/platform/i18n";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 const FILESIZE_BASE = { base: 2, output: "object" } as const;
 

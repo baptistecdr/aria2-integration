@@ -1,10 +1,10 @@
 import type Aria2 from "@baptistecdr/aria2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
-import { captureTorrentFromURL, captureURL } from "@/aria2-extension";
 import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
+import { captureTorrentFromURL, captureURL } from "@/services/capture";
 
 // A plain object is used instead of `vi.mockObject(new Aria2(...))`: auto-mocking a real Aria2 instance
 // (which extends EventTarget) makes vitest's deep-equal assertions on it (toHaveBeenCalledWith) pathologically
@@ -13,9 +13,12 @@ function createMockAria2(): Aria2 {
   return { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
 }
 
-vi.mock("@/aria2-extension", () => ({
+vi.mock("@/services/capture", () => ({
   captureTorrentFromURL: vi.fn(),
   captureURL: vi.fn(),
+}));
+
+vi.mock("@/platform/browser-info", () => ({
   isChromium: vi.fn().mockReturnValue(false),
 }));
 

@@ -1,58 +1,6 @@
 import type Aria2 from "@baptistecdr/aria2";
-import browser, { type Notifications } from "webextension-polyfill";
-import type { Server } from "@/models/server";
-
-export function isFirefox() {
-  return !isChromium();
-}
-
-export function isChromium() {
-  // @ts-expect-error Only available on Chromium
-  return browser.downloads.onDeterminingFilename !== undefined;
-}
-
-export async function isOsAndroid(): Promise<boolean> {
-  const platform = await browser.runtime.getPlatformInfo();
-  return platform.os === "android";
-}
-
-export function encodeFileToBase64(file: File | Blob) {
-  return new Promise((resolve, reject) => {
-    const temporaryFileReader = new FileReader();
-    temporaryFileReader.onerror = () => {
-      temporaryFileReader.abort();
-      reject(new Error(`Cannot parse '${file}'.`));
-    };
-    temporaryFileReader.onloadend = () => {
-      if (temporaryFileReader.result) {
-        const splitResult = temporaryFileReader.result.toString().split(/[:;,]/);
-        if (splitResult.length >= 4) {
-          resolve(splitResult[3]);
-        } else {
-          reject(new Error(`Cannot get base64 encoded string for '${file}'.`));
-        }
-      } else {
-        reject(new Error(`Result is empty for '${file}'.`));
-      }
-    };
-    temporaryFileReader.readAsDataURL(file);
-  });
-}
-
-export async function showNotification(message: string) {
-  const options: Notifications.CreateNotificationOptions = {
-    type: "basic",
-    title: "Aria2",
-    iconUrl: "../icons/icon-browser-80.png",
-    message,
-  };
-  await browser.notifications.create(undefined, options);
-}
-
-export async function download(url: string): Promise<Blob> {
-  const res = await fetch(url);
-  return res.blob();
-}
+import type { Server } from "@/domain/server";
+import { download, encodeFileToBase64 } from "@/platform/files";
 
 export async function captureTorrentFromFile(aria2: Aria2, server: Server, file: File, isInIncognitoMode: boolean) {
   const blobAsBase64 = await encodeFileToBase64(file);

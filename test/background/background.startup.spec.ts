@@ -1,17 +1,24 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
-import { captureURL, isChromium } from "@/aria2-extension";
+import { isChromium } from "@/platform/browser-info";
+import { captureURL } from "@/services/capture";
 import browser from "../setupTests";
 
-vi.mock("@/aria2-extension", () => ({
+vi.mock("@/services/capture", () => ({
   captureTorrentFromURL: vi.fn(),
   captureURL: vi.fn().mockResolvedValue(undefined),
+}));
+
+vi.mock("@/platform/browser-info", () => ({
   isChromium: vi.fn().mockReturnValue(false),
   isFirefox: vi.fn().mockReturnValue(true),
+}));
+
+vi.mock("@/platform/notifications", () => ({
   showNotification: vi.fn(),
 }));
 
-vi.mock("@/current-tab-provider", () => ({
+vi.mock("@/platform/tabs", () => ({
   findCurrentTab: vi.fn().mockResolvedValue(undefined),
 }));
 

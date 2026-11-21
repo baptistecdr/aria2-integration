@@ -2,15 +2,21 @@ import { describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
 import { listenerOnDownloadChanged, listenerOnDownloadCreated } from "@/background/background";
 
-vi.mock("@/aria2-extension", () => ({
+vi.mock("@/services/capture", () => ({
   captureTorrentFromURL: vi.fn(),
   captureURL: vi.fn(),
+}));
+
+vi.mock("@/platform/browser-info", () => ({
   isChromium: vi.fn().mockReturnValue(true),
   isFirefox: vi.fn().mockReturnValue(false),
+}));
+
+vi.mock("@/platform/notifications", () => ({
   showNotification: vi.fn(),
 }));
 
-vi.mock("@/current-tab-provider", () => ({
+vi.mock("@/platform/tabs", () => ({
   findCurrentTab: vi.fn().mockResolvedValue(undefined),
 }));
 

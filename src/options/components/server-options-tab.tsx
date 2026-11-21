@@ -1,12 +1,12 @@
 import { type SubmitEvent, useState } from "react";
 import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import i18n from "@/i18n";
+import i18n from "@/platform/i18n";
 import "bootstrap-icons/font/bootstrap-icons.css";
-import { useExtensionOptions } from "@/extension-options-provider";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
-import { ServerIncognitoModeOptions } from "@/models/server-incognito-mode-options";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
+import { ServerIncognitoModeOptions } from "@/domain/server-incognito-mode-options";
 import AlertProps from "@/options/models/alert-props";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 interface Props {
   server: Server;

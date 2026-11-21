@@ -1,9 +1,9 @@
 import Aria2 from "@baptistecdr/aria2";
 import { render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import { type Task, TaskStatus } from "@/domain/task";
 import ServerTask from "@/popup/components/server-task";
-import { type Task, TaskStatus } from "@/popup/models/task";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,

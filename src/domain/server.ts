@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import * as z from "zod/mini";
-import { ServerIncognitoModeOptions, ServerIncognitoModeOptionsSchema } from "@/models/server-incognito-mode-options";
+import { ServerIncognitoModeOptions, ServerIncognitoModeOptionsSchema } from "@/domain/server-incognito-mode-options";
 
 export const ServerSchema = z.object({
   uuid: z._default(z.string(), () => uuidv4()),

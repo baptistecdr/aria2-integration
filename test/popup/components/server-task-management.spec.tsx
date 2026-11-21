@@ -1,10 +1,10 @@
 import Aria2 from "@baptistecdr/aria2";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { captureURL } from "@/aria2-extension";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import type { Task } from "@/domain/task";
 import ServerTaskManagement from "@/popup/components/server-task-management";
-import type { Task } from "@/popup/models/task";
+import { captureURL } from "@/services/capture";
 
 vi.mock("@baptistecdr/aria2", () => ({
   default: vi.fn(function (this: Aria2) {
@@ -16,8 +16,8 @@ vi.mock("@baptistecdr/aria2", () => ({
 const aria2 = new Aria2({});
 const server: Server = { uuid: "server-1" } as Server;
 
-vi.mock("@/aria2-extension", async () => {
-  const actual = await vi.importActual("@/aria2-extension");
+vi.mock("@/services/capture", async () => {
+  const actual = await vi.importActual("@/services/capture");
   return {
     ...actual,
     captureURL: vi.fn(),

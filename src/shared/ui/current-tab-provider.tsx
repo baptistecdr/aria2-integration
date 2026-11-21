@@ -1,16 +1,6 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import browser, { type Tabs } from "webextension-polyfill";
-
-export async function findCurrentTab(): Promise<Tabs.Tab | undefined> {
-  const tabs = await browser.tabs.query({
-    currentWindow: true,
-    active: true,
-  });
-  if (tabs.length === 0) {
-    return undefined;
-  }
-  return tabs[0];
-}
+import type { Tabs } from "webextension-polyfill";
+import { findCurrentTab } from "@/platform/tabs";
 
 const CurrentTabContext = createContext<Tabs.Tab | undefined>(undefined);
 

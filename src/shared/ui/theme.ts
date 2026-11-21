@@ -1,8 +1,4 @@
-enum Theme {
-  Light = "light",
-  Dark = "dark",
-  Auto = "auto",
-}
+import Theme from "@/domain/theme";
 
 export function applyTheme(theme: Theme) {
   if (theme === Theme.Auto && window.matchMedia("(prefers-color-scheme: dark)").matches) {
@@ -13,5 +9,3 @@ export function applyTheme(theme: Theme) {
     document.documentElement.setAttribute("data-bs-theme", theme);
   }
 }
-
-export default Theme;

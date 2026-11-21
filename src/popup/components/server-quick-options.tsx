@@ -1,9 +1,9 @@
 import type { ChangeEvent } from "react";
 import { Col, Form, Row } from "react-bootstrap";
-import { useExtensionOptions } from "@/extension-options-provider";
-import i18n from "@/i18n";
-import { ExtensionOptions } from "@/models/extension-options";
-import type { Server } from "@/models/server";
+import { ExtensionOptions } from "@/domain/extension-options";
+import type { Server } from "@/domain/server";
+import i18n from "@/platform/i18n";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 interface Props {
   server: Server;

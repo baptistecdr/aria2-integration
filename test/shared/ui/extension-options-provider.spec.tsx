@@ -2,12 +2,13 @@ import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser from "webextension-polyfill";
-import { ExtensionOptionsProvider, useExtensionOptions } from "@/extension-options-provider";
-import { ExtensionOptions } from "@/models/extension-options";
-import Theme, { applyTheme } from "@/models/theme";
+import { ExtensionOptions } from "@/domain/extension-options";
+import Theme from "@/domain/theme";
+import { ExtensionOptionsProvider, useExtensionOptions } from "@/shared/ui/extension-options-provider";
+import { applyTheme } from "@/shared/ui/theme";
 
-vi.mock("@/models/theme", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@/models/theme")>();
+vi.mock("@/shared/ui/theme", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@/shared/ui/theme")>();
   return {
     ...actual,
     applyTheme: vi.fn(),

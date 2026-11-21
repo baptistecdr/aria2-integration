@@ -2,18 +2,18 @@ import Aria2 from "@baptistecdr/aria2";
 import { filesize } from "filesize";
 import { useCallback, useEffect, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import i18n from "@/i18n";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import { Task } from "@/domain/task";
+import i18n from "@/platform/i18n";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 import ServerTask from "@/popup/components/server-task";
-import { Task } from "@/popup/models/task";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
-import { isOsAndroid } from "@/aria2-extension";
+import { defaultGlobalStat, getGlobalStat } from "@/domain/global-stat";
+import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
-import { defaultGlobalStat, getGlobalStat } from "@/popup/models/global-stat";
 
 const FILESIZE_BASE = { base: 2 } as const;
 const POLL_INTERVAL_MS = 1000; // 1 second

@@ -1,7 +1,7 @@
 import * as z from "zod/mini";
-import { intFromString } from "@/models/zod";
-import { FileSchema } from "@/popup/models/file";
-import { basename } from "@/stdlib";
+import { FileSchema } from "@/domain/file";
+import { basename } from "@/domain/paths";
+import { intFromString } from "@/domain/zod";
 
 export enum TaskStatus {
   Active = "active",

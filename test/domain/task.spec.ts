@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { Task, TaskStatus } from "@/popup/models/task";
+import { Task, TaskStatus } from "@/domain/task";
 
 const baseTaskData = {
   completedLength: "500",

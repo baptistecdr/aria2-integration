@@ -1,8 +1,8 @@
 import { useEffect, useId, useState } from "react";
 import { Tab, Tabs } from "react-bootstrap";
-import { useExtensionOptions } from "@/extension-options-provider";
-import i18n from "@/i18n";
+import i18n from "@/platform/i18n";
 import ServerTab from "@/popup/components/server-tab";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 function ServersTabs() {
   const { extensionOptions } = useExtensionOptions();

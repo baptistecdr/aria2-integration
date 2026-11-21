@@ -3,7 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import ServerTab from "@/popup/components/server-tab";
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: vi.fn(),
 }));
 

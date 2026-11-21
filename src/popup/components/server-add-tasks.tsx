@@ -1,11 +1,12 @@
 import type Aria2 from "@baptistecdr/aria2";
 import { type SubmitEvent, useState } from "react";
 import { Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import { captureTorrentFromFile, captureURL, showNotification } from "@/aria2-extension";
-import { useCurrentTab } from "@/current-tab-provider";
-import { useExtensionOptions } from "@/extension-options-provider";
-import i18n from "@/i18n";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import i18n from "@/platform/i18n";
+import { showNotification } from "@/platform/notifications";
+import { captureTorrentFromFile, captureURL } from "@/services/capture";
+import { useCurrentTab } from "@/shared/ui/current-tab-provider";
+import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
 
 interface Props {
   aria2: Aria2;

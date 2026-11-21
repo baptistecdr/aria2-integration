@@ -1,8 +1,8 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 
 const { mockSetExtensionOptions, mockUseExtensionOptions } = vi.hoisted(() => ({
@@ -10,7 +10,7 @@ const { mockSetExtensionOptions, mockUseExtensionOptions } = vi.hoisted(() => ({
   mockUseExtensionOptions: vi.fn(),
 }));
 
-vi.mock("@/extension-options-provider", () => ({
+vi.mock("@/shared/ui/extension-options-provider", () => ({
   useExtensionOptions: mockUseExtensionOptions,
 }));
 

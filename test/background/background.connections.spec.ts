@@ -1,8 +1,8 @@
 import Aria2 from "@baptistecdr/aria2";
 import { describe, expect, it } from "vitest";
 import { createConnections } from "@/background/background";
-import { ExtensionOptions } from "@/models/extension-options";
-import { Server } from "@/models/server";
+import { ExtensionOptions } from "@/domain/extension-options";
+import { Server } from "@/domain/server";
 
 describe("Connections", () => {
   it("should create one connection per server", () => {

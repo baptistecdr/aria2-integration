@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import Theme, { applyTheme } from "@/models/theme";
+import Theme from "@/domain/theme";
+import { applyTheme } from "@/shared/ui/theme";
 
 describe("Apply Theme", () => {
   const originalDocumentElement = document.documentElement;
