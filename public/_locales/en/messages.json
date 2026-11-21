@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "No server available to capture downloads."
+  },
+  "managedByPolicy": {
+    "message": "Set by your organization."
+  },
+  "managedServersByPolicy": {
+    "message": "The servers are set by your organization: they can't be changed."
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "Capture downloads is set by your organization."
   }
 }

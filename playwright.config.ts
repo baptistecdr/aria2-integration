@@ -1,6 +1,6 @@
 import { defineConfig } from "@playwright/test";
 
-// The extension must be built for Chromium first: `npm run build:chromium`.
+// Run with `npm run test:e2e`, which builds the extension for both browsers first.
 // aria2 runs in Docker (compose.yaml), started by the global setup.
 export default defineConfig({
   testDir: "e2e",
@@ -18,4 +18,11 @@ export default defineConfig({
   use: {
     trace: "retain-on-failure",
   },
+  projects: [
+    // Loads the extension built in dist by `npm run build:chromium`.
+    { name: "chromium", testIgnore: "firefox/**" },
+    // Drives Firefox through WebDriver BiDi and loads the extension built in dist-firefox by `npm run build:firefox:e2e`.
+    // Set FIREFOX_PATH when Firefox is not at its default location.
+    { name: "firefox", testMatch: "firefox/**/*.spec.ts" },
+  ],
 });

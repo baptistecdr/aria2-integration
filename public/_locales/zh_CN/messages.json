@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "没有可用的服务器来拦截下载."
+  },
+  "managedByPolicy": {
+    "message": "由您的组织设置。"
+  },
+  "managedServersByPolicy": {
+    "message": "服务器由您的组织设置,无法更改。"
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "拦截下载由您的组织设置。"
   }
 }

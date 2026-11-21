@@ -3,8 +3,8 @@ import type { AddressInfo } from "node:net";
 import { resolve } from "node:path";
 import Aria2 from "@baptistecdr/aria2";
 import { type BrowserContext, test as base, chromium, type Page, type Worker } from "@playwright/test";
-import type { ExtensionOptions } from "@/models/extension-options";
-import type { Server } from "@/models/server";
+import type { ExtensionOptions } from "@/domain/extension-options";
+import type { Server } from "@/domain/server";
 
 // Only available inside the extension's service worker, where the evaluated callbacks run.
 declare const chrome: any;

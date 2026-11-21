@@ -4,9 +4,9 @@ import "bootstrap-icons/font/bootstrap-icons.css";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap";
 import { Container } from "react-bootstrap";
-import { isOsAndroid } from "@/aria2-extension";
-import { CurrentTabProvider } from "@/current-tab-provider";
-import { ExtensionOptionsProvider } from "@/extension-options-provider";
+import { isOsAndroid } from "@/platform/browser-info";
+import { CurrentTabProvider } from "@/shared/ui/current-tab-provider";
+import { ExtensionOptionsProvider } from "@/shared/ui/extension-options-provider";
 import ServersTabs from "./components/servers-tabs";
 
 const container = document.getElementById("root");

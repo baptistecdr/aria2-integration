@@ -34,4 +34,5 @@ if (process.env.BROWSER === "firefox") {
   manifest.storage = { managed_schema: "managed-schema.json" };
 }
 
-fs.writeFileSync("./dist/manifest.json", JSON.stringify(manifest, null, 2));
+const outDir = process.env.OUT_DIR || "./dist";
+fs.writeFileSync(`${outDir}/manifest.json`, JSON.stringify(manifest, null, 2));

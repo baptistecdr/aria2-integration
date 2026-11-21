@@ -290,5 +290,14 @@
   },
   "toggleCaptureDownloadsNoServer": {
     "message": "Aucun serveur disponible pour capturer les téléchargements."
+  },
+  "managedByPolicy": {
+    "message": "Défini par votre organisation."
+  },
+  "managedServersByPolicy": {
+    "message": "Les serveurs sont définis par votre organisation : ils ne peuvent pas être modifiés."
+  },
+  "toggleCaptureDownloadsManaged": {
+    "message": "La capture des téléchargements est définie par votre organisation."
   }
 }
