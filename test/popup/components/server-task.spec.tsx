@@ -1,4 +1,5 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
 import { type Task, TaskStatus } from "@/domain/task";
@@ -134,5 +135,29 @@ describe("ServerTask", () => {
 
     expect(screen.getByText("Translated: popupDownloadSpeed")).toHaveClass("visually-hidden");
     expect(screen.getByText("Translated: popupUploadSpeed")).toHaveClass("visually-hidden");
+  });
+
+  it.each([
+    { status: TaskStatus.Active, completed: 40, color: "inherit" },
+    { status: TaskStatus.Active, completed: 80, color: "white" },
+    { status: TaskStatus.Paused, completed: 80, color: "rgb(0, 0, 0)" },
+    { status: TaskStatus.Complete, completed: 100, color: "white" },
+  ])("writes the percentage of a $status task at $completed % in a contrasting color", ({ status, completed, color }) => {
+    task.status = status;
+    task.completedLength = (task.totalLength * completed) / 100;
+
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    // The inline style: jsdom computes "inherit" to black as well.
+    expect(screen.getByText(`${completed} %`).style.color).toBe(color);
+  });
+
+  it("shows the full file name when it gets the keyboard focus", async () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    await userEvent.tab();
+    expect(document.activeElement).toHaveTextContent("test-file.mp4");
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("test-file.mp4");
   });
 });
