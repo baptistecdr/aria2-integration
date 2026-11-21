@@ -14,8 +14,10 @@ function ServerQuickOptions({ server }: Props) {
   const { extensionOptions, managedOptions, updateExtensionOptions } = useExtensionOptions();
 
   const isCapturingOnThisServer = extensionOptions.captureDownloads && extensionOptions.captureServer === server.uuid;
-  // Turning capture on or off here changes both options.
-  const captureDownloadsManaged = managedOptions.has("captureDownloads") || managedOptions.has("captureServer");
+  // Turning capture on or off here also makes this server the capture server: a capture server set by the policy only
+  // allows it on that server.
+  const captureDownloadsManaged =
+    managedOptions.has("captureDownloads") || (managedOptions.has("captureServer") && extensionOptions.captureServer !== server.uuid);
   const useCompleteFilePathManaged = managedOptions.has("useCompleteFilePath");
 
   const updateOptions = (overrides: Partial<ExtensionOptions>) => updateExtensionOptions((options) => ExtensionOptions.withOverrides(options, overrides));

@@ -3,6 +3,7 @@ import type { BackgroundContext } from "@/background/context";
 import { ExtensionOptions } from "@/domain/extension-options";
 import i18n from "@/platform/i18n";
 import { showNotification } from "@/platform/notifications";
+import { CaptureServerMissingError } from "@/services/options-store";
 
 export const OPEN_POPUP_COMMAND = "open_popup";
 export const TOGGLE_CAPTURE_DOWNLOADS_COMMAND = "toggle_capture_downloads";
@@ -27,19 +28,22 @@ async function toggleCaptureDownloads(store: BackgroundContext["store"]) {
     await showNotification(i18n("toggleCaptureDownloadsManaged"));
     return;
   }
-  let hasServer = true;
-  // The toggle is computed from the latest stored options, so it can't undo a change made meanwhile on another page.
-  const options = await store.update((current) => {
-    const captureServer = current.captureServer !== "" ? current.captureServer : (Object.keys(current.servers)[0] ?? "");
-    if (captureServer === "") {
-      hasServer = false;
-      return current;
+  let options: ExtensionOptions;
+  try {
+    // The toggle is computed from the latest stored options, so it can't undo a change made meanwhile on another page.
+    options = await store.update((current) => {
+      const captureServer = current.captureServer !== "" ? current.captureServer : (Object.keys(current.servers)[0] ?? "");
+      return ExtensionOptions.withOverrides(current, { captureServer, captureDownloads: !current.captureDownloads });
+    });
+  } catch (error) {
+    // No server at all, or the policy sets a capture server that does not exist.
+    if (error instanceof CaptureServerMissingError) {
+      await showNotification(i18n("toggleCaptureDownloadsNoServer"));
+      return;
     }
-    return ExtensionOptions.withOverrides(current, { captureServer, captureDownloads: !current.captureDownloads });
-  });
-  if (!hasServer) {
-    await showNotification(i18n("toggleCaptureDownloadsNoServer"));
-  } else if (options.captureDownloads) {
+    throw error;
+  }
+  if (options.captureDownloads) {
     await showNotification(i18n("toggleCaptureDownloadsEnabled", options.servers[options.captureServer].name));
   } else {
     await showNotification(i18n("toggleCaptureDownloadsDisabled"));

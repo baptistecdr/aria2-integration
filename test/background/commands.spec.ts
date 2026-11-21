@@ -80,6 +80,15 @@ describe("Commands", () => {
     expect(showNotification).toHaveBeenCalledWith("Translated: toggleCaptureDownloadsManaged");
   });
 
+  it("tells the user there is no server when the capture server set by the policy does not exist", async () => {
+    const store = fakeOptionsStore({ servers: { server1 }, captureServer: "missing-server" }, ["captureServer"]);
+
+    await createCommandHandler({ store, connections })(TOGGLE_CAPTURE_DOWNLOADS_COMMAND);
+
+    expect(store.get().captureDownloads).toBe(false);
+    expect(showNotification).toHaveBeenCalledWith("Translated: toggleCaptureDownloadsNoServer");
+  });
+
   it("toggles capture downloads on the capture server set by the policy", async () => {
     const store = fakeOptionsStore({ servers: { server1, server2 }, captureServer: "server2" }, ["captureServer"]);
 

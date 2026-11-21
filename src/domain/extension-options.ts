@@ -56,6 +56,11 @@ export const ExtensionOptions = {
     return ExtensionOptions.withOverrides(options, overrides);
   },
 
+  // Whether downloads are captured without a server to send them to: capture downloads needs an existing capture server.
+  capturesWithoutServer(options: ExtensionOptions): boolean {
+    return options.captureDownloads && options.servers[options.captureServer] === undefined;
+  },
+
   // Converts the options set by an enterprise policy into overrides of the user options.
   // Throws when the policy is invalid.
   parseManagedOverrides(managed: Record<string, unknown>): Partial<ExtensionOptions> {

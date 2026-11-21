@@ -3,7 +3,7 @@ import browser from "webextension-polyfill";
 import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
 import Theme from "@/domain/theme";
-import { createOptionsStore, loadOptions, type OptionsStore, saveOptions } from "@/services/options-store";
+import { CaptureServerMissingError, createOptionsStore, loadOptions, type OptionsStore, saveOptions } from "@/services/options-store";
 
 const createMockServer = (overrides?: Partial<Server>): Server =>
   Server.create({
@@ -288,11 +288,11 @@ describe("options store", () => {
       const listener = vi.fn();
       store.subscribe(listener);
 
-      const updated = await store.update((options) => ExtensionOptions.withOverrides(options, { captureDownloads: true }));
+      const updated = await store.update((options) => ExtensionOptions.withOverrides(options, { notifyErrorOccurs: false }));
 
-      expect(updated.captureDownloads).toBe(true);
-      expect(storage.stored().captureDownloads).toBe(true);
-      expect(store.get().captureDownloads).toBe(true);
+      expect(updated.notifyErrorOccurs).toBe(false);
+      expect(storage.stored().notifyErrorOccurs).toBe(false);
+      expect(store.get().notifyErrorOccurs).toBe(false);
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith(updated);
     });
@@ -304,9 +304,9 @@ describe("options store", () => {
       // Another page changes the theme, and this store has not reloaded yet.
       storage.writeFromElsewhere(ExtensionOptions.create({ theme: Theme.Dark }));
 
-      await store.update((options) => ExtensionOptions.withOverrides(options, { captureDownloads: true }));
+      await store.update((options) => ExtensionOptions.withOverrides(options, { notifyErrorOccurs: false }));
 
-      expect(storage.stored()).toEqual(ExtensionOptions.create({ theme: Theme.Dark, captureDownloads: true }));
+      expect(storage.stored()).toEqual(ExtensionOptions.create({ theme: Theme.Dark, notifyErrorOccurs: false }));
     });
 
     it("should apply concurrent updates one after the other", async () => {
@@ -314,11 +314,11 @@ describe("options store", () => {
       store = createOptionsStore();
 
       await Promise.all([
-        store.update((options) => ExtensionOptions.withOverrides(options, { captureDownloads: true })),
+        store.update((options) => ExtensionOptions.withOverrides(options, { notifyErrorOccurs: false })),
         store.update((options) => ExtensionOptions.withOverrides(options, { useCompleteFilePath: true })),
       ]);
 
-      expect(storage.stored()).toEqual(ExtensionOptions.create({ captureDownloads: true, useCompleteFilePath: true }));
+      expect(storage.stored()).toEqual(ExtensionOptions.create({ notifyErrorOccurs: false, useCompleteFilePath: true }));
     });
 
     it("should notify subscribers when the options are changed elsewhere", async () => {
@@ -354,7 +354,7 @@ describe("options store", () => {
       const unsubscribe = store.subscribe(listener);
 
       unsubscribe();
-      await store.update((options) => ExtensionOptions.withOverrides(options, { captureDownloads: true }));
+      await store.update((options) => ExtensionOptions.withOverrides(options, { notifyErrorOccurs: false }));
 
       expect(listener).not.toHaveBeenCalled();
     });
@@ -434,6 +434,45 @@ describe("options store", () => {
 
       await vi.waitFor(() => expect(store.get().theme).toBe(Theme.Light));
       expect([...store.managed()]).toEqual(["captureDownloads"]);
+    });
+
+    describe("capture downloads needs a capture server", () => {
+      const server = createMockServer({ uuid: "server1" });
+
+      it.each([
+        ["an empty", ""],
+        ["an unknown", "missing-server"],
+      ])("should refuse to enable capture downloads when the policy sets %s capture server", async (_, captureServer) => {
+        policy = { captureServer };
+        const storage = fakeSyncStorage(ExtensionOptions.create({ servers: { server1: server }, captureServer: "server1" }));
+        store = createOptionsStore();
+
+        const update = store.update((options) => ExtensionOptions.withOverrides(options, { captureServer: "server1", captureDownloads: true }));
+
+        await expect(update).rejects.toBeInstanceOf(CaptureServerMissingError);
+        expect(storage.stored().captureDownloads).toBe(false);
+        expect(store.get().captureDownloads).toBe(false);
+      });
+
+      it("should keep accepting other changes while the policy enables capture downloads without a server", async () => {
+        policy = { captureDownloads: true };
+        const storage = fakeSyncStorage(ExtensionOptions.create({ servers: { server1: server } }));
+        store = createOptionsStore();
+
+        await store.update((options) => ExtensionOptions.withOverrides(options, { theme: Theme.Light }));
+
+        expect(storage.stored().theme).toBe(Theme.Light);
+      });
+
+      it("should enable capture downloads on the capture server set by the policy", async () => {
+        policy = { captureServer: "server1" };
+        fakeSyncStorage(ExtensionOptions.create({ servers: { server1: server } }));
+        store = createOptionsStore();
+
+        const updated = await store.update((options) => ExtensionOptions.withOverrides(options, { captureDownloads: true }));
+
+        expect(updated).toMatchObject({ captureDownloads: true, captureServer: "server1" });
+      });
     });
 
     it("should notify subscribers when the policy changes which options it sets, even with the same values", async () => {

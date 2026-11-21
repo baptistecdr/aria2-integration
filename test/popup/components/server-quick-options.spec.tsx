@@ -255,6 +255,19 @@ describe("ServerQuickOptions", () => {
       expect(screen.getByText(/managedByPolicy/)).toBeInTheDocument();
     });
 
+    it("lets the user toggle capture downloads on the capture server set by the policy", () => {
+      mockUseExtensionOptions.mockReturnValue({
+        extensionOptions: ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid }),
+        updateExtensionOptions: mockUpdateExtensionOptions,
+        managedOptions: new Set(["captureServer"]),
+      });
+
+      render(<ServerQuickOptions server={server} />);
+
+      expect(screen.getByLabelText(CAPTURE_DOWNLOADS_LABEL)).toBeEnabled();
+      expect(screen.queryByText(/managedByPolicy/)).not.toBeInTheDocument();
+    });
+
     it("disables use complete file path when the policy sets it", () => {
       const optionsWithCapture = ExtensionOptions.create({ servers: { [server.uuid]: server }, captureServer: server.uuid, captureDownloads: true });
       mockUseExtensionOptions.mockReturnValue({

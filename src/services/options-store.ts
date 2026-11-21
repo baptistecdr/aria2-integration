@@ -50,6 +50,15 @@ export async function saveOptions(options: ExtensionOptions): Promise<void> {
   await writeSyncStorage({ [OPTIONS_KEY]: ExtensionOptions.serialize(options) });
 }
 
+// Thrown by update() when the change would capture downloads without a capture server, e.g. when the policy sets a
+// capture server that does not exist.
+export class CaptureServerMissingError extends Error {
+  constructor() {
+    super("Capture downloads needs an existing capture server");
+    this.name = "CaptureServerMissingError";
+  }
+}
+
 export type OptionsListener = (options: ExtensionOptions) => void;
 export type OptionsUpdater = (current: ExtensionOptions) => ExtensionOptions;
 
@@ -59,7 +68,8 @@ export type OptionsUpdater = (current: ExtensionOptions) => ExtensionOptions;
  * - `ready()` resolves once the options are loaded from storage: anything reading the options right after the context
  *   starts (e.g. a background event dispatched at browser startup) must wait for it.
  * - `update()` always applies the change to the latest stored options, so concurrent writers (options page, popup,
- *   keyboard shortcut) do not overwrite each other with stale values.
+ *   keyboard shortcut) do not overwrite each other with stale values. It rejects with CaptureServerMissingError, without
+ *   saving, when the change would capture downloads without an existing capture server.
  * - `subscribe()` notifies about every change, wherever it was made.
  * - `managed()` tells which options are set by an enterprise policy. Changing them has no effect: the user's own values
  *   stay in storage, and apply again if the policy stops setting them.
@@ -127,14 +137,20 @@ export function createOptionsStore(): OptionsStore {
       const update = updates.then(async () => {
         await loaded;
         const stored = await readStoredOptions();
-        const changed = updater(effectiveOptions(stored));
+        const current = effectiveOptions(stored);
+        const changed = updater(current);
         // The options set by the policy keep the user's own values in storage: the policy applies on top of them.
         const userOptions = ExtensionOptions.withOverrides(
           changed,
           Object.fromEntries(Object.keys(stored.policy).map((key) => [key, stored.userOptions[key as ManagedOption]])),
         );
-        await saveOptions(userOptions);
         const next = stateOf({ userOptions, policy: stored.policy });
+        // Checked once the policy is applied: it can replace the capture server the change chose. A policy enabling
+        // capture downloads without a server is left as it is, so that the user can still change the other options.
+        if (ExtensionOptions.capturesWithoutServer(next.options) && !ExtensionOptions.capturesWithoutServer(current)) {
+          throw new CaptureServerMissingError();
+        }
+        await saveOptions(userOptions);
         set(next);
         return next.options;
       });
