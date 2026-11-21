@@ -1,47 +1,37 @@
-import Aria2 from "@baptistecdr/aria2";
 import { filesize } from "filesize";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import i18n from "@/i18n";
-import type { Server } from "@/models/server";
+import type { Server } from "@/domain/server";
+import i18n from "@/platform/i18n";
 import ServerAddTasks from "@/popup/components/server-add-tasks";
 import ServerQuickOptions from "@/popup/components/server-quick-options";
 import ServerTask from "@/popup/components/server-task";
-import { Task } from "@/popup/models/task";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
-import { isOsAndroid } from "@/aria2-extension";
+import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
-import { defaultGlobalStat, getGlobalStat } from "@/popup/models/global-stat";
+import { useAria2Tasks } from "@/popup/hooks/use-aria2-tasks";
+import { createAria2Client } from "@/services/aria2-client";
+import { runWithNotification } from "@/services/notify";
 
 const FILESIZE_BASE = { base: 2 } as const;
-const POLL_INTERVAL_MS = 1000; // 1 second
 
 interface Props {
   server: Server;
 }
 
-type TaskGroups = [Task[][], Task[][], Task[][]];
-
-async function getTasks(aria2server: Aria2, numWaiting: number, numStopped: number): Promise<Task[]> {
-  const result = (await aria2server.multicall([["tellActive"], ["tellWaiting", 0, numWaiting], ["tellStopped", 0, numStopped]])) as TaskGroups;
-  return Task.parseMany(result.flatMap((tasks) => (Array.isArray(tasks) ? tasks : [])));
-}
-
 function ServerTab({ server }: Props) {
-  const [loading, setLoading] = useState(true);
-  const [aria2] = useState(new Aria2(server));
-  const [globalStat, setGlobalStat] = useState(defaultGlobalStat());
-  const [tasks, setTasks] = useState<Task[]>([]);
+  // The server can be changed elsewhere while the popup is open: reconnect when a setting of the connection changes, but
+  // not on a rename or new download parameters.
+  const { secure, host, port, path, secret } = server;
+  const aria2 = useMemo(() => createAria2Client({ secure, host, port, path, secret }), [secure, host, port, path, secret]);
+  const { loading, failed, globalStat, tasks } = useAria2Tasks(aria2);
   const [showAddTask, setShowAddTask] = useState(false);
   const [showQuickOptions, setShowQuickOptions] = useState(false);
-  const [defaultMessage, setDefaultMessage] = useState(i18n("serverNoTasks"));
   const [isAndroid, setIsAndroid] = useState(false);
 
-  const onClickPurge = () => {
-    aria2.call("aria2.purgeDownloadResult");
-  };
+  const onClickPurge = () => runWithNotification(() => aria2.purgeDownloadResult(), {});
 
   const toggleAddTask = useCallback(() => {
     setShowAddTask((prev) => !prev);
@@ -53,38 +43,9 @@ function ServerTab({ server }: Props) {
     setShowAddTask(false);
   }, []);
 
-  const updateTasks = useCallback(async () => {
-    try {
-      const stat = await getGlobalStat(aria2);
-      const fetchedTasks = await getTasks(aria2, stat.numWaiting, stat.numStopped);
-      setGlobalStat(stat);
-      setTasks(fetchedTasks);
-    } catch (error) {
-      console.error(error);
-      setDefaultMessage(i18n("serverError"));
-    }
-    setLoading(false);
-  }, [aria2]);
-
   useEffect(() => {
-    let cancelled = false;
-    let timeoutId: number | undefined;
-
-    const poll = async () => {
-      await updateTasks();
-      if (!cancelled) {
-        timeoutId = window.setTimeout(poll, POLL_INTERVAL_MS);
-      }
-    };
-
-    isOsAndroid().then(setIsAndroid);
-    poll();
-
-    return () => {
-      cancelled = true;
-      clearTimeout(timeoutId);
-    };
-  }, [updateTasks]);
+    void isOsAndroid().then(setIsAndroid);
+  }, []);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -121,7 +82,7 @@ function ServerTab({ server }: Props) {
       {showTaskList && tasks.length === 0 && (
         <Row>
           <Col xs={12}>
-            <em>{defaultMessage}</em>
+            <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
           </Col>
         </Row>
       )}

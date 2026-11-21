@@ -25,6 +25,7 @@ describe("generate-manifest", () => {
 
   afterEach(() => {
     delete process.env.BROWSER;
+    delete process.env.OUT_DIR;
     vol.reset();
     vi.resetModules();
   });
@@ -101,5 +102,16 @@ describe("generate-manifest", () => {
     expect(parsedManifest.version).toBe(manifest.version);
     expect(parsedManifest.permissions).toEqual(manifest.permissions);
     expect(parsedManifest.background).toBeUndefined();
+  });
+
+  it("should write the manifest to OUT_DIR when it is set", async () => {
+    process.env.BROWSER = "firefox";
+    process.env.OUT_DIR = "./dist-firefox";
+    vol.mkdirSync("./dist-firefox");
+
+    await import(scriptPath);
+
+    expect(JSON.parse(vol.readFileSync("./dist-firefox/manifest.json", "utf8") as string).browser_specific_settings).toBeDefined();
+    expect(vol.existsSync("./dist/manifest.json")).toBe(false);
   });
 });
