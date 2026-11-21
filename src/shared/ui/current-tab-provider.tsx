@@ -1,24 +1,23 @@
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import type { Tabs } from "webextension-polyfill";
-import { findCurrentTab } from "@/platform/tabs";
+import { findCurrentTab, type Tab } from "@/platform/tabs";
 
-const CurrentTabContext = createContext<Tabs.Tab | undefined>(undefined);
+const CurrentTabContext = createContext<Tab | undefined>(undefined);
 
 interface CurrentTabProviderProps {
   children: ReactNode;
 }
 
 function CurrentTabProvider({ children }: CurrentTabProviderProps) {
-  const [currentTab, setCurrentTab] = useState<Tabs.Tab | undefined>(undefined);
+  const [currentTab, setCurrentTab] = useState<Tab | undefined>(undefined);
 
   useEffect(() => {
-    findCurrentTab().then(setCurrentTab);
+    void findCurrentTab().then(setCurrentTab);
   }, []);
 
   return <CurrentTabContext.Provider value={currentTab}>{children}</CurrentTabContext.Provider>;
 }
 
-function useCurrentTab(): Tabs.Tab | undefined {
+function useCurrentTab(): Tab | undefined {
   return useContext(CurrentTabContext);
 }
 

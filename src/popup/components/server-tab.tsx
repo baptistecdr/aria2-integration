@@ -41,7 +41,7 @@ function ServerTab({ server }: Props) {
   }, []);
 
   useEffect(() => {
-    isOsAndroid().then(setIsAndroid);
+    void isOsAndroid().then(setIsAndroid);
   }, []);
 
   if (loading) {

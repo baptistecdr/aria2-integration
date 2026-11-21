@@ -31,7 +31,8 @@ export function keepContextMenusInSync(store: OptionsStore) {
   const rebuild = (options: ExtensionOptions) => {
     rebuilds = rebuilds.then(() => createContextMenus(options)).catch((error) => console.error(error));
   };
-  store.ready().then((options) => {
+  // ready() never rejects.
+  void store.ready().then((options) => {
     rebuild(options);
     store.subscribe(rebuild);
   });

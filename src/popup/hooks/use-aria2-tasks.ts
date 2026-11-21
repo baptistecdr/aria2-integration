@@ -39,7 +39,8 @@ export function useAria2Tasks(aria2: Aria2Client): Aria2Tasks {
         timeoutId = window.setTimeout(poll, POLL_INTERVAL_MS);
       }
     };
-    poll();
+    // poll() handles its own errors.
+    void poll();
 
     return () => {
       cancelled = true;

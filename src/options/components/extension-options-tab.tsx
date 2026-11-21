@@ -61,7 +61,7 @@ function ExtensionOptionsForm({ options, alertProps, onCloseAlert, onSave }: Ext
   const themeAutoId = useId();
 
   useEffect(() => {
-    isOsAndroid().then(setIsAndroid);
+    void isOsAndroid().then(setIsAndroid);
   }, []);
 
   const { captureDownloads, captureServer } = values;

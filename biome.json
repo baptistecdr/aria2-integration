@@ -1,5 +1,5 @@
 {
-  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+  "$schema": "https://biomejs.dev/schemas/2.6.8/schema.json",
   "formatter": {
     "enabled": true,
     "formatWithErrors": false,
@@ -22,6 +22,9 @@
       "preset": "recommended",
       "suspicious": {
         "noExplicitAny": "off"
+      },
+      "nursery": {
+        "noFloatingPromises": "error"
       }
     }
   },
@@ -40,5 +43,178 @@
       "quoteStyle": "double",
       "attributePosition": "auto"
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": ["src/domain/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/platform/**", "@/services/**", "@/shared/**", "@/background/**", "@/popup/**", "@/options/**", "@baptistecdr/aria2"],
+                    "message": "domain/ is pure logic: it can't depend on the browser, aria2 or the other layers."
+                  }
+                ],
+                "paths": {
+                  "webextension-polyfill": "Only platform/ and background/ use the WebExtension APIs: go through a platform/ module.",
+                  "react": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-bootstrap": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-dom": "React is only used by the pages (popup/, options/ and shared/ui/)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/platform/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/services/**", "@/shared/**", "@/background/**", "@/popup/**", "@/options/**"],
+                    "message": "Dependencies point inward: background/, popup/ and options/ use shared/ui/ and services/, which use domain/ and platform/."
+                  }
+                ],
+                "paths": {
+                  "react": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-bootstrap": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-dom": "React is only used by the pages (popup/, options/ and shared/ui/)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/services/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/shared/**", "@/background/**", "@/popup/**", "@/options/**"],
+                    "message": "Dependencies point inward: background/, popup/ and options/ use shared/ui/ and services/, which use domain/ and platform/."
+                  }
+                ],
+                "paths": {
+                  "webextension-polyfill": "Only platform/ and background/ use the WebExtension APIs: go through a platform/ module.",
+                  "react": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-bootstrap": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-dom": "React is only used by the pages (popup/, options/ and shared/ui/)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/shared/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/background/**", "@/popup/**", "@/options/**"],
+                    "message": "Dependencies point inward: background/, popup/ and options/ use shared/ui/ and services/, which use domain/ and platform/."
+                  }
+                ],
+                "paths": {
+                  "webextension-polyfill": "Only platform/ and background/ use the WebExtension APIs: go through a platform/ module."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/background/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/shared/**", "@/popup/**", "@/options/**"],
+                    "message": "The background script has no page: it can't use the UI code."
+                  }
+                ],
+                "paths": {
+                  "react": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-bootstrap": "React is only used by the pages (popup/, options/ and shared/ui/).",
+                  "react-dom": "React is only used by the pages (popup/, options/ and shared/ui/)."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/popup/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/background/**", "@/options/**"],
+                    "message": "Dependencies point inward: background/, popup/ and options/ use shared/ui/ and services/, which use domain/ and platform/."
+                  }
+                ],
+                "paths": {
+                  "webextension-polyfill": "Only platform/ and background/ use the WebExtension APIs: go through a platform/ module."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/options/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["@/background/**", "@/popup/**"],
+                    "message": "Dependencies point inward: background/, popup/ and options/ use shared/ui/ and services/, which use domain/ and platform/."
+                  }
+                ],
+                "paths": {
+                  "webextension-polyfill": "Only platform/ and background/ use the WebExtension APIs: go through a platform/ module."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }

@@ -2,10 +2,9 @@ import { filesize } from "filesize";
 import { Duration } from "luxon";
 import { useId } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
-import browser from "webextension-polyfill";
 import type { Server } from "@/domain/server";
-import { Task } from "@/domain/task";
-import i18n from "@/platform/i18n";
+import { Task, TaskStatus } from "@/domain/task";
+import i18n, { getUILanguage, type MessageKey } from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
 import type { Aria2Client } from "@/services/aria2-client";
 
@@ -18,10 +17,19 @@ interface Props {
 const FILESIZE_BASE = { base: 2 } as const;
 const PROGRESS_TEXT_COLOR_THRESHOLD = 55;
 
+const STATUS_MESSAGES: Record<TaskStatus, MessageKey> = {
+  [TaskStatus.Active]: "taskStatusActive",
+  [TaskStatus.Complete]: "taskStatusComplete",
+  [TaskStatus.Error]: "taskStatusError",
+  [TaskStatus.Paused]: "taskStatusPaused",
+  [TaskStatus.Removed]: "taskStatusRemoved",
+  [TaskStatus.Waiting]: "taskStatusWaiting",
+};
+
 function formatETA(seconds: number): string {
   const milliseconds = seconds * 1000;
   const duration = Duration.fromMillis(milliseconds, {
-    locale: browser.i18n.getUILanguage(),
+    locale: getUILanguage(),
   });
   return duration.toISOTime()?.replace(/\.\d{3}$/, "") ?? "";
 }
@@ -43,8 +51,7 @@ function ServerTask({ server, aria2, task }: Props) {
     }
   };
 
-  const capitalizedStatus = task.status.charAt(0).toUpperCase() + task.status.slice(1);
-  const status = i18n(`taskStatus${capitalizedStatus}`);
+  const status = i18n(STATUS_MESSAGES[task.status]);
 
   const eta = task.downloadSpeed !== 0 ? formatETA((task.totalLength - task.completedLength) / task.downloadSpeed) : "∞";
 
