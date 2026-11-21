@@ -430,6 +430,19 @@ describe("ServerOptionsTab", () => {
     expect(screen.queryByText("serverOptionsDelete")).not.toBeInTheDocument();
   });
 
+  it("still copies the server uuid when the policy sets the servers", async () => {
+    vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["servers"]) });
+    const user = userEvent.setup();
+    const writeText = vi.spyOn(navigator.clipboard, "writeText").mockResolvedValue(undefined);
+    render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+
+    const copyButton = screen.getByRole("button", { name: "serverOptionsCopyUuid" });
+    expect(copyButton).toBeEnabled();
+    await user.click(copyButton);
+
+    expect(writeText).toHaveBeenCalledWith("test-uuid");
+  });
+
   it("lets the server be edited when the policy does not set the servers", () => {
     vi.mocked(useExtensionOptions).mockReturnValue({ extensionOptions, updateExtensionOptions, managedOptions: new Set(["captureDownloads"]) });
 

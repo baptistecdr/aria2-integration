@@ -89,25 +89,26 @@ function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete,
           </Col>
         </Row>
       )}
-      <fieldset disabled={readOnly}>
-        <Row className="mb-3">
-          <Form.Group as={Col} controlId="form-server-uuid">
-            <Form.Label>{i18n("serverOptionsUuid")}</Form.Label>
-            <InputGroup>
-              <Form.Control type="text" value={server.uuid} disabled={true} />
-              <Button
-                variant="outline-secondary"
-                aria-label={i18n("serverOptionsCopyUuid")}
-                title={i18n("serverOptionsCopyUuid")}
-                onClick={() => navigator.clipboard.writeText(server.uuid)}
-              >
-                <i className="bi-clipboard" />
-              </Button>
-            </InputGroup>
-            <Form.Text muted>{i18n("serverOptionsUuidDescription")}</Form.Text>
-          </Form.Group>
-        </Row>
+      {/* Outside the read-only fieldset: the uuid can be copied to configure the server in a policy. */}
+      <Row className="mb-3">
+        <Form.Group as={Col} controlId="form-server-uuid">
+          <Form.Label>{i18n("serverOptionsUuid")}</Form.Label>
+          <InputGroup>
+            <Form.Control type="text" value={server.uuid} disabled={true} />
+            <Button
+              variant="outline-secondary"
+              aria-label={i18n("serverOptionsCopyUuid")}
+              title={i18n("serverOptionsCopyUuid")}
+              onClick={() => navigator.clipboard.writeText(server.uuid)}
+            >
+              <i className="bi-clipboard" />
+            </Button>
+          </InputGroup>
+          <Form.Text muted>{i18n("serverOptionsUuidDescription")}</Form.Text>
+        </Form.Group>
+      </Row>
 
+      <fieldset disabled={readOnly}>
         <Row className="mb-3">
           <Form.Group as={Col} controlId="form-server-name">
             <Form.Label>{i18n("serverOptionsName")}</Form.Label>
