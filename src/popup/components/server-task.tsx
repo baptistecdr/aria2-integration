@@ -56,7 +56,13 @@ function ServerTask({ server, aria2, task }: Props) {
 
   const eta = task.downloadSpeed !== 0 ? formatETA((task.totalLength - task.completedLength) / task.downloadSpeed) : "∞";
 
-  const progressTextColor = progressPercent <= PROGRESS_TEXT_COLOR_THRESHOLD ? "inherit" : "white";
+  // Once the bar is under the percentage, the text must contrast with the bar: white, except on the light yellow of
+  // paused tasks, where only dark text reaches the WCAG contrast ratio (like Bootstrap's text-bg-warning).
+  const progressVariant = getProgressVariant();
+  let progressTextColor = "inherit";
+  if (progressPercent > PROGRESS_TEXT_COLOR_THRESHOLD) {
+    progressTextColor = progressVariant === "warning" ? "#000" : "white";
+  }
 
   return (
     <Row as="li" className="mt-2 gx-0 ps-2 pe-2 small">
@@ -72,7 +78,8 @@ function ServerTask({ server, aria2, task }: Props) {
                 </Tooltip>
               }
             >
-              <span>{filename}</span>
+              {/* biome-ignore lint/a11y/noNoninteractiveTabindex: the tooltip shows the full name of a truncated file, which keyboard users must be able to open too (WCAG 1.4.13). */}
+              <span tabIndex={0}>{filename}</span>
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
@@ -92,7 +99,7 @@ function ServerTask({ server, aria2, task }: Props) {
       <Col xs={12} sm={12}>
         <div className="progress position-relative">
           <div
-            className={`progress-bar bg-${getProgressVariant()}`}
+            className={`progress-bar bg-${progressVariant}`}
             role="progressbar"
             style={{ width: `${progressPercent}%` }}
             aria-label={i18n("taskProgress", filename)}
