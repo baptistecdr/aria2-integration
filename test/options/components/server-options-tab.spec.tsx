@@ -405,4 +405,15 @@ describe("ServerOptionsTab", () => {
       }),
     );
   });
+
+  it("shows the server again when it changes elsewhere, keeping the confirmation", async () => {
+    const { rerender } = render(<ServerOptionsTab server={server} deleteServer={deleteServer} />);
+    await userEvent.click(screen.getByText("serverOptionsSave"));
+    expect(await screen.findByText("serverOptionsSuccess")).toBeInTheDocument();
+
+    rerender(<ServerOptionsTab server={Server.create({ ...server, name: "Renamed" })} deleteServer={deleteServer} />);
+
+    expect(screen.getByLabelText("serverOptionsName")).toHaveValue("Renamed");
+    expect(screen.getByText("serverOptionsSuccess")).toBeInTheDocument();
+  });
 });

@@ -1,4 +1,4 @@
-import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useSyncExternalStore } from "react";
 import { ExtensionOptions } from "@/domain/extension-options";
 import { createOptionsStore, type OptionsStore, type OptionsUpdater } from "@/services/options-store";
 import { applyTheme } from "@/shared/ui/theme";
@@ -28,13 +28,8 @@ interface ExtensionOptionsProviderProps {
 }
 
 function ExtensionOptionsProvider({ children, store = getPageStore() }: ExtensionOptionsProviderProps) {
-  const [extensionOptions, setExtensionOptions] = useState(store.get());
-
-  useEffect(() => {
-    const unsubscribe = store.subscribe(setExtensionOptions);
-    store.ready().then(setExtensionOptions);
-    return unsubscribe;
-  }, [store]);
+  // The defaults until the options are loaded, then the stored options, kept up to date by the store.
+  const extensionOptions = useSyncExternalStore(store.subscribe, store.get);
 
   useEffect(() => {
     applyTheme(extensionOptions.theme);

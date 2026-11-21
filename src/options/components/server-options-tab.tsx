@@ -1,12 +1,13 @@
 import { type SubmitEvent, useState } from "react";
 import { Alert, Button, Col, Form, InputGroup, Row } from "react-bootstrap";
-import i18n from "@/platform/i18n";
 import "bootstrap-icons/font/bootstrap-icons.css";
 import { ExtensionOptions } from "@/domain/extension-options";
-import { Server } from "@/domain/server";
-import { ServerIncognitoModeOptions } from "@/domain/server-incognito-mode-options";
+import type { Server } from "@/domain/server";
 import AlertProps from "@/options/models/alert-props";
+import { formatPath, fromServerFormValues, type ServerFormValues, serverUrl, toServerFormValues } from "@/options/models/server-form";
+import i18n from "@/platform/i18n";
 import { useExtensionOptions } from "@/shared/ui/extension-options-provider";
+import { useFormValues } from "@/shared/ui/use-form-values";
 
 interface Props {
   server: Server;
@@ -15,90 +16,51 @@ interface Props {
 
 const VALIDATION_TIMEOUT = 1500; // 1,5 s
 
-function formatPath(path: string): string {
-  return path.startsWith("/") ? path : `/${path}`;
-}
-
-function deserializeRpcParameters(rpcParameters: Record<string, string>): string {
-  return Object.keys(rpcParameters)
-    .reduce((previousValue, currentValue) => {
-      return `${previousValue}${currentValue}: ${rpcParameters[currentValue]}\n`;
-    }, "")
-    .trim();
-}
-
-function serializeRpcParameters(rpcParameters: string): Record<string, string> {
-  const newRpcParameters: Record<string, string> = {};
-  for (const parameter of rpcParameters.trim().split("\n")) {
-    const [option, ...values] = parameter.split(/\s*:+\s*/);
-    // We need to join on ':' in case the parameter is, for example, proxy: http://localhost:8080
-    // option = proxy, values = ["http", "localhost", "8080"]
-    const value = values.join(":");
-    if (value !== "") {
-      newRpcParameters[option.trim()] = value;
-    }
-  }
-  return newRpcParameters;
-}
-
 function ServerOptionsTab({ server, deleteServer }: Props) {
   const { updateExtensionOptions } = useExtensionOptions();
-
-  const [serverName, setServerName] = useState(server.name);
-  const [serverHost, setServerHost] = useState(server.host);
-  const [serverPort, setServerPort] = useState(server.port);
-  const [serverSecure, setServerSecure] = useState(server.secure);
-  const [serverPath, setServerPath] = useState(server.path);
-  const [serverSecret, setServerSecret] = useState(server.secret);
-  const [serverRpcParameters, setServerRpcParameters] = useState(deserializeRpcParameters(server.rpcParameters));
-  const [serverIncognitoModeAutomaticallyPurgeDownloads, setServerIncognitoModeAutomaticallyPurgeDownloads] = useState(
-    server.incognitoModeOptions?.automaticallyPurgeDownloads ?? false,
-  );
-  const [serverIncognitoModeOverwriteRpcParameters, setServerIncognitoModeOverwriteRpcParameters] = useState(
-    server.incognitoModeOptions?.overwriteRpcParameters ?? false,
-  );
-  const [serverIncognitoModeRpcParameters, setServerIncognitoModeRpcParameters] = useState(
-    deserializeRpcParameters(server.incognitoModeOptions?.rpcParameters || {}),
-  );
-
-  const [validated, setValidated] = useState(false);
-  const [showPassword, setShowPassword] = useState(false);
+  // Lives outside the form so that the confirmation stays visible when the saved server restarts the form.
   const [alertProps, setAlertProps] = useState(new AlertProps());
 
-  function serverUrl(): URL | null {
+  const save = async (values: ServerFormValues) => {
     try {
-      return new URL(`http${serverSecure ? "s" : ""}://${serverHost}:${serverPort}${serverPath}`);
-    } catch (_) {
-      return null;
+      await updateExtensionOptions((options) => ExtensionOptions.withServer(options, fromServerFormValues(server.uuid, values)));
+      setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
+    } catch (error) {
+      console.error(error);
+      setAlertProps(AlertProps.error(i18n("serverOptionsError")));
     }
-  }
+  };
+
+  // The form restarts from the server whenever it changes: when saved, or when changed elsewhere.
+  return (
+    <ServerOptionsForm
+      key={JSON.stringify(server)}
+      server={server}
+      alertProps={alertProps}
+      onCloseAlert={() => setAlertProps(new AlertProps())}
+      onSave={save}
+      onDelete={() => deleteServer(server)}
+    />
+  );
+}
+
+interface ServerOptionsFormProps {
+  server: Server;
+  alertProps: AlertProps;
+  onCloseAlert: () => void;
+  onSave: (values: ServerFormValues) => Promise<void>;
+  onDelete: () => void;
+}
+
+function ServerOptionsForm({ server, alertProps, onCloseAlert, onSave, onDelete }: ServerOptionsFormProps) {
+  const [values, set] = useFormValues(() => toServerFormValues(server));
+  const [validated, setValidated] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmitSaveServer(formEvent: SubmitEvent<HTMLFormElement>) {
     formEvent.preventDefault();
-    const form = formEvent.currentTarget;
-    if (form.checkValidity()) {
-      try {
-        const updatedServer = Server.create({
-          uuid: server.uuid,
-          name: serverName,
-          secure: serverSecure,
-          host: serverHost,
-          port: serverPort,
-          path: serverPath,
-          secret: serverSecret,
-          rpcParameters: serializeRpcParameters(serverRpcParameters),
-          incognitoModeOptions: ServerIncognitoModeOptions.create({
-            automaticallyPurgeDownloads: serverIncognitoModeAutomaticallyPurgeDownloads,
-            overwriteRpcParameters: serverIncognitoModeOverwriteRpcParameters,
-            rpcParameters: serializeRpcParameters(serverIncognitoModeRpcParameters),
-          }),
-        });
-        await updateExtensionOptions((options) => ExtensionOptions.withServer(options, updatedServer));
-        setAlertProps(AlertProps.success(i18n("serverOptionsSuccess")));
-      } catch (error) {
-        console.error(error);
-        setAlertProps(AlertProps.error(i18n("serverOptionsError")));
-      }
+    if (formEvent.currentTarget.checkValidity()) {
+      await onSave(values);
       window.setTimeout(() => setValidated(false), VALIDATION_TIMEOUT);
     }
     setValidated(true);
@@ -109,7 +71,7 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       {alertProps.show && (
         <Row className="mb-3">
           <Form.Group as={Col} controlId="form-server-name">
-            <Alert variant={alertProps.variant} className="mb-0" onClose={() => setAlertProps(new AlertProps())} dismissible>
+            <Alert variant={alertProps.variant} className="mb-0" onClose={onCloseAlert} dismissible>
               {alertProps.message}
             </Alert>
           </Form.Group>
@@ -136,35 +98,35 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-name">
           <Form.Label>{i18n("serverOptionsName")}</Form.Label>
-          <Form.Control type="text" value={serverName} required onChange={(e) => setServerName(e.target.value)} />
+          <Form.Control type="text" value={values.name} required onChange={(e) => set("name", e.target.value)} />
         </Form.Group>
         <Form.Group as={Col} controlId="form-server-host">
           <Form.Label>{i18n("serverOptionsHost")}</Form.Label>
-          <Form.Control type="text" value={serverHost} required onChange={(e) => setServerHost(e.target.value)} />
+          <Form.Control type="text" value={values.host} required onChange={(e) => set("host", e.target.value)} />
         </Form.Group>
       </Row>
 
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-port">
           <Form.Label>{i18n("serverOptionsPort")}</Form.Label>
-          <Form.Control type="number" min={0} max={49151} value={serverPort} required onChange={(e) => setServerPort(Number.parseInt(e.target.value, 10))} />
+          <Form.Control type="number" min={0} max={49151} value={values.port} required onChange={(e) => set("port", Number.parseInt(e.target.value, 10))} />
         </Form.Group>
 
         <Form.Group as={Col} controlId="form-server-path">
           <Form.Label>{i18n("serverOptionsPath")}</Form.Label>
-          <Form.Control type="text" value={serverPath} required onChange={(e) => setServerPath(formatPath(e.target.value))} />
+          <Form.Control type="text" value={values.path} required onChange={(e) => set("path", formatPath(e.target.value))} />
         </Form.Group>
       </Row>
 
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-server-secure">
           <Form.Label>{i18n("serverOptionsSecureConnection")}</Form.Label>
-          <Form.Check checked={serverSecure} onChange={(e) => setServerSecure(e.target.checked)} />
+          <Form.Check checked={values.secure} onChange={(e) => set("secure", e.target.checked)} />
         </Form.Group>
 
         <Form.Group as={Col} controlId="form-server-url">
           <Form.Label>{i18n("serverOptionsUrl")}</Form.Label>
-          <Form.Control type="text" value={serverUrl()?.toString() ?? ""} disabled={true} />
+          <Form.Control type="text" value={serverUrl(values)?.toString() ?? ""} disabled={true} />
         </Form.Group>
       </Row>
 
@@ -172,7 +134,7 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
         <Form.Group as={Col} controlId="form-server-secret">
           <Form.Label>{i18n("serverOptionsSecret")}</Form.Label>
           <InputGroup>
-            <Form.Control type={showPassword ? "text" : "password"} value={serverSecret} onChange={(e) => setServerSecret(e.target.value)} />
+            <Form.Control type={showPassword ? "text" : "password"} value={values.secret} onChange={(e) => set("secret", e.target.value)} />
             <Button variant="outline-secondary" onClick={() => setShowPassword(!showPassword)}>
               <i className={showPassword ? "bi-eye-slash" : "bi-eye"} />
             </Button>
@@ -184,7 +146,7 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
       <Row className="mb-3">
         <Form.Group as={Col} controlId="form-rpc-parameters">
           <Form.Label>{i18n("serverOptionsRpcParameters")}</Form.Label>
-          <Form.Control as="textarea" rows={3} placeholder="split: 5" value={serverRpcParameters} onChange={(e) => setServerRpcParameters(e.target.value)} />
+          <Form.Control as="textarea" rows={3} placeholder="split: 5" value={values.rpcParameters} onChange={(e) => set("rpcParameters", e.target.value)} />
           <Form.Text>{i18n("serverOptionsRpcParametersDescription")}</Form.Text>
         </Form.Group>
       </Row>
@@ -202,8 +164,8 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
           <Form.Check
             label={i18n("serverOptionsAutomaticallyPurgeDownloads")}
             aria-label={i18n("serverOptionsAutomaticallyPurgeDownloads")}
-            checked={serverIncognitoModeAutomaticallyPurgeDownloads}
-            onChange={(e) => setServerIncognitoModeAutomaticallyPurgeDownloads(e.target.checked)}
+            checked={values.incognitoAutomaticallyPurgeDownloads}
+            onChange={(e) => set("incognitoAutomaticallyPurgeDownloads", e.target.checked)}
           />
         </Form.Group>
       </Row>
@@ -213,8 +175,8 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
           <Form.Check
             label={i18n("serverOptionsOverwriteRpcParameters")}
             aria-label={i18n("serverOptionsOverwriteRpcParameters")}
-            checked={serverIncognitoModeOverwriteRpcParameters}
-            onChange={(e) => setServerIncognitoModeOverwriteRpcParameters(e.target.checked)}
+            checked={values.incognitoOverwriteRpcParameters}
+            onChange={(e) => set("incognitoOverwriteRpcParameters", e.target.checked)}
           />
         </Form.Group>
       </Row>
@@ -226,9 +188,9 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
             as="textarea"
             rows={3}
             placeholder="split: 5"
-            disabled={!serverIncognitoModeOverwriteRpcParameters}
-            value={serverIncognitoModeRpcParameters}
-            onChange={(e) => setServerIncognitoModeRpcParameters(e.target.value)}
+            disabled={!values.incognitoOverwriteRpcParameters}
+            value={values.incognitoRpcParameters}
+            onChange={(e) => set("incognitoRpcParameters", e.target.value)}
           />
           <Form.Text>{i18n("serverOptionsRpcParametersDescription")}</Form.Text>
         </Form.Group>
@@ -239,7 +201,7 @@ function ServerOptionsTab({ server, deleteServer }: Props) {
           <Button type="submit" variant="primary">
             {i18n("serverOptionsSave")}
           </Button>
-          <Button variant="danger" className="ms-2" onClick={() => deleteServer(server)}>
+          <Button variant="danger" className="ms-2" onClick={onDelete}>
             {i18n("serverOptionsDelete")}
           </Button>
         </Col>
