@@ -17,11 +17,17 @@ let extensionOptions = ExtensionOptions.create();
 let connections: Record<string, Aria2> = createConnections(extensionOptions);
 const downloadItems: Record<string, Downloads.DownloadItem> = {};
 
-ExtensionOptions.fromStorage().then(async (extOptions) => {
-  extensionOptions = extOptions;
-  connections = createConnections(extensionOptions);
-  await createContextMenus(extensionOptions);
-});
+// The background page can be woken up by an event (e.g. a download started right after the browser restarts) before
+// the options are loaded from storage: every listener relying on the options must wait for this promise first.
+const extensionOptionsLoaded: Promise<void> = ExtensionOptions.fromStorage()
+  .then(async (extOptions) => {
+    extensionOptions = extOptions;
+    connections = createConnections(extensionOptions);
+    await createContextMenus(extensionOptions);
+  })
+  .catch((error) => {
+    console.error(error);
+  });
 
 export function createConnections(extensionOptions: ExtensionOptions) {
   const conns: Record<string, Aria2> = {};
@@ -82,6 +88,7 @@ browser.runtime.onInstalled.addListener(async (details) => {
 browser.storage.onChanged.addListener(listenerStorageOnChanged);
 
 export async function listenerStorageOnChanged(changes: Record<string, browser.Storage.StorageChange>) {
+  await extensionOptionsLoaded;
   if (changes.options) {
     extensionOptions = await ExtensionOptions.fromStorage();
     connections = createConnections(extensionOptions);
@@ -180,6 +187,7 @@ async function removeDownloadItemCompletely(downloadItem: Downloads.DownloadItem
 }
 
 async function handleDownload(downloadItem: Downloads.DownloadItem, handler: (connection: Aria2, server: Server, referer: string, cookies: string) => void) {
+  await extensionOptionsLoaded;
   if (extensionOptions.captureDownloads && connections[extensionOptions.captureServer] !== undefined) {
     const connection = connections[extensionOptions.captureServer];
     const server = extensionOptions.servers[extensionOptions.captureServer];
@@ -224,6 +232,9 @@ export async function listenerOnDownloadChanged(downloadDelta: Downloads.OnChang
       }
     });
     delete downloadItems[downloadItem.id];
+  } else if (downloadDelta.state?.current === "complete" || downloadDelta.state?.current === "interrupted") {
+    // Every download is tracked: forget the ones that ended without ever getting a filename.
+    delete downloadItems[downloadItem.id];
   }
 }
 
@@ -232,10 +243,9 @@ browser.downloads?.onCreated.addListener(listenerOnDownloadCreated);
 export async function listenerOnDownloadCreated(downloadItem: Downloads.DownloadItem) {
   if (isChromium()) {
     // Chromium only knows the filename once onChanged fires, which can happen before any awaited call here resolves:
-    // track the item right away and let listenerOnDownloadChanged decide whether to capture it.
-    if (extensionOptions.captureDownloads) {
-      downloadItems[downloadItem.id] = downloadItem;
-    }
+    // track the item right away and let listenerOnDownloadChanged decide whether to capture it (options may not be
+    // loaded yet, so captureDownloads is checked there).
+    downloadItems[downloadItem.id] = downloadItem;
     return;
   }
   const currentTab = await findCurrentTab();
@@ -258,6 +268,7 @@ export async function listenerOnDownloadCreated(downloadItem: Downloads.Download
 browser.contextMenus?.onClicked.addListener(listenerOnClicked);
 
 export async function listenerOnClicked(info: Menus.OnClickData, tab?: Tabs.Tab) {
+  await extensionOptionsLoaded;
   const connection = connections[info.menuItemId];
   const server = extensionOptions.servers[info.menuItemId];
 
@@ -290,6 +301,7 @@ export async function listenerOnCommand(command: string) {
   if (command === "open_popup") {
     await browser.action.openPopup();
   } else if (command === "toggle_capture_downloads") {
+    await extensionOptionsLoaded;
     const newCaptureDownloads = !extensionOptions.captureDownloads;
     let newCaptureServer = extensionOptions.captureServer;
     if (newCaptureServer === "") {
@@ -330,6 +342,7 @@ async function purgeDownloadsWhenInIncognitoMode(server: Server, aria2: Aria2, g
 
 export async function listenerOnAlarm(alarm: browser.Alarms.Alarm) {
   if (alarm.name === ALARM_NAME) {
+    await extensionOptionsLoaded;
     const numActives = Object.entries(connections).map(async ([serverId, aria2]) => {
       const server = extensionOptions.servers[serverId];
       const globalStat = await getGlobalStat(aria2);
