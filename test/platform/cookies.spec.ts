@@ -1,20 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import browser, { type Cookies } from "webextension-polyfill";
-import { formatCookies, getCookies } from "@/background/background";
 import { isFirefox } from "@/platform/browser-info";
-
-vi.mock("@/services/capture", () => ({
-  captureTorrentFromURL: vi.fn(),
-  captureURL: vi.fn(),
-}));
+import { formatCookies, getCookies } from "@/platform/cookies";
 
 vi.mock("@/platform/browser-info", () => ({
   isChromium: vi.fn(),
   isFirefox: vi.fn(),
-}));
-
-vi.mock("@/platform/notifications", () => ({
-  showNotification: vi.fn(),
 }));
 
 describe("Cookies", () => {

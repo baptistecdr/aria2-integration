@@ -1,10 +1,15 @@
 import type Aria2 from "@baptistecdr/aria2";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Downloads } from "webextension-polyfill";
-import { captureDownloadItem, downloadItemMustBeCaptured } from "@/background/background";
+import type { Connections } from "@/background/connections";
+import { captureDownloadItem, createDownloadHandlers, downloadItemMustBeCaptured } from "@/background/downloads";
 import { ExtensionOptions } from "@/domain/extension-options";
 import { Server } from "@/domain/server";
+import { isChromium } from "@/platform/browser-info";
+import { showNotification } from "@/platform/notifications";
 import { captureTorrentFromURL, captureURL } from "@/services/capture";
+import { fakeOptionsStore } from "../helpers/fake-options-store";
+import browser from "../setupTests";
 
 // A plain object is used instead of `vi.mockObject(new Aria2(...))`: auto-mocking a real Aria2 instance
 // (which extends EventTarget) makes vitest's deep-equal assertions on it (toHaveBeenCalledWith) pathologically
@@ -20,6 +25,15 @@ vi.mock("@/services/capture", () => ({
 
 vi.mock("@/platform/browser-info", () => ({
   isChromium: vi.fn().mockReturnValue(false),
+  isFirefox: vi.fn().mockReturnValue(true),
+}));
+
+vi.mock("@/platform/notifications", () => ({
+  showNotification: vi.fn(),
+}));
+
+vi.mock("@/platform/tabs", () => ({
+  findCurrentTab: vi.fn().mockResolvedValue({ url: "https://example.com/page", incognito: false }),
 }));
 
 describe("Capture Download Item", () => {
@@ -299,5 +313,109 @@ describe("Capture Download Item", () => {
     expect(captureURL).toHaveBeenCalledTimes(1);
     expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.zip", "referer", "cookies", false, "/path/to", "file.zip");
     expect(captureTorrentFromURL).not.toHaveBeenCalled();
+  });
+});
+
+describe("Download handlers", () => {
+  const SERVER_UUID = "6f1c7a3e-2b4d-4e8f-9a1b-3c5d7e9f1a2b";
+  const server = Server.create({ uuid: SERVER_UUID, name: "aria2" });
+  const aria2 = { call: vi.fn(), multicall: vi.fn() } as unknown as Aria2;
+  const connections: Connections = { get: (id) => (id === SERVER_UUID ? aria2 : undefined), all: () => [[server, aria2]] };
+  const captureOptions = { servers: { [SERVER_UUID]: server }, captureDownloads: true, captureServer: SERVER_UUID };
+  const downloadItem = (overrides: Partial<Downloads.DownloadItem> = {}) =>
+    ({ id: 1, filename: "/downloads/file.bin", url: "https://example.com/file.bin", totalBytes: 1024, ...overrides }) as Downloads.DownloadItem;
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(isChromium).mockReturnValue(false);
+    vi.mocked(captureURL).mockResolvedValue(undefined);
+    browser.downloads.cancel = vi.fn().mockResolvedValue(undefined);
+    browser.downloads.removeFile = vi.fn().mockResolvedValue(undefined);
+    browser.downloads.erase = vi.fn().mockResolvedValue([]);
+  });
+
+  describe("on Firefox", () => {
+    it("should cancel the browser download and send it to aria2", async () => {
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await handlers.onCreated(downloadItem());
+
+      expect(browser.downloads.cancel).toHaveBeenCalledWith(1);
+      expect(browser.downloads.erase).toHaveBeenCalledWith({ id: 1 });
+      expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.bin", "https://example.com/page", "", false, undefined, "file.bin");
+      expect(showNotification).toHaveBeenCalledWith("Translated: addFileSuccess");
+    });
+
+    it("should not capture the download when capture downloads is disabled", async () => {
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore({ ...captureOptions, captureDownloads: false }), connections });
+
+      await expect(handlers.onCreated(downloadItem())).resolves.toBeUndefined();
+
+      expect(browser.downloads.cancel).not.toHaveBeenCalled();
+      expect(captureURL).not.toHaveBeenCalled();
+    });
+
+    it("should let the browser download excluded files", async () => {
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore({ ...captureOptions, excludedFileTypes: ["bin"] }), connections });
+
+      await handlers.onCreated(downloadItem());
+
+      expect(browser.downloads.cancel).not.toHaveBeenCalled();
+      expect(captureURL).not.toHaveBeenCalled();
+    });
+
+    it("should notify the error when aria2 rejects the download", async () => {
+      vi.spyOn(console, "error").mockImplementation(() => {});
+      vi.mocked(captureURL).mockRejectedValueOnce(new Error("aria2 is down"));
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await expect(handlers.onCreated(downloadItem())).resolves.toBeUndefined();
+
+      expect(showNotification).toHaveBeenCalledWith("Translated: addFileError");
+    });
+
+    it("should still send the download to aria2 when the browser download cannot be cancelled", async () => {
+      browser.downloads.cancel = vi.fn().mockRejectedValue(new Error("already complete"));
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await handlers.onCreated(downloadItem());
+
+      expect(browser.downloads.removeFile).toHaveBeenCalledWith(1);
+      expect(browser.downloads.erase).toHaveBeenCalledWith({ id: 1 });
+      expect(captureURL).toHaveBeenCalled();
+    });
+  });
+
+  describe("on Chromium", () => {
+    beforeEach(() => {
+      vi.mocked(isChromium).mockReturnValue(true);
+    });
+
+    it("should wait for the filename before sending the download to aria2", async () => {
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await handlers.onCreated(downloadItem({ filename: "" }));
+      expect(captureURL).not.toHaveBeenCalled();
+
+      await handlers.onChanged({ id: 1, filename: { previous: "", current: "/downloads/file.bin" } });
+      expect(captureURL).toHaveBeenCalledWith(aria2, server, "https://example.com/file.bin", "https://example.com/page", "", false, undefined, "file.bin");
+    });
+
+    it("should not throw when the download item is not tracked", async () => {
+      // browser.downloads.onChanged fires for every download, including the ones created before the background started.
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await expect(handlers.onChanged({ id: 123456 } as Downloads.OnChangedDownloadDeltaType)).resolves.toBeUndefined();
+    });
+
+    it("should forget downloads that end without getting a filename", async () => {
+      const handlers = createDownloadHandlers({ store: fakeOptionsStore(captureOptions), connections });
+
+      await handlers.onCreated(downloadItem({ filename: "" }));
+      await handlers.onChanged({ id: 1, state: { previous: "in_progress", current: "interrupted" } });
+      await handlers.onChanged({ id: 1, filename: { previous: "", current: "/downloads/file.bin" } });
+
+      expect(captureURL).not.toHaveBeenCalled();
+    });
   });
 });
