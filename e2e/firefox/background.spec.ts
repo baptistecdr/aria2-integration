@@ -18,9 +18,13 @@ test.describe("capture downloads in Firefox", () => {
     // The browser download is cancelled and erased in favour of aria2.
     await expect.poll(() => extension.browserDownloads()).toEqual([]);
 
-    const aria2Request = fileServer.requestsTo("/files/archive.bin").find((request) => request.headers["user-agent"]?.startsWith("aria2"));
-    expect(aria2Request?.headers.referer).toBe(fileServer.url("/page.html"));
-    expect(aria2Request?.headers.cookie).toContain("session=e2e-cookie");
+    // aria2 fetches the file after it accepts the download: wait for its request to reach the file server.
+    await expect
+      .poll(() => {
+        const aria2Request = fileServer.requestsTo("/files/archive.bin").find((request) => request.headers["user-agent"]?.startsWith("aria2"));
+        return { referer: aria2Request?.headers.referer, cookie: aria2Request?.headers.cookie };
+      })
+      .toEqual({ referer: fileServer.url("/page.html"), cookie: expect.stringContaining("session=e2e-cookie") });
   });
 
   test("lets the browser download excluded file types", async ({ extension, aria2, fileServer }) => {
