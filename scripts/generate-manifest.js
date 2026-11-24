@@ -5,8 +5,7 @@ const manifest = JSON.parse(rawManifest);
 const outDir = process.env.OUT_DIR || "./dist";
 
 // Points every size from `minSize` up to an SVG. The smaller PNGs stay: they are drawn for the pixel grid.
-const withSvg = (icons, svg, minSize) =>
-  Object.fromEntries(Object.entries(icons).map(([size, png]) => [size, Number(size) >= minSize ? svg : png]));
+const withSvg = (icons, svg, minSize) => Object.fromEntries(Object.entries(icons).map(([size, png]) => [size, Number(size) >= minSize ? svg : png]));
 
 if (process.env.BROWSER === "firefox") {
   // Firefox supports SVG icons, which stay sharp at any zoom level and pixel density.
