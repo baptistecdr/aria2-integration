@@ -240,7 +240,7 @@
     "message": "connection(s)"
   },
   "contextMenusTitle": {
-    "message": "Downloads with Aria2"
+    "message": "Download with Aria2"
   },
   "addUrlSuccess": {
     "message": "The URL has been sent to $SERVER$.",
