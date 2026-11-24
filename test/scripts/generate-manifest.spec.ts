@@ -104,6 +104,45 @@ describe("generate-manifest", () => {
     expect(parsedManifest.background).toBeUndefined();
   });
 
+  it("should use SVG icons from 48 px and an SVG toolbar icon from 24 px in Firefox", async () => {
+    process.env.BROWSER = "firefox";
+    vol.writeFileSync(
+      "./public/manifest.json",
+      JSON.stringify({
+        ...manifest,
+        icons: { "16": "icons/icon-browser-16.png", "38": "icons/icon-browser-38.png", "48": "icons/icon-browser-48.png", "128": "icons/icon-browser-128.png" },
+        action: { default_icon: { "19": "icons/toolbar-19.png", "24": "icons/toolbar-24.png", "32": "icons/toolbar-32.png" } },
+      }),
+    );
+
+    await import(scriptPath);
+
+    const parsedManifest = JSON.parse(vol.readFileSync("./dist/manifest.json", "utf8") as string);
+    expect(parsedManifest.icons).toEqual({
+      "16": "icons/icon-browser-16.png",
+      "38": "icons/icon-browser-38.png",
+      "48": "icons/icon-browser.svg",
+      "128": "icons/icon-browser.svg",
+    });
+    expect(parsedManifest.action.default_icon).toEqual({
+      "19": "icons/toolbar-19.png",
+      "24": "icons/toolbar.svg",
+      "32": "icons/toolbar.svg",
+    });
+  });
+
+  it("should not ship the SVG icons in Chromium", async () => {
+    process.env.BROWSER = "chromium";
+    vol.mkdirSync("./dist/icons");
+    vol.writeFileSync("./dist/icons/icon-browser.svg", "<svg/>");
+    vol.writeFileSync("./dist/icons/toolbar.svg", "<svg/>");
+    vol.writeFileSync("./dist/icons/toolbar-32.png", "png");
+
+    await import(scriptPath);
+
+    expect(vol.readdirSync("./dist/icons")).toEqual(["toolbar-32.png"]);
+  });
+
   it("should write the manifest to OUT_DIR when it is set", async () => {
     process.env.BROWSER = "firefox";
     process.env.OUT_DIR = "./dist-firefox";
