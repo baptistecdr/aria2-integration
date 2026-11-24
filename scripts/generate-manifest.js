@@ -9,8 +9,12 @@ const withSvg = (icons, svg, minSize) => Object.fromEntries(Object.entries(icons
 
 if (process.env.BROWSER === "firefox") {
   // Firefox supports SVG icons, which stay sharp at any zoom level and pixel density.
-  manifest.icons = withSvg(manifest.icons, "icons/icon-browser.svg", 48);
-  manifest.action.default_icon = withSvg(manifest.action.default_icon, "icons/toolbar.svg", 24);
+  if (manifest.icons) {
+    manifest.icons = withSvg(manifest.icons, "icons/icon-browser.svg", 48);
+  }
+  if (manifest.action?.default_icon) {
+    manifest.action.default_icon = withSvg(manifest.action.default_icon, "icons/toolbar.svg", 24);
+  }
   manifest.background = {
     type: "module",
     scripts: ["js/background.js"],
