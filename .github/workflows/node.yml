@@ -64,8 +64,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir "$ARTIFACTS_DIR"
-          gh api /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-firefox-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
-          gh api /repos/${{ github.repository }}/actions/artifacts/${{ steps.upload-chromium-artifact.outputs.artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
+          # Right after the upload, the artifact can still answer 404 for a few seconds: retry before failing.
+          download() {
+            for delay in 5 10 20 40; do
+              gh api "/repos/${{ github.repository }}/actions/artifacts/$1/zip" > "$2" && return 0
+              echo "Artifact $1 is not available yet, retrying in ${delay}s"
+              sleep "$delay"
+            done
+            gh api "/repos/${{ github.repository }}/actions/artifacts/$1/zip" > "$2"
+          }
+          download ${{ steps.upload-firefox-artifact.outputs.artifact-id }} "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          download ${{ steps.upload-chromium-artifact.outputs.artifact-id }} "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
       - name: Attest artifacts
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
@@ -124,8 +133,17 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           mkdir "$ARTIFACTS_DIR"
-          gh api /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.firefox-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
-          gh api /repos/${{ github.repository }}/actions/artifacts/${{ needs.build.outputs.chromium-artifact-id }}/zip > "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
+          # Right after the upload, the artifact can still answer 404 for a few seconds: retry before failing.
+          download() {
+            for delay in 5 10 20 40; do
+              gh api "/repos/${{ github.repository }}/actions/artifacts/$1/zip" > "$2" && return 0
+              echo "Artifact $1 is not available yet, retrying in ${delay}s"
+              sleep "$delay"
+            done
+            gh api "/repos/${{ github.repository }}/actions/artifacts/$1/zip" > "$2"
+          }
+          download ${{ needs.build.outputs.firefox-artifact-id }} "$ARTIFACTS_DIR/$ARTIFACT_FIREFOX_FILENAME"
+          download ${{ needs.build.outputs.chromium-artifact-id }} "$ARTIFACTS_DIR/$ARTIFACT_CHROMIUM_FILENAME"
 
       - name: Verify artifacts
         env:
