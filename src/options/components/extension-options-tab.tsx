@@ -64,6 +64,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
   const themeLightId = useId();
   const themeDarkId = useId();
   const themeAutoId = useId();
+  const policyHintsId = useId();
 
   useEffect(() => {
     void isOsAndroid().then(setIsAndroid);
@@ -71,6 +72,10 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
 
   const { captureDownloads, captureServer } = values;
   const isManaged = (option: ManagedOption) => managedOptions.has(option);
+  const policyHintId = (option: ManagedOption) => `${policyHintsId}-${option}`;
+  // The ids of the texts describing a field: its description, and the policy hint when the policy sets it.
+  const describedBy = (option: ManagedOption, descriptionId?: string) =>
+    [descriptionId, isManaged(option) ? policyHintId(option) : undefined].filter((id) => id !== undefined).join(" ") || undefined;
   // The fields refining what is captured are only editable while downloads are captured.
   const captureFieldDisabled = (option: ManagedOption) => !captureDownloads || isManaged(option);
 
@@ -106,17 +111,22 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
               <Form.Check
                 checked={captureDownloads}
                 disabled={isManaged("captureDownloads")}
+                aria-describedby={describedBy("captureDownloads")}
                 label={i18n("extensionOptionsCaptureDownloads")}
-                aria-label={i18n("extensionOptionsCaptureDownloads")}
                 onChange={onChangeCaptureDownloads}
               />
-              <ManagedHint managed={isManaged("captureDownloads")} />
+              <ManagedHint id={policyHintId("captureDownloads")} managed={isManaged("captureDownloads")} />
             </Form.Group>
           </Col>
           <Col xs={12} sm={12} className="mb-3">
             <Form.Group controlId="form-capture-downloads-servers">
-              <Form.Label>{i18n("extensionOptionsCaptureDownloads")}</Form.Label>
-              <Form.Select disabled={captureFieldDisabled("captureServer")} value={captureServer} onChange={onChangeCaptureServer}>
+              <Form.Label>{i18n("extensionOptionsServerToSendDownloads")}</Form.Label>
+              <Form.Select
+                disabled={captureFieldDisabled("captureServer")}
+                aria-describedby={describedBy("captureServer")}
+                value={captureServer}
+                onChange={onChangeCaptureServer}
+              >
                 <option value="" disabled>
                   {i18n("extensionOptionsNoServerSelected")}
                 </option>
@@ -126,7 +136,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                   </option>
                 ))}
               </Form.Select>
-              <ManagedHint managed={isManaged("captureServer")} />
+              <ManagedHint id={policyHintId("captureServer")} managed={isManaged("captureServer")} />
             </Form.Group>
           </Col>
           {isChromium() && (
@@ -136,6 +146,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 <Form.Control
                   type="number"
                   disabled={captureFieldDisabled("minFileSizeInBytes")}
+                  aria-describedby={describedBy("minFileSizeInBytes", minimumFileSizeDescriptionId)}
                   min={0}
                   value={values.minFileSize}
                   onChange={onChangeMinFileSize}
@@ -143,7 +154,9 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 />
                 <Form.Select
                   id={formMinimumFileSizeExponentId}
+                  aria-label={i18n("extensionOptionsMinimumFileSizeUnit")}
                   disabled={captureFieldDisabled("minFileSizeInBytes")}
+                  aria-describedby={describedBy("minFileSizeInBytes", minimumFileSizeDescriptionId)}
                   value={values.minFileSizeExponent}
                   onChange={(e) => set("minFileSizeExponent", Number.parseInt(e.target.value, 10))}
                 >
@@ -156,7 +169,7 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
               <FormText id={minimumFileSizeDescriptionId} muted>
                 {i18n("extensionOptionsMinimumFileSizeDescription")}
               </FormText>
-              <ManagedHint managed={isManaged("minFileSizeInBytes")} />
+              <ManagedHint id={policyHintId("minFileSizeInBytes")} managed={isManaged("minFileSizeInBytes")} />
             </Form.Group>
           )}
           <Col xs={12} sm={12} className="mb-3">
@@ -167,13 +180,14 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeProtocolsInformation")}
                 disabled={captureFieldDisabled("excludedProtocols")}
+                aria-describedby={describedBy("excludedProtocols", excludedProtocolsDescriptionId)}
                 value={values.excludedProtocols}
                 onChange={(e) => set("excludedProtocols", e.target.value)}
               />
               <FormText id={excludedProtocolsDescriptionId} muted>
                 {i18n("extensionOptionsExcludeProtocolsDescription")}
               </FormText>
-              <ManagedHint managed={isManaged("excludedProtocols")} />
+              <ManagedHint id={policyHintId("excludedProtocols")} managed={isManaged("excludedProtocols")} />
             </Form.Group>
           </Col>
           <Col xs={12} sm={12} className="mb-3">
@@ -184,13 +198,14 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeSitesInformation")}
                 disabled={captureFieldDisabled("excludedSites")}
+                aria-describedby={describedBy("excludedSites", excludedSitesDescriptionId)}
                 value={values.excludedSites}
                 onChange={(e) => set("excludedSites", e.target.value)}
               />
               <FormText id={excludedSitesDescriptionId} muted>
                 {i18n("extensionOptionsExcludeSitesDescription")}
               </FormText>
-              <ManagedHint managed={isManaged("excludedSites")} />
+              <ManagedHint id={policyHintId("excludedSites")} managed={isManaged("excludedSites")} />
             </Form.Group>
           </Col>
           <Col xs={12} sm={12} className="mb-3">
@@ -201,31 +216,37 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
                 rows={3}
                 placeholder={i18n("extensionOptionsExcludeFileTypesInformation")}
                 disabled={captureFieldDisabled("excludedFileTypes")}
+                aria-describedby={describedBy("excludedFileTypes", excludedFileTypesDescriptionId)}
                 value={values.excludedFileTypes}
                 onChange={(e) => set("excludedFileTypes", e.target.value)}
               />
               <Form.Text id={excludedFileTypesDescriptionId} muted>
                 {i18n("extensionOptionsExcludeFileTypesDescription")}
               </Form.Text>
-              <ManagedHint managed={isManaged("excludedFileTypes")} />
+              <ManagedHint id={policyHintId("excludedFileTypes")} managed={isManaged("excludedFileTypes")} />
             </Form.Group>
           </Col>
           <Col xs={11} sm={11} className="mb-3">
             <Form.Group controlId="form-use-complete-path">
               <Form.Check
                 disabled={captureFieldDisabled("useCompleteFilePath")}
+                aria-describedby={describedBy("useCompleteFilePath")}
                 checked={values.useCompleteFilePath}
                 label={i18n("extensionOptionsUseCompleteFilePath")}
-                aria-label={i18n("extensionOptionsUseCompleteFilePath")}
                 onChange={(e) => set("useCompleteFilePath", e.target.checked)}
               />
-              <ManagedHint managed={isManaged("useCompleteFilePath")} />
+              <ManagedHint id={policyHintId("useCompleteFilePath")} managed={isManaged("useCompleteFilePath")} />
             </Form.Group>
           </Col>
           <Col xs={1} sm={1} className="mb-3 align-self-center">
             <Form.Group controlId="form-use-complete-path-help">
-              <Button variant="link" disabled={!captureDownloads} onClick={() => setShowModal(true)}>
-                <i className="bi bi-question-circle" />
+              <Button
+                variant="link"
+                disabled={!captureDownloads}
+                aria-label={i18n("extensionOptionsUseCompleteFilePathHelpLabel")}
+                onClick={() => setShowModal(true)}
+              >
+                <i className="bi bi-question-circle" aria-hidden="true" />
               </Button>
             </Form.Group>
           </Col>
@@ -243,77 +264,75 @@ function ExtensionOptionsForm({ options, managedOptions, alertProps, onCloseAler
         </>
       )}
 
-      <Col xs={12} sm={12} className="mb-3">
-        <Form.Label>{i18n("extensionOptionsNotify")}</Form.Label>
+      <Col as="fieldset" xs={12} sm={12} className="mb-3">
+        <legend className="form-label fs-6">{i18n("extensionOptionsNotify")}</legend>
         <Form.Check
           id={notifyUrlIsAddedId}
           checked={values.notifyUrlIsAdded}
           disabled={isManaged("notifyUrlIsAdded")}
+          aria-describedby={describedBy("notifyUrlIsAdded")}
           onChange={(e) => set("notifyUrlIsAdded", e.target.checked)}
           label={i18n("extensionOptionsNotifyUrlIsAdded")}
-          aria-label={i18n("extensionOptionsNotifyUrlIsAdded")}
         />
-        <ManagedHint managed={isManaged("notifyUrlIsAdded")} />
+        <ManagedHint id={policyHintId("notifyUrlIsAdded")} managed={isManaged("notifyUrlIsAdded")} />
         <Form.Check
           id={notifyFileIsAddedId}
           checked={values.notifyFileIsAdded}
           disabled={isManaged("notifyFileIsAdded")}
+          aria-describedby={describedBy("notifyFileIsAdded")}
           onChange={(e) => set("notifyFileIsAdded", e.target.checked)}
           label={i18n("extensionOptionsNotifyFileIsAdded")}
-          aria-label={i18n("extensionOptionsNotifyFileIsAdded")}
         />
-        <ManagedHint managed={isManaged("notifyFileIsAdded")} />
+        <ManagedHint id={policyHintId("notifyFileIsAdded")} managed={isManaged("notifyFileIsAdded")} />
         <Form.Check
           id={notifyErrorOccursId}
           checked={values.notifyErrorOccurs}
           disabled={isManaged("notifyErrorOccurs")}
+          aria-describedby={describedBy("notifyErrorOccurs")}
           onChange={(e) => set("notifyErrorOccurs", e.target.checked)}
           label={i18n("extensionOptionsNotifyErrorOccurs")}
-          aria-label={i18n("extensionOptionsNotifyErrorOccurs")}
         />
-        <ManagedHint managed={isManaged("notifyErrorOccurs")} />
+        <ManagedHint id={policyHintId("notifyErrorOccurs")} managed={isManaged("notifyErrorOccurs")} />
       </Col>
 
       <Col xs={12} sm={12} className="mb-3">
-        <Form.Group controlId="form-theme">
-          <Form.Label>{i18n("extensionOptionsTheme")}</Form.Label>
-          <Form.Group controlId="form-group-theme">
-            <Form.Check
-              inline
-              label={i18n("extensionOptionsThemeLight")}
-              name="group-theme"
-              type="radio"
-              id={themeLightId}
-              value={Theme.Light}
-              checked={values.theme === Theme.Light}
-              disabled={isManaged("theme")}
-              onChange={(e) => set("theme", e.target.value as Theme)}
-            />
-            <Form.Check
-              inline
-              label={i18n("extensionOptionsThemeDark")}
-              name="group-theme"
-              type="radio"
-              id={themeDarkId}
-              value={Theme.Dark}
-              checked={values.theme === Theme.Dark}
-              disabled={isManaged("theme")}
-              onChange={(e) => set("theme", e.target.value as Theme)}
-            />
-            <Form.Check
-              inline
-              label={i18n("extensionOptionsThemeAuto")}
-              name="group-theme"
-              type="radio"
-              id={themeAutoId}
-              value={Theme.Auto}
-              checked={values.theme === Theme.Auto}
-              disabled={isManaged("theme")}
-              onChange={(e) => set("theme", e.target.value as Theme)}
-            />
-          </Form.Group>
-          <ManagedHint managed={isManaged("theme")} />
-        </Form.Group>
+        <fieldset aria-describedby={describedBy("theme")}>
+          <legend className="form-label fs-6">{i18n("extensionOptionsTheme")}</legend>
+          <Form.Check
+            inline
+            label={i18n("extensionOptionsThemeLight")}
+            name="group-theme"
+            type="radio"
+            id={themeLightId}
+            value={Theme.Light}
+            checked={values.theme === Theme.Light}
+            disabled={isManaged("theme")}
+            onChange={(e) => set("theme", e.target.value as Theme)}
+          />
+          <Form.Check
+            inline
+            label={i18n("extensionOptionsThemeDark")}
+            name="group-theme"
+            type="radio"
+            id={themeDarkId}
+            value={Theme.Dark}
+            checked={values.theme === Theme.Dark}
+            disabled={isManaged("theme")}
+            onChange={(e) => set("theme", e.target.value as Theme)}
+          />
+          <Form.Check
+            inline
+            label={i18n("extensionOptionsThemeAuto")}
+            name="group-theme"
+            type="radio"
+            id={themeAutoId}
+            value={Theme.Auto}
+            checked={values.theme === Theme.Auto}
+            disabled={isManaged("theme")}
+            onChange={(e) => set("theme", e.target.value as Theme)}
+          />
+        </fieldset>
+        <ManagedHint id={policyHintId("theme")} managed={isManaged("theme")} />
       </Col>
 
       <Col xs={12} sm={12} className="mb-3">

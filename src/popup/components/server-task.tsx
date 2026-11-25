@@ -1,11 +1,12 @@
 import { filesize } from "filesize";
 import { Duration } from "luxon";
-import { useId } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Col, OverlayTrigger, Row, Tooltip } from "react-bootstrap";
 import type { Server } from "@/domain/server";
 import { Task, TaskStatus } from "@/domain/task";
 import i18n, { getUILanguage, type MessageKey } from "@/platform/i18n";
 import ServerTaskManagement from "@/popup/components/server-task-management";
+import Speeds from "@/popup/components/speeds";
 import type { Aria2Client } from "@/services/aria2-client";
 
 interface Props {
@@ -36,6 +37,21 @@ function formatETA(seconds: number): string {
 
 function ServerTask({ server, aria2, task }: Props) {
   const filename = Task.filename(task);
+  const filenameRef = useRef<HTMLDivElement>(null);
+  const [truncated, setTruncated] = useState(false);
+
+  // Only a truncated name needs the keyboard focus (to open its tooltip): not every task adds a tab stop.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the name changes what is truncated.
+  useEffect(() => {
+    const element = filenameRef.current;
+    if (!element) {
+      return;
+    }
+    const measure = () => setTruncated(element.scrollWidth > element.clientWidth);
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, [filename]);
 
   const progressPercent = task.totalLength > 0 ? Math.round((task.completedLength * 100) / task.totalLength) : 0;
 
@@ -55,13 +71,19 @@ function ServerTask({ server, aria2, task }: Props) {
 
   const eta = task.downloadSpeed !== 0 ? formatETA((task.totalLength - task.completedLength) / task.downloadSpeed) : "∞";
 
-  const progressTextColor = progressPercent <= PROGRESS_TEXT_COLOR_THRESHOLD ? "inherit" : "white";
+  // Once the bar is under the percentage, the text must contrast with the bar: white, except on the light yellow of
+  // paused tasks, where only black text reaches the WCAG contrast ratio (like Bootstrap's text-bg-warning).
+  const progressVariant = getProgressVariant();
+  let progressTextColor = "inherit";
+  if (progressPercent > PROGRESS_TEXT_COLOR_THRESHOLD) {
+    progressTextColor = progressVariant === "warning" ? "var(--bs-black)" : "white";
+  }
 
   return (
-    <Row className="mt-2 gx-0 ps-2 pe-2 small">
+    <Row as="li" className="mt-2 gx-0 ps-2 pe-2 small">
       <Col xs={9}>
         <Row>
-          <Col xs={12} sm={12} className="align-self-start text-start text-truncate fw-bold">
+          <Col ref={filenameRef} xs={12} sm={12} className="align-self-start text-start text-truncate fw-bold">
             <OverlayTrigger
               key="bottom"
               placement="top"
@@ -71,7 +93,7 @@ function ServerTask({ server, aria2, task }: Props) {
                 </Tooltip>
               }
             >
-              <span>{filename}</span>
+              <span tabIndex={truncated ? 0 : undefined}>{filename}</span>
             </OverlayTrigger>
           </Col>
           <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
@@ -80,8 +102,7 @@ function ServerTask({ server, aria2, task }: Props) {
           </Col>
           {Task.isActive(task) && (
             <Col xs={12} sm={12} className="align-self-start ps-4 text-start">
-              {task.connections} {i18n("taskConnections")}, <i className="bi-arrow-down" /> {filesize(task.downloadSpeed, FILESIZE_BASE)}/s -{" "}
-              <i className="bi-arrow-up" /> {filesize(task.uploadSpeed, FILESIZE_BASE)}/s
+              {task.connections} {i18n("taskConnections")}, <Speeds downloadSpeed={task.downloadSpeed} uploadSpeed={task.uploadSpeed} />
             </Col>
           )}
         </Row>
@@ -92,14 +113,16 @@ function ServerTask({ server, aria2, task }: Props) {
       <Col xs={12} sm={12}>
         <div className="progress position-relative">
           <div
-            className={`progress-bar bg-${getProgressVariant()}`}
+            className={`progress-bar bg-${progressVariant}`}
             role="progressbar"
             style={{ width: `${progressPercent}%` }}
-            aria-valuenow={progressPercent * 10}
+            aria-label={i18n("taskProgress", filename)}
+            aria-valuenow={progressPercent}
             aria-valuemin={0}
-            aria-valuemax={1000}
+            aria-valuemax={100}
           />
-          <small className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
+          {/* The progress bar already gives the percentage to screen readers. */}
+          <small aria-hidden="true" className="justify-content-center d-flex position-absolute w-100" style={{ color: progressTextColor }}>
             {progressPercent} %
           </small>
         </div>

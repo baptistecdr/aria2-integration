@@ -50,7 +50,7 @@ describe("ExtensionOptionsTab", () => {
     render(<ExtensionOptionsTab />);
 
     await user.click(screen.getByRole("checkbox", { name: "extensionOptionsCaptureDownloads" }));
-    await user.selectOptions(screen.getByRole("combobox", { name: "extensionOptionsCaptureDownloads" }), "server1");
+    await user.selectOptions(screen.getByRole("combobox", { name: "extensionOptionsServerToSendDownloads" }), "server1");
     await user.clear(screen.getByLabelText("extensionOptionsExcludeFileTypes"));
     await user.type(screen.getByLabelText("extensionOptionsExcludeFileTypes"), "zip, rar");
     await user.click(screen.getByLabelText("extensionOptionsNotifyUrlIsAdded"));
@@ -139,5 +139,22 @@ describe("ExtensionOptionsTab", () => {
     render(<ExtensionOptionsTab />);
 
     expect(screen.queryByText("managedByPolicy")).not.toBeInTheDocument();
+  });
+
+  it("reads the description of a field with it, and the policy hint when the policy sets it", () => {
+    showOptions(current, ["excludedSites", "theme"]);
+
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.getByLabelText("extensionOptionsExcludeSites")).toHaveAccessibleDescription("extensionOptionsExcludeSitesDescription managedByPolicy");
+    expect(screen.getByLabelText("extensionOptionsExcludeProtocols")).toHaveAccessibleDescription("extensionOptionsExcludeProtocolsDescription");
+    expect(screen.getByRole("group", { name: "extensionOptionsTheme" })).toHaveAccessibleDescription("managedByPolicy");
+  });
+
+  it("labels the notification checkboxes and the theme radio buttons as groups", () => {
+    render(<ExtensionOptionsTab />);
+
+    expect(screen.getByRole("group", { name: "extensionOptionsNotify" })).toContainElement(screen.getByLabelText("extensionOptionsNotifyErrorOccurs"));
+    expect(screen.getByRole("group", { name: "extensionOptionsTheme" })).toContainElement(screen.getByLabelText("extensionOptionsThemeDark"));
   });
 });

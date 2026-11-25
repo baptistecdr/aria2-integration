@@ -1,9 +1,11 @@
 import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { Server } from "@/domain/server";
 import { type Task, TaskStatus } from "@/domain/task";
 import ServerTask from "@/popup/components/server-task";
 import type { Aria2Client } from "@/services/aria2-client";
+import browser from "../../setupTests";
 
 vi.mock("@/popup/components/server-task-management", () => ({
   default: () => <div data-testid="task-management">Task Management</div>,
@@ -117,5 +119,55 @@ describe("ServerTask", () => {
     render(<ServerTask server={server} aria2={aria2} task={task} />);
 
     expect(screen.getByText(/00:00:50/)).toBeInTheDocument();
+  });
+
+  it("names the progress bar after the file and gives its percentage", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    const progressBar = screen.getByRole("progressbar", { name: "Translated: taskProgress" });
+    expect(progressBar).toHaveAttribute("aria-valuenow", "50");
+    expect(progressBar).toHaveAttribute("aria-valuemax", "100");
+    expect(browser.i18n.getMessage).toHaveBeenCalledWith("taskProgress", "test-file.mp4");
+  });
+
+  it("names the speeds for screen readers", () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    expect(screen.getByText("Translated: popupDownloadSpeed")).toHaveClass("visually-hidden");
+    expect(screen.getByText("Translated: popupUploadSpeed")).toHaveClass("visually-hidden");
+  });
+
+  it.each([
+    { status: TaskStatus.Active, completed: 40, color: "inherit" },
+    { status: TaskStatus.Active, completed: 80, color: "white" },
+    { status: TaskStatus.Paused, completed: 80, color: "var(--bs-black)" },
+    { status: TaskStatus.Complete, completed: 100, color: "white" },
+  ])("writes the percentage of a $status task at $completed % in a contrasting color", ({ status, completed, color }) => {
+    task.status = status;
+    task.completedLength = (task.totalLength * completed) / 100;
+
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    // The inline style: jsdom computes "inherit" to black as well.
+    expect(screen.getByText(`${completed} %`).style.color).toBe(color);
+  });
+
+  it("does not add a tab stop for a file name that is not truncated", async () => {
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    expect(screen.getByText("test-file.mp4")).not.toHaveAttribute("tabindex");
+  });
+
+  it("shows the full file name when it gets the keyboard focus", async () => {
+    // jsdom has no layout: the name is truncated when its box is narrower than its text.
+    vi.spyOn(Element.prototype, "scrollWidth", "get").mockReturnValue(200);
+    vi.spyOn(Element.prototype, "clientWidth", "get").mockReturnValue(100);
+    render(<ServerTask server={server} aria2={aria2} task={task} />);
+
+    await userEvent.tab();
+    expect(document.activeElement).toHaveTextContent("test-file.mp4");
+
+    expect(await screen.findByRole("tooltip")).toHaveTextContent("test-file.mp4");
+    vi.restoreAllMocks();
   });
 });

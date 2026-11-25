@@ -45,19 +45,19 @@ test("pauses, resumes and deletes a task", async ({ extension, aria2, fileServer
   await expect(popup.getByText("movie.mkv")).toBeVisible();
   await expect(popup.getByText(/^Active, /)).toBeVisible();
 
-  await popup.getByRole("button", { name: "play-pause-retry" }).click();
+  await popup.getByRole("button", { name: "Pause movie.mkv" }).click();
   await expect.poll(async () => (await aria2.call("aria2.tellStatus", gid, ["status"])).status).toBe("paused");
   await expect(popup.getByText(/^Paused, /)).toBeVisible();
 
-  await popup.getByRole("button", { name: "play-pause-retry" }).click();
+  await popup.getByRole("button", { name: "Resume movie.mkv" }).click();
   await expect.poll(async () => (await aria2.call("aria2.tellStatus", gid, ["status"])).status).toBe("active");
 
-  await popup.getByRole("button", { name: "delete" }).click();
+  await popup.getByRole("button", { name: "Delete movie.mkv" }).click();
   await expect.poll(async () => (await aria2.call("aria2.tellStatus", gid, ["status"])).status).toBe("removed");
   await expect(popup.getByText(/^Removed, /)).toBeVisible();
 
   // Deleting a removed task drops its result.
-  await popup.getByRole("button", { name: "delete" }).click();
+  await popup.getByRole("button", { name: "Delete movie.mkv" }).click();
   await expect(popup.getByText("movie.mkv")).toHaveCount(0);
   expect(await aria2.tasks()).toEqual([]);
 });

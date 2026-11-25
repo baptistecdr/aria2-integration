@@ -1,4 +1,3 @@
-import { filesize } from "filesize";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import type { Server } from "@/domain/server";
@@ -11,11 +10,10 @@ import "bootstrap/dist/js/bootstrap";
 import "./server-tab.css";
 import { isOsAndroid } from "@/platform/browser-info";
 import { LoadingSpinner } from "@/popup/components/loading-spinner";
+import Speeds from "@/popup/components/speeds";
 import { useAria2Tasks } from "@/popup/hooks/use-aria2-tasks";
 import { createAria2Client } from "@/services/aria2-client";
 import { runWithNotification } from "@/services/notify";
-
-const FILESIZE_BASE = { base: 2 } as const;
 
 interface Props {
   server: Server;
@@ -47,46 +45,62 @@ function ServerTab({ server }: Props) {
     void isOsAndroid().then(setIsAndroid);
   }, []);
 
-  if (loading) {
-    return <LoadingSpinner />;
-  }
-
   const showTaskList = !showAddTask && !showQuickOptions;
 
+  // The status is always mounted, and only its content changes: screen readers announce a change of a live region, not
+  // one that is added with its text (the loading state, then the server becoming unreachable).
   return (
     <Container fluid>
-      <Row>
-        <Col xs={6} className="align-self-baseline text-start stats">
-          <i className="bi-arrow-down" /> {filesize(globalStat.downloadSpeed, FILESIZE_BASE)}/s - <i className="bi-arrow-up" />{" "}
-          {filesize(globalStat.uploadSpeed, FILESIZE_BASE)}/s
-        </Col>
-        <Col xs={6} className="align-self-baseline text-end">
-          <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
-            {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
-          </Button>
-          <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
-            {i18n("serverPurge")}
-          </Button>
-          {!isAndroid && (
-            <Button variant="secondary" size="sm" className="btn-right" aria-label="quick-options" onClick={toggleQuickOptions}>
-              {showQuickOptions ? <i className="bi-caret-left" /> : <i className="bi-gear" />}
-            </Button>
-          )}
-        </Col>
-        <Col xs={12}>
-          <hr className="mt-2 mb-2" />
-        </Col>
-      </Row>
-      {showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
-      {showQuickOptions && <ServerQuickOptions server={server} />}
-      {showTaskList && tasks.length === 0 && (
+      {!loading && (
         <Row>
+          <Col xs={6} className="align-self-baseline text-start stats">
+            <Speeds downloadSpeed={globalStat.downloadSpeed} uploadSpeed={globalStat.uploadSpeed} />
+          </Col>
+          <Col xs={6} className="align-self-baseline text-end">
+            <Button variant="primary" size="sm" className="btn-left" onClick={toggleAddTask}>
+              {showAddTask ? i18n("serverCancel") : i18n("serverAdd")}
+            </Button>
+            <Button variant="danger" size="sm" className={isAndroid ? "btn-right" : "btn-middle"} onClick={onClickPurge}>
+              {i18n("serverPurge")}
+            </Button>
+            {!isAndroid && (
+              <Button
+                variant="secondary"
+                size="sm"
+                className="btn-right"
+                aria-label={i18n("popupQuickOptions")}
+                aria-expanded={showQuickOptions}
+                onClick={toggleQuickOptions}
+              >
+                {showQuickOptions ? <i className="bi-caret-left" aria-hidden="true" /> : <i className="bi-gear" aria-hidden="true" />}
+              </Button>
+            )}
+          </Col>
           <Col xs={12}>
-            <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
+            <hr className="mt-2 mb-2" />
           </Col>
         </Row>
       )}
-      {showTaskList && tasks.map((task) => <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />)}
+      {!loading && showAddTask && <ServerAddTasks aria2={aria2} server={server} />}
+      {!loading && showQuickOptions && <ServerQuickOptions server={server} />}
+      <div role="status">
+        {loading && <LoadingSpinner />}
+        {!loading && showTaskList && tasks.length === 0 && (
+          <Row>
+            <Col xs={12}>
+              <em>{failed ? i18n("serverError") : i18n("serverNoTasks")}</em>
+            </Col>
+          </Row>
+        )}
+      </div>
+      {!loading && showTaskList && tasks.length > 0 && (
+        // A list, so that screen readers tell how many downloads there are and move from one to the next.
+        <ul className="list-unstyled mb-0">
+          {tasks.map((task) => (
+            <ServerTask key={task.gid} server={server} aria2={aria2} task={task} />
+          ))}
+        </ul>
+      )}
     </Container>
   );
 }
