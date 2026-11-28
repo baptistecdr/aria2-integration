@@ -104,13 +104,13 @@ describe("generate-manifest", () => {
     expect(parsedManifest.background).toBeUndefined();
   });
 
-  it("should use SVG icons from 48 px and an SVG toolbar icon from 24 px in Firefox", async () => {
+  it("should use the SVG toolbar symbol below 48 px, the SVG extension icon from 48 px and an SVG toolbar icon from 24 px in Firefox", async () => {
     process.env.BROWSER = "firefox";
     vol.writeFileSync(
       "./public/manifest.json",
       JSON.stringify({
         ...manifest,
-        icons: { "16": "icons/icon-browser-16.png", "38": "icons/icon-browser-38.png", "48": "icons/icon-browser-48.png", "128": "icons/icon-browser-128.png" },
+        icons: { "16": "icons/toolbar-16.png", "38": "icons/toolbar-38.png", "48": "icons/icon-browser-48.png", "128": "icons/icon-browser-128.png" },
         action: { default_icon: { "19": "icons/toolbar-19.png", "24": "icons/toolbar-24.png", "32": "icons/toolbar-32.png" } },
       }),
     );
@@ -119,8 +119,8 @@ describe("generate-manifest", () => {
 
     const parsedManifest = JSON.parse(vol.readFileSync("./dist/manifest.json", "utf8") as string);
     expect(parsedManifest.icons).toEqual({
-      "16": "icons/icon-browser-16.png",
-      "38": "icons/icon-browser-38.png",
+      "16": "icons/toolbar.svg",
+      "38": "icons/toolbar.svg",
       "48": "icons/icon-browser.svg",
       "128": "icons/icon-browser.svg",
     });
